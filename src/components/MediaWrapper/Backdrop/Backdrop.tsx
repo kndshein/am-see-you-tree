@@ -1,6 +1,6 @@
 import Loading from '../../Loading/Loading';
 import styles from './Backdrop.module.scss';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 
 interface Props {

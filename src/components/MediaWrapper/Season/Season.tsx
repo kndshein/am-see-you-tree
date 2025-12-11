@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ShowType } from '../../../types/Media';
 import styles from './Season.module.scss';
 

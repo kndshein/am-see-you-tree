@@ -10,7 +10,7 @@ import Backdrop from './Backdrop/Backdrop';
 import { useState } from 'react';
 import Index from './Index/Index';
 import styles from './MediaWrapper.module.scss';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
 import { OrderType } from '../../App';

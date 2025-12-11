@@ -5,7 +5,7 @@ import dateCalc from '../../../utils/date-calc';
 import runtimeCalc from '../../../utils/runtime-calc';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
 
 type PropTypes = {

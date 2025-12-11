@@ -4,7 +4,7 @@ import { MediaType } from '../../types/Media';
 import TopContainer from './TopContainer/TopContainer';
 import LeftContainer from './LeftContainer/LeftContainer';
 import RightContainer from './RightContainer/RightContainer';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 type PropTypes = {
   tmdb_data: TmdbType;

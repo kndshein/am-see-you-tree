@@ -1,7 +1,7 @@
 import styles from './Episodes.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
 import { ShowType } from '../../../types/Media';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { calculateDelay } from '../../../utils/utils';
 
 type PropTypes = {

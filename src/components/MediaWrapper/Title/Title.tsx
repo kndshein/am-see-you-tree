@@ -1,7 +1,7 @@
 import { MediaType } from '../../../types/Media';
 import { TmdbType } from '../../../types/Tmdb';
 import styles from './Title.module.scss';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 type PropTypes = {
   tmdb_data: TmdbType;

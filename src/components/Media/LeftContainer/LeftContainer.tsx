@@ -1,7 +1,7 @@
 import styles from './LeftContainer.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
 import Genres from '../Genres/Genres';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { container } from '../Media';
 import { MediaType } from '../../../types/Media';
 

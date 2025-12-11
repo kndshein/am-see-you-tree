@@ -1,7 +1,7 @@
 import styles from './TopContainer.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { container } from '../Media';
 
 type PropTypes = {

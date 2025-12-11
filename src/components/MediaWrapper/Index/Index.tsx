@@ -1,6 +1,6 @@
 import { OrderType } from '../../../App';
 import styles from './Index.module.scss';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface Props {
   idx: number;
