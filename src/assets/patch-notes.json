@@ -220,7 +220,7 @@
     "version": "4.5.0",
     "date": "June 2024",
     "notes": [
-      "Implemented media navgation via the collections list.",
+      "Implemented media navigation via the collections list.",
       "Implemented pre-fetching resources shown in the collections list."
     ]
   },
@@ -288,7 +288,7 @@
     "version": "4.6.1",
     "date": "June 2024",
     "notes": [
-      "Configured scrolling to be instant on Chrome due to laggy scrolling on Chromiums.",
+      "Configured scrolling to be instant on Chrome due to lag-y scrolling on Chromiums.",
       "Reduced computation for non-themed titles."
     ]
   },
@@ -350,6 +350,13 @@
     "date": "November 2025",
     "notes": [
       "Added <i>Ironheart</i>, <i>The Fantastic Four: First Steps</i>, <i>Eyes of Wakanda</i>, and <i>Marvel Zombies</i>."
+    ]
+  },
+  {
+    "version": "4.9.1",
+    "date": "April 2026",
+    "notes": [
+      "Added <i>Wonder Man</i>, and <i>Daredevil: Born Again (Season 2)</i>."
     ]
   }
 ]

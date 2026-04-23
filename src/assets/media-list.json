@@ -573,5 +573,19 @@
   {
     "type": "movie",
     "id": "617126-the-fantastic-4-first-steps"
+  },
+  {
+    "type": "tv",
+    "id": "198178-wonder-man",
+    "season": 1,
+    "epiStart": 1,
+    "epiEnd": 8
+  },
+  {
+    "type": "tv",
+    "id": "202555-daredevil-born-again",
+    "season": 2,
+    "epiStart": 1,
+    "epiEnd": 8
   }
 ]
