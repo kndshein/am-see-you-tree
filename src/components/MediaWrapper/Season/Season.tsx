@@ -47,7 +47,9 @@ export default function Season({
       animate={is_content_collapsed ? 'visible' : 'hidden'}
     >
       <p className={styles.season_label}>Season</p>
-      <p className={styles.season_num}>{nums[media_data.season - 1]}</p>
+      <p className={styles.season_num}>
+        {nums[media_data.season - 1] ?? media_data.season}
+      </p>
     </motion.div>
   );
 }

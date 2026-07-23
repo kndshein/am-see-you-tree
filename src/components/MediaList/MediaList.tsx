@@ -38,10 +38,21 @@ export default function MediaList({
         // Use 'instant' for Chrome since scrolling on Chromiums seem to be laggy
         behavior: 'smooth',
       });
-      // Janky solution to prevent from fetching while scrolling
-      setTimeout(() => {
-        setIsNavigating(false);
-      }, 1000);
+      // Clear the navigating flag when the scroll actually settles rather than
+      // guessing with a fixed timeout. Fall back to a timeout where `scrollend`
+      // isn't supported.
+      const scroll_container = media_list_ref.current;
+      if (scroll_container && 'onscrollend' in scroll_container) {
+        scroll_container.addEventListener(
+          'scrollend',
+          () => setIsNavigating(false),
+          { once: true }
+        );
+      } else {
+        setTimeout(() => {
+          setIsNavigating(false);
+        }, 1000);
+      }
     }
 
     setActiveToggle(id == active_toggle ? null : id);

@@ -14,6 +14,7 @@ import { motion } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
 import { OrderType } from '../../App';
+import { sanitizeMediaId } from '../../utils/utils';
 
 type PropTypes = {
   media_data: MediaType;
@@ -63,9 +64,9 @@ export default function MediaWrapper({
     media_ui_type = media_data.type;
   }
 
-  let url = `https://api.themoviedb.org/3/${url_media_type}/${
-    media_data.id
-  }?api_key=${
+  // IDs are slugs like "241388-eyes-of-wakanda"; TMDB needs just the numeric id.
+  const tmdb_id = sanitizeMediaId(media_data.id);
+  let url = `https://api.themoviedb.org/3/${url_media_type}/${tmdb_id}?api_key=${
     import.meta.env.VITE_API_KEY
   }&language=en-US&include_image_language=null&append_to_response=credits${url_append}`;
 

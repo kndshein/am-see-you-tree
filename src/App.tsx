@@ -7,9 +7,9 @@ import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
 
-export type OrderType = 'Chronological' | 'Reverse Chronological';
+const order_types = ['Chronological', 'Reverse Chronological'] as const;
 
-const order_types = ['Chronological', 'Reverse Chronological'];
+export type OrderType = (typeof order_types)[number];
 
 // Create the client once outside of render so it isn't recreated (and its
 // cache discarded) on every state change.
@@ -43,7 +43,7 @@ function App() {
     }
   }, []);
 
-  const order_type = order_types[order_index] as OrderType;
+  const order_type = order_types[order_index];
 
   return (
     <QueryClientProvider client={query_client}>
