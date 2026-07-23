@@ -1,0 +1,137 @@
+@use '../../sass/variables.scss' as *;
+
+$hud: rgba(102, 192, 204, 0.55);
+$hud-dim: rgba(102, 192, 204, 0.22);
+
+.hud {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+// Darkens the edges so the flat screen reads as a curved visor.
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 50% 50%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.35) 82%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+}
+
+// Faint diagonal "reflection" across the glass.
+.sheen {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(102, 192, 204, 0.05) 38%,
+    rgba(255, 255, 255, 0.04) 42%,
+    transparent 46%,
+    transparent 100%
+  );
+}
+
+.rail_left,
+.rail_right {
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    $hud-dim 15%,
+    $hud-dim 85%,
+    transparent
+  );
+
+  // Tick marks along the rail.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      $hud 0,
+      $hud 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+}
+
+.rail_left {
+  left: 18px;
+  &::after {
+    left: 0;
+  }
+}
+
+.rail_right {
+  right: 18px;
+  &::after {
+    right: 0;
+  }
+}
+
+$corner-size: 34px;
+$corner-thick: 2px;
+$corner-inset: 14px;
+
+%corner {
+  position: absolute;
+  width: $corner-size;
+  height: $corner-size;
+  border: $corner-thick solid rgba(255, 255, 255, 0.3);
+}
+
+.corner_tl {
+  @extend %corner;
+  top: $corner-inset;
+  left: $corner-inset;
+  border-right: 0;
+  border-bottom: 0;
+}
+.corner_tr {
+  @extend %corner;
+  top: $corner-inset;
+  right: $corner-inset;
+  border-left: 0;
+  border-bottom: 0;
+}
+.corner_bl {
+  @extend %corner;
+  bottom: $corner-inset;
+  left: $corner-inset;
+  border-right: 0;
+  border-top: 0;
+}
+.corner_br {
+  @extend %corner;
+  bottom: $corner-inset;
+  right: $corner-inset;
+  border-left: 0;
+  border-top: 0;
+}
+
+.top_bar {
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  right: 60px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: $hud;
+}

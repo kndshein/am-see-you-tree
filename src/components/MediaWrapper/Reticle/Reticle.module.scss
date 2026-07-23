@@ -1,0 +1,60 @@
+@use '../../../sass/variables.scss' as *;
+
+$bracket: 38px;
+$thick: 2px;
+$glow: rgba(102, 192, 204, 0.9);
+
+.reticle {
+  position: absolute;
+  // Mirror `.content_container.active` padding (MediaWrapper.module.scss:
+  // 50px 50px 100px) so the frame centers exactly where `.content` does.
+  top: 50px;
+  right: 50px;
+  bottom: 100px;
+  left: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+// Same box as the expanded `.content`, so brackets sit on its corners.
+.frame {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 70vh;
+}
+
+.corner {
+  position: absolute;
+  width: $bracket;
+  height: $bracket;
+  border: $thick solid $accent-lite;
+  filter: drop-shadow(0 0 4px $glow);
+}
+
+.tl {
+  top: -10px;
+  left: -10px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.tr {
+  top: -10px;
+  right: -10px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.bl {
+  bottom: -10px;
+  left: -10px;
+  border-right: 0;
+  border-top: 0;
+}
+.br {
+  bottom: -10px;
+  right: -10px;
+  border-left: 0;
+  border-top: 0;
+}

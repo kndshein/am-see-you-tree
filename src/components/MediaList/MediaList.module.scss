@@ -8,6 +8,11 @@
   scrollbar-color: $accent-lite $main;
   scrollbar-width: thin;
   scroll-behavior: smooth;
+  // One shared vanishing point at the viewport center so every card projects
+  // onto the same curve and adjacent edges line up. JS sets each card's
+  // rotateY/scale (see MediaList.tsx).
+  perspective: 850px;
+  perspective-origin: 50% 50%;
 
   &::after {
     content: '';
@@ -29,6 +34,9 @@
 
   &.is_active {
     overflow: hidden;
+    // Drop perspective while a card is expanded so it isn't the containing
+    // block for the card's position:fixed fullscreen overlay.
+    perspective: none;
   }
 }
 

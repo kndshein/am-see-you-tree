@@ -11,6 +11,7 @@ import styles from './MediaWrapper.module.scss';
 import { motion } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
+import Reticle from './Reticle/Reticle';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
 import tmdb_data_map from '../../assets/tmdb-data.json';
@@ -173,6 +174,7 @@ export default function MediaWrapper({
               is_content_expanded={is_content_expanded}
             />
           </motion.div>
+          {is_active && <Reticle is_expanded={is_content_expanded} />}
         </div>
       )}
     </button>

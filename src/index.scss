@@ -69,6 +69,13 @@ code {
     }
   }
 
+  // When a card is active its content is shown fullscreen, so hide the empty
+  // in-row placeholder (keep the border box for layout, just make it invisible)
+  // — otherwise it sits flat and out of place among the curved cards.
+  &.active {
+    border-color: transparent;
+  }
+
   // Adjust z-index during media stacking when switched out rapidly (such as via collection navigation)
   &:not(.collapsed-layout):not(.active):not(.expanded-layout) {
     z-index: 1;

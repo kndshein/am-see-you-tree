@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Nav from './components/Nav/Nav';
+import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
 import { MotionConfig } from 'motion/react';
 
@@ -57,6 +58,7 @@ function App() {
             is_movies_only={is_movies_only}
             order_type={order_type}
           />
+          <Hud />
         </main>
       )}
     </MotionConfig>
