@@ -1,6 +1,8 @@
-export default function (e: number) {
-  const hour = Math.floor(e / 60);
-  const min = e % 60;
-  const concat = hour + 'h ' + min + 'min';
-  return concat;
+export default function runtimeCalc(minutes?: number): string {
+  if (!minutes || minutes <= 0) return '';
+  const hour = Math.floor(minutes / 60);
+  const min = minutes % 60;
+  if (hour === 0) return `${min}min`;
+  if (min === 0) return `${hour}h`;
+  return `${hour}h ${min}min`;
 }

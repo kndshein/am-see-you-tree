@@ -21,16 +21,15 @@ export default function Nav({ is_movies_only, setIsMoviesOnly }: PropTypes) {
       <div className={styles.gif_container}>
         <img
           src="https://media.giphy.com/media/XmppNRlrlu2SA/giphy.gif"
-          alt="futuristic blob looking thing animated"
+          alt="Futuristic sci-fi visual animation"
         />
       </div>
       <button
+        aria-pressed={is_movies_only}
         className={`${is_movies_only ? styles.active : ''} ${styles.button} ${
           styles.media_filter
         }`}
-        onClick={() => {
-          is_movies_only ? setIsMoviesOnly(false) : setIsMoviesOnly(true);
-        }}
+        onClick={() => setIsMoviesOnly((prev) => !prev)}
       >
         Movies Only
       </button>

@@ -1,83 +1,59 @@
 import { motion } from 'motion/react';
 import styles from './Genres.module.scss';
+import { Genre } from '../../../types/Tmdb';
 
 type PropTypes = {
-  genres: Array<any>;
+  genres?: Genre[];
 };
 
-export default function Genres({ genres }: PropTypes) {
-  // Copy before sorting so we don't mutate the array owned/cached by React Query.
-  const sorted_genres = [...genres].sort((a, b) => {
-    if (a.name < b.name) {
-      return -1;
-    }
-    if (a.name > b.name) {
-      return 1;
-    }
-    return 0;
-  });
+export default function Genres({ genres = [] }: PropTypes) {
+  // Copy before sorting
+  const sorted_genres = [...genres].sort((a, b) => a.name.localeCompare(b.name));
 
-  const classNameColor = (e: number) => {
-    let className;
-    switch (e) {
+  const classNameColor = (id: number) => {
+    switch (id) {
       case 28:
-        className = styles.action;
-        break;
+        return styles.action;
       case 12:
-        className = styles.adventure;
-        break;
+        return styles.adventure;
       case 16:
-        className = styles.animation;
-        break;
+        return styles.animation;
       case 35:
-        className = styles.comedy;
-        break;
+        return styles.comedy;
       case 18:
-        className = styles.drama;
-        break;
+        return styles.drama;
       case 14:
-        className = styles.fantasy;
-        break;
+        return styles.fantasy;
       case 878:
-        className = styles.science_fiction;
-        break;
+        return styles.science_fiction;
       case 53:
-        className = styles.thriller;
-        break;
+        return styles.thriller;
       case 10751:
-        className = styles.family;
-        break;
+        return styles.family;
       case 10759:
-        className = styles.aa;
-        break;
+        return styles.aa;
       case 10765:
-        className = styles.sf;
-        break;
+        return styles.sf;
       case 80:
-        className = styles.crime;
-        break;
+        return styles.crime;
       case 10768:
-        className = styles.wp;
-        break;
+        return styles.wp;
       case 9648:
-        className = styles.mystery;
-        break;
+        return styles.mystery;
       case 27:
-        className = styles.horror;
-        break;
+        return styles.horror;
       default:
-        className = styles.none;
+        return styles.none;
     }
-    return className;
   };
 
   return (
     <section className={styles.genres}>
-      {sorted_genres.map((ele, idx) => {
+      {sorted_genres.map((ele) => {
         return (
           <motion.div
             className={`${classNameColor(ele.id)}`}
-            key={idx}
+            key={ele.id}
             variants={{
               visible: {
                 opacity: 1,

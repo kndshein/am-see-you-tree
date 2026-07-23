@@ -1,5 +1,5 @@
 import styles from './RightContainer.module.scss';
-import { TmdbType } from '../../../types/Tmdb';
+import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
 import dateCalc from '../../../utils/date-calc';
 import runtimeCalc from '../../../utils/runtime-calc';
@@ -41,6 +41,8 @@ export default function RightContainer({
     },
   };
 
+  const seasonData = media_data.type === 'tv' ? tmdb_data[`season/${media_data.season}`] : undefined;
+
   return (
     <motion.section
       className={styles.container}
@@ -54,12 +56,12 @@ export default function RightContainer({
         <>
           <motion.section className={styles.info_group} variants={element}>
             <motion.span className={styles.vote} variants={element}>
-              {Math.round(tmdb_data.vote_average * 10) / 10}
+              {Math.round((tmdb_data.vote_average ?? 0) * 10) / 10}
             </motion.span>
             <motion.span className={styles.dot}>•</motion.span>
-            {media_data.type == 'tv' ? (
+            {media_data.type === 'tv' ? (
               <motion.span variants={element}>
-                {dateCalc(tmdb_data[`season/${media_data.season}`].air_date)}
+                {dateCalc(seasonData?.air_date)}
               </motion.span>
             ) : (
               <>
@@ -76,13 +78,13 @@ export default function RightContainer({
             )}
           </motion.section>
           <motion.section className={styles.cast} variants={element}>
-            {tmdb_data.credits.cast
+            {(tmdb_data.credits?.cast ?? [])
               .slice(0, 5)
-              .map((actor: any, idx: number) => {
+              .map((actor: CastMember, idx: number) => {
                 return (
                   <motion.span
                     className={styles.actor}
-                    key={idx}
+                    key={actor.name || idx}
                     variants={element}
                   >
                     {actor.name}
@@ -93,7 +95,7 @@ export default function RightContainer({
           <Overview tmdb_data={tmdb_data} media_data={media_data} />
         </>
       )}
-      {media_data.type == 'tv' && (
+      {media_data.type === 'tv' && (
         <Episodes tmdb_data={tmdb_data} media_data={media_data} />
       )}
     </motion.section>

@@ -12,12 +12,13 @@ type PropTypes = {
 
 export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
   let poster_slug = tmdb_data.poster_path;
-  if (media_data.type == 'tv') {
-    const seasonal_poster =
-      tmdb_data[`season/${[media_data.season]}`].poster_path;
-    poster_slug = seasonal_poster ?? tmdb_data.poster_path;
+  if (media_data.type === 'tv') {
+    const seasonData = tmdb_data[`season/${media_data.season}`];
+    poster_slug = seasonData?.poster_path ?? tmdb_data.poster_path;
   }
-  const poster_path = `https://image.tmdb.org/t/p/w342${poster_slug}`;
+  const poster_path = poster_slug
+    ? `https://image.tmdb.org/t/p/w342${poster_slug}`
+    : '';
 
   return (
     <motion.div
@@ -50,7 +51,12 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
           },
         }}
       >
-        <img src={poster_path} alt={tmdb_data.original_title} />
+        {poster_path && (
+          <img
+            src={poster_path}
+            alt={tmdb_data.original_title || tmdb_data.original_name || 'Poster'}
+          />
+        )}
       </motion.div>
       <Genres genres={tmdb_data.genres} />
     </motion.div>

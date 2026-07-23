@@ -34,25 +34,7 @@ export default function MediaList({
       ele_active_to_be.scrollIntoView({ behavior: 'smooth' });
     }
 
-    setActiveToggle(id == active_toggle ? null : id);
-  };
-
-  const WrapperComponent = (
-    ele: MediaType,
-    idx: number,
-    media_length: number,
-  ) => {
-    return (
-      <MediaWrapper
-        media_data={ele}
-        is_movies_only={is_movies_only}
-        handleToggle={handleToggle}
-        is_active={active_toggle == idx}
-        idx={idx}
-        order_type={order_type}
-        media_length={media_length}
-      />
-    );
+    setActiveToggle(id === active_toggle ? null : id);
   };
 
   useEffect(() => {
@@ -66,24 +48,17 @@ export default function MediaList({
     }
   }, [order_type]);
 
-  // Concave "visor" curve, like a concave lens: the center card keeps its width
-  // but is squashed shorter (SHORT_Y), while edge cards keep their height but
-  // are squished narrower (SQUISH_X) and rotate inward (rotateY). Everything
-  // scales down (≤ 1) so nothing spills out of the rail. The scroll container
-  // owns a single perspective/vanishing point (see MediaList.module.scss) so the
-  // cards project onto one shared curve and adjacent edges line up. While a card
-  // is expanded the curve is cleared and the container perspective is dropped
-  // (CSS) so its fullscreen overlay anchors to the viewport. Offsets are measured
-  // once and cached; the scroll handler only does math + composited transform
-  // writes (no layout reads), rAF-throttled to stay smooth.
+  // Per-card 3D concave "visor" curve:
+  // Each card receives per-card perspective & rotateY so background cards keep their
+  // 3D curved orientation even when a card is expanded into fullscreen.
   useEffect(() => {
     const el = media_list_ref.current;
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const MAX_ANGLE = 34; // degrees the edge cards rotate inward
-    const SQUISH_X = 0.32; // how much narrower the edge cards get
-    const SHORT_Y = 0.2; // how much shorter the center card gets
+    const SQUISH_X = -0.1; // how much narrower the edge cards get
+    const SHORT_Y = 0.1; // how much shorter the center card gets
     const MAX_DIST = 1.4; // clamp so far-edge cards don't over-rotate
     let raf = 0;
     let cards: HTMLElement[] = [];
@@ -94,6 +69,13 @@ export default function MediaList({
       const half = el.clientWidth / 2 || 1;
       for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
+
+        // If this card is active, clear transform so it morphs cleanly to fullscreen overlay
+        if (active_toggle !== null && card.id === active_toggle.toString()) {
+          card.style.transform = 'none';
+          continue;
+        }
+
         const d = Math.max(
           -MAX_DIST,
           Math.min(MAX_DIST, (centers[i] - mid) / half),
@@ -102,22 +84,14 @@ export default function MediaList({
         const center = 1 - ad / MAX_DIST; // 1 at center → 0 at edges
         const scale_x = 1 - SQUISH_X * (1 - center); // sides narrower
         const scale_y = 1 - SHORT_Y * center; // center shorter
-        // Concave: `-d * MAX_ANGLE` turns each card's inner edge toward you.
         const angle = -d * MAX_ANGLE;
-        card.style.transform = `rotateY(${angle}deg) scale(${scale_x.toFixed(
-          3,
-        )}, ${scale_y.toFixed(3)})`;
+
+        // Per-card 3D perspective and rotation without container perspective trap
+        card.style.transform = `perspective(1000px) rotateY(${angle.toFixed(
+          2,
+        )}deg) scale(${scale_x.toFixed(3)}, ${scale_y.toFixed(3)})`;
       }
     };
-
-    // No curve while a card is expanded (container perspective is off in CSS
-    // then, so leftover rotateY would just shear the background cards).
-    if (active_toggle != null) {
-      el.querySelectorAll<HTMLElement>('.media').forEach(
-        (c) => (c.style.transform = ''),
-      );
-      return;
-    }
 
     const measure = () => {
       cards = Array.from(el.querySelectorAll<HTMLElement>('.media'));
@@ -148,23 +122,31 @@ export default function MediaList({
   return (
     <div
       className={`${styles.media_list} ${
-        active_toggle ? styles.is_active : ''
+        active_toggle !== null ? styles.is_active : ''
       }`}
       ref={media_list_ref}
     >
       {media_list.map((ele, idx) => {
+        const shouldShow = ele.type === 'movie' || !is_movies_only;
+        if (!shouldShow) return null;
+
+        const key = `${ele.id}${
+          ele.type === 'tv'
+            ? `_s${ele.season}_ep${ele.epiStart}-${ele.epiEnd}`
+            : ''
+        }`;
+
         return (
-          <Fragment
-            key={`${ele.id}${
-              ele.type == 'tv'
-                ? `${ele.season}${ele.epiStart}${ele.epiEnd}`
-                : ''
-            }`}
-          >
-            {ele.type == 'movie'
-              ? WrapperComponent(ele, idx, media_list.length)
-              : !is_movies_only &&
-                WrapperComponent(ele, idx, media_list.length)}
+          <Fragment key={key}>
+            <MediaWrapper
+              media_data={ele}
+              is_movies_only={is_movies_only}
+              handleToggle={handleToggle}
+              is_active={active_toggle === idx}
+              idx={idx}
+              order_type={order_type}
+              media_length={media_list.length}
+            />
           </Fragment>
         );
       })}

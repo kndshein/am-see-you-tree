@@ -11,17 +11,20 @@ type PropTypes = {
 export default function Overview({ tmdb_data, media_data }: PropTypes) {
   const should_reduce_motion = useReducedMotion();
 
-  // Shows w/ singular seasons don't nest their overview info
-  const overview_text =
-    media_data.type == 'tv'
-      ? tmdb_data[`season/${media_data.season}`].overview || tmdb_data.overview
-      : tmdb_data.overview;
+  const seasonData =
+    media_data.type === 'tv' ? tmdb_data[`season/${media_data.season}`] : undefined;
 
-  // The per-character reveal below mounts one animated node per character.
-  // Skip it entirely for users who prefer reduced motion (and save the nodes).
+  const overview_text =
+    media_data.type === 'tv'
+      ? seasonData?.overview || tmdb_data.overview || ''
+      : tmdb_data.overview || '';
+
   if (should_reduce_motion) {
     return <p className={styles.overview}>{overview_text}</p>;
   }
+
+  // Word-by-word reveal for high performance and clean visual animation
+  const words = overview_text.split(' ');
 
   return (
     <motion.p
@@ -30,7 +33,7 @@ export default function Overview({ tmdb_data, media_data }: PropTypes) {
         visible: {
           opacity: 1,
           transition: {
-            staggerChildren: 0.002,
+            staggerChildren: 0.015,
           },
         },
         hidden: {
@@ -44,29 +47,27 @@ export default function Overview({ tmdb_data, media_data }: PropTypes) {
       }}
       initial={{ opacity: 0 }}
     >
-      {overview_text.split('').map((letter: string, idx: number) => {
-        return (
-          <motion.span
-            key={idx}
-            variants={{
-              visible: {
-                opacity: 1,
-                transition: {
-                  opacity: {
-                    duration: 0,
-                  },
-                },
+      {words.map((word, idx) => (
+        <motion.span
+          key={idx}
+          style={{ display: 'inline-block', marginRight: '0.25em' }}
+          variants={{
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                duration: 0.1,
               },
-              hidden: {
-                opacity: 0,
-              },
-            }}
-            initial={{ opacity: 0 }}
-          >
-            {letter}
-          </motion.span>
-        );
-      })}
+            },
+            hidden: {
+              opacity: 0,
+              y: 4,
+            },
+          }}
+        >
+          {word}
+        </motion.span>
+      ))}
     </motion.p>
   );
 }

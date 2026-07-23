@@ -5,7 +5,7 @@ import Tag from './Tag/Tag';
 import Title from './Title/Title';
 import Media from '../Media/Media';
 import Backdrop from './Backdrop/Backdrop';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Index from './Index/Index';
 import styles from './MediaWrapper.module.scss';
 import { motion } from 'motion/react';
@@ -39,7 +39,6 @@ export default function MediaWrapper({
     triggerOnce: true,
   });
   const [is_backdrop_loaded, setIsBackdropLoaded] = useState(false);
-  // Denotes if curr media is fully expanded or not
   const [{ is_content_expanded, is_content_collapsed }, setContentStatus] =
     useState({
       is_content_expanded: is_active,
@@ -47,33 +46,46 @@ export default function MediaWrapper({
     });
 
   const media_ui_type: MediaUiType =
-    media_data.type == 'tv' ? 'show' : media_data.type;
+    media_data.type === 'tv' ? 'show' : media_data.type;
 
-  // Data is prefetched at build time (scripts/prefetch-tmdb.mjs) — no runtime
-  // fetching. Keep this key in sync with `tmdbKey` in that script.
   const tmdb_key =
-    media_data.type == 'tv'
+    media_data.type === 'tv'
       ? `${media_data.id}__season${media_data.season}`
       : media_data.id;
   const data: TmdbType = (tmdb_data_map as Record<string, TmdbType>)[tmdb_key];
   const has_data = !!data;
 
-  // Only render (and thus load the backdrop image) once the card is active or
-  // scrolled into view, so we don't mount 100+ images at once.
   const is_ready = is_active || inView;
+  const isDisabled = !is_ready || !has_data || !is_backdrop_loaded;
+
+  const handleClick = () => {
+    if (!isDisabled) {
+      handleToggle(idx);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((e.key === 'Enter' || e.key === ' ') && !isDisabled) {
+      e.preventDefault();
+      handleToggle(idx);
+    }
+  };
 
   return (
-    <button
+    <div
       id={idx.toString()}
       ref={ref}
+      role="button"
+      tabIndex={isDisabled ? -1 : 0}
+      aria-disabled={isDisabled}
+      aria-expanded={is_content_expanded}
       className={`${media_data.id} media ${is_active ? 'active' : ''} ${
-        !is_ready || !has_data || !is_backdrop_loaded ? '' : 'ready'
+        isDisabled ? '' : 'ready'
       } ${is_content_expanded ? 'expanded-layout' : ''} ${
         is_content_collapsed ? 'collapsed-layout' : ''
       }`}
-      onClick={() => handleToggle(idx)}
-      tabIndex={0}
-      disabled={!is_ready || !has_data || !is_backdrop_loaded}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
     >
       {!is_ready ? (
         <Loading />
@@ -144,7 +156,6 @@ export default function MediaWrapper({
             }}
             animate={is_content_expanded ? 'expanded' : 'collapsed'}
           >
-            {/* Double loading because the background image only loads if it's rendered */}
             <Backdrop
               data={data}
               media_data={media_data}
@@ -161,7 +172,7 @@ export default function MediaWrapper({
               order_type={order_type}
               media_length={media_length}
             />
-            {media_data.type == 'tv' && (
+            {media_data.type === 'tv' && (
               <Season
                 media_data={media_data}
                 is_content_collapsed={is_content_collapsed}
@@ -177,6 +188,6 @@ export default function MediaWrapper({
           {is_active && <Reticle is_expanded={is_content_expanded} />}
         </div>
       )}
-    </button>
+    </div>
   );
 }

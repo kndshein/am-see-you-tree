@@ -9,10 +9,14 @@
   letter-spacing: 0.5px;
 }
 
+html,
 body {
   position: relative;
   height: 100vh;
+  width: 100vw;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -ms-overflow-style: none;
@@ -51,11 +55,6 @@ code {
   background: transparent;
   scroll-margin: 50px;
 
-  // Let the browser skip layout/paint for offscreen cards. `auto` remembers
-  // each card's real size after first render, so variable-width titles don't
-  // cause horizontal scroll jumps. Turned off for the active/expanded card
-  // below, because the paint containment this implies would trap that card's
-  // position:fixed overlay inside the card instead of the viewport.
   content-visibility: auto;
   contain-intrinsic-size: auto 250px auto 600px;
 
@@ -69,14 +68,10 @@ code {
     }
   }
 
-  // When a card is active its content is shown fullscreen, so hide the empty
-  // in-row placeholder (keep the border box for layout, just make it invisible)
-  // — otherwise it sits flat and out of place among the curved cards.
   &.active {
     border-color: transparent;
   }
 
-  // Adjust z-index during media stacking when switched out rapidly (such as via collection navigation)
   &:not(.collapsed-layout):not(.active):not(.expanded-layout) {
     z-index: 1;
   }
@@ -93,7 +88,6 @@ code {
       z-index: -2;
       content: '';
       position: absolute;
-      // Sheen effect
       top: 0px;
       left: 0px;
       bottom: 0px;
@@ -122,7 +116,9 @@ code {
   display: flex;
   flex-flow: column;
   height: 100vh;
-  padding-bottom: 55px;
+  width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .order_type_btn {
