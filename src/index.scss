@@ -51,9 +51,18 @@ code {
   background: transparent;
   scroll-margin: 50px;
 
+  // Let the browser skip layout/paint for offscreen cards. `auto` remembers
+  // each card's real size after first render, so variable-width titles don't
+  // cause horizontal scroll jumps. Turned off for the active/expanded card
+  // below, because the paint containment this implies would trap that card's
+  // position:fixed overlay inside the card instead of the viewport.
+  content-visibility: auto;
+  contain-intrinsic-size: auto 250px auto 600px;
+
   &:not(.collapsed-layout) {
     z-index: 2;
     border: 2px dashed $accent-lite;
+    content-visibility: visible;
 
     &::after {
       opacity: 0;

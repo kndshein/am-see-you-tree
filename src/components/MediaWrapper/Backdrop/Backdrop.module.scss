@@ -48,6 +48,10 @@
   background-size: 100% 9px;
   height: 100%;
   width: 100%;
+  // Animating background-position isn't GPU-composited, so it repaints every
+  // frame. That's fine here: `content-visibility: auto` on `.media` (index.scss)
+  // makes the browser skip rendering — including this animation — for offscreen
+  // cards, so only the handful actually in the viewport keep painting.
   animation: pan-overlay 20s infinite linear;
   position: absolute;
   opacity: 0.1;

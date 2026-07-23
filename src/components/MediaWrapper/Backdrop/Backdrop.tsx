@@ -33,8 +33,14 @@ export default function Backdrop({
         <div className={styles.screen_overlay}></div>
         <img
           className={styles.backdrop}
-          src={`https://image.tmdb.org/t/p/original${backdrop_path}`}
+          // w1280 keeps the brief sharp moment on expand crisp, and reusing
+          // this one already-decoded image (rather than swapping sizes on
+          // expand) avoids a reload flash. `original` was multi-MB and stalled
+          // decode on scroll; `decoding="async"` keeps decode off the main
+          // thread.
+          src={`https://image.tmdb.org/t/p/w1280${backdrop_path}`}
           alt={data.original_title}
+          decoding="async"
           onLoad={() => setIsBackdropLoaded(true)}
         />
       </motion.div>
