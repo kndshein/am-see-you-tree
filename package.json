@@ -9,24 +9,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/monaspace-krypton": "^5.2.5",
-    "@tanstack/react-query": "^5.90.12",
-    "@tanstack/react-query-devtools": "^5.91.1",
+    "@fontsource/monaspace-krypton": "^5.3.0",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query-devtools": "^5.101.4",
     "@types/react-modal": "^3.16.3",
-    "axios": "^1.13.2",
-    "motion": "^12.23.26",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
-    "react-icons": "^5.5.0",
-    "react-intersection-observer": "^10.0.0",
+    "axios": "^1.18.1",
+    "motion": "^12.42.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-icons": "^5.7.0",
+    "react-intersection-observer": "^10.1.0",
     "react-modal": "^3.16.3"
   },
   "devDependencies": {
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.2",
-    "sass": "^1.96.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.2.7"
+    "@vitejs/plugin-react": "^6.0.4",
+    "sass": "^1.101.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
   }
 }
