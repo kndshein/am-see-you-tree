@@ -13,7 +13,7 @@ export default function MediaListWrapper({
   is_movies_only,
   order_type,
 }: PropTypes) {
-  const media_list_ref = useRef<HTMLDivElement>(null);
+  const media_list_ref = useRef<HTMLDivElement | null>(null);
 
   const scroll_intensity = 800;
   const handleScroll = (direction: 'right' | 'left') => {

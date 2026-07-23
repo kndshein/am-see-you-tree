@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import './components/MediaListWrapper/MediaListWrapper';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Nav from './components/Nav/Nav';
 import Modal from 'react-modal';
@@ -12,18 +11,20 @@ export type OrderType = 'Chronological' | 'Reverse Chronological';
 
 const order_types = ['Chronological', 'Reverse Chronological'];
 
+// Create the client once outside of render so it isn't recreated (and its
+// cache discarded) on every state change.
+const query_client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function App() {
   const [is_DOM_loaded, setIsDOMLoaded] = useState(false);
   const [is_movies_only, setIsMoviesOnly] = useState(true);
   const [order_index, setOrderIndex] = useState(0);
-
-  const query_client = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
 
   function handleDOMLoad() {
     setIsDOMLoaded(true);

@@ -1,5 +1,28 @@
 @use '../../sass/variables.scss' as *;
 
+.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  gap: 8px;
+}
+
+.error_message {
+  color: $main-lite;
+  font-family: $body-text;
+}
+
+.error_retry {
+  color: $accent-lite;
+  font-family: $accent-text;
+  font-size: 0.8em;
+}
+
 .content_container {
   height: 100%;
   width: 100%;

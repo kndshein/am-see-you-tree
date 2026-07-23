@@ -69,27 +69,40 @@ export default function MediaWrapper({
     import.meta.env.VITE_API_KEY
   }&language=en-US&include_image_language=null&append_to_response=credits${url_append}`;
 
-  const { isPending, data } = useQuery({
+  const { isPending, isError, data, refetch } = useQuery({
     queryKey: query_array,
     queryFn: () => axios.get(url).then((res) => res.data),
     // If is_active, do it. Otherwise, do it if inView, but not while is_navigating
     enabled: is_active ? true : is_navigating ? false : inView,
   });
 
+  // Guard against a failed fetch: `isPending` flips to false on error while
+  // `data` stays undefined, so the content below would crash on `data.*`.
+  const has_data = !isError && !!data;
+
   return (
     <button
       id={idx.toString()}
       ref={ref}
       className={`${media_data.id} media ${is_active ? 'active' : ''} ${
-        isPending || !is_backdrop_loaded ? '' : 'ready'
+        isPending || !has_data || !is_backdrop_loaded ? '' : 'ready'
       } ${is_content_expanded ? 'expanded-layout' : ''} ${
         is_content_collapsed ? 'collapsed-layout' : ''
       }`}
-      onClick={() => handleToggle(idx)}
+      // On error the card acts as a retry target; otherwise it toggles.
+      onClick={() => (isError ? refetch() : handleToggle(idx))}
       tabIndex={0}
-      disabled={isPending || !is_backdrop_loaded}
+      // Keep enabled while in error so the retry click above stays clickable.
+      disabled={isPending || (!isError && (!data || !is_backdrop_loaded))}
     >
       {isPending ? (
+        <Loading />
+      ) : isError ? (
+        <div className={styles.error}>
+          <p className={styles.error_message}>Couldn't load this title.</p>
+          <p className={styles.error_retry}>Tap to retry</p>
+        </div>
+      ) : !data ? (
         <Loading />
       ) : (
         <div

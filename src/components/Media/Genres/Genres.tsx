@@ -6,7 +6,8 @@ type PropTypes = {
 };
 
 export default function Genres({ genres }: PropTypes) {
-  genres.sort((a, b) => {
+  // Copy before sorting so we don't mutate the array owned/cached by React Query.
+  const sorted_genres = [...genres].sort((a, b) => {
     if (a.name < b.name) {
       return -1;
     }
@@ -72,7 +73,7 @@ export default function Genres({ genres }: PropTypes) {
 
   return (
     <section className={styles.genres}>
-      {genres.map((ele, idx) => {
+      {sorted_genres.map((ele, idx) => {
         return (
           <motion.div
             className={`${classNameColor(ele.id)}`}
