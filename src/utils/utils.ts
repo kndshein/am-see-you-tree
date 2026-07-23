@@ -3,10 +3,6 @@ export function calculateDelay(overview_text: string) {
   return 0.1 + 0.3 * (overview_text.length / 200);
 }
 
-export function sanitizeMediaId(id: string) {
-  return id.split('-')[0];
-}
-
 // https://stackoverflow.com/a/7557433
 export function isElementInViewport(ele: HTMLElement) {
   var rect = ele.getBoundingClientRect();

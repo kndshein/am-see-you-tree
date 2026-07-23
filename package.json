@@ -4,16 +4,16 @@
   "version": "4.9.0",
   "type": "module",
   "scripts": {
+    "prefetch": "node scripts/prefetch-tmdb.mjs",
+    "predev": "npm run prefetch",
     "dev": "vite",
+    "prebuild": "npm run prefetch",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@fontsource/monaspace-krypton": "^5.3.0",
-    "@tanstack/react-query": "^5.101.4",
-    "@tanstack/react-query-devtools": "^5.101.4",
     "@types/react-modal": "^3.16.3",
-    "axios": "^1.18.1",
     "motion": "^12.42.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

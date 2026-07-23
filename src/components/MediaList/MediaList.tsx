@@ -24,35 +24,14 @@ export default function MediaList({
   media_list_ref,
 }: PropTypes) {
   const [active_toggle, setActiveToggle] = useState<ActiveToggleType>(null);
-  // Use `is_navigating` over `is_scrolling` since this is a coded action. Does not take into account of user scrolling
-  const [is_navigating, setIsNavigating] = useState(false);
   const [media_list, setMediaList] = useState(media_list_chrono);
 
   const handleToggle: HandleToggleType = (id) => {
     const ele_active_to_be = document.getElementById(id.toString());
 
-    // If element is not in view, set scrolling state, which is used downstream to prevent fetching
+    // Bring the toggled card into view if it isn't already.
     if (!!ele_active_to_be && !isElementInViewport(ele_active_to_be)) {
-      setIsNavigating(true);
-      ele_active_to_be.scrollIntoView({
-        // Use 'instant' for Chrome since scrolling on Chromiums seem to be laggy
-        behavior: 'smooth',
-      });
-      // Clear the navigating flag when the scroll actually settles rather than
-      // guessing with a fixed timeout. Fall back to a timeout where `scrollend`
-      // isn't supported.
-      const scroll_container = media_list_ref.current;
-      if (scroll_container && 'onscrollend' in scroll_container) {
-        scroll_container.addEventListener(
-          'scrollend',
-          () => setIsNavigating(false),
-          { once: true }
-        );
-      } else {
-        setTimeout(() => {
-          setIsNavigating(false);
-        }, 1000);
-      }
+      ele_active_to_be.scrollIntoView({ behavior: 'smooth' });
     }
 
     setActiveToggle(id == active_toggle ? null : id);
@@ -69,7 +48,6 @@ export default function MediaList({
         is_movies_only={is_movies_only}
         handleToggle={handleToggle}
         is_active={active_toggle == idx}
-        is_navigating={is_navigating}
         idx={idx}
         order_type={order_type}
         media_length={media_length}

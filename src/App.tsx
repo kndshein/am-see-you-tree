@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Nav from './components/Nav/Nav';
 import Modal from 'react-modal';
@@ -11,16 +9,6 @@ Modal.setAppElement('#root');
 const order_types = ['Chronological', 'Reverse Chronological'] as const;
 
 export type OrderType = (typeof order_types)[number];
-
-// Create the client once outside of render so it isn't recreated (and its
-// cache discarded) on every state change.
-const query_client = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 function App() {
   const [is_DOM_loaded, setIsDOMLoaded] = useState(false);
@@ -47,34 +35,31 @@ function App() {
   const order_type = order_types[order_index];
 
   return (
-    <QueryClientProvider client={query_client}>
-      <MotionConfig reducedMotion="user">
-        {is_DOM_loaded && (
-          <main className="app">
-            <Nav
-              is_movies_only={is_movies_only}
-              setIsMoviesOnly={setIsMoviesOnly}
-            />
-            <button
-              className="order_type_btn"
-              onClick={() =>
-                setOrderIndex((prevState) => {
-                  if (prevState == order_types.length - 1) return 0;
-                  return prevState + 1;
-                })
-              }
-            >
-              Showing in {order_types[order_index]} Order
-            </button>
-            <MediaListWrapper
-              is_movies_only={is_movies_only}
-              order_type={order_type}
-            />
-          </main>
-        )}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </MotionConfig>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user">
+      {is_DOM_loaded && (
+        <main className="app">
+          <Nav
+            is_movies_only={is_movies_only}
+            setIsMoviesOnly={setIsMoviesOnly}
+          />
+          <button
+            className="order_type_btn"
+            onClick={() =>
+              setOrderIndex((prevState) => {
+                if (prevState == order_types.length - 1) return 0;
+                return prevState + 1;
+              })
+            }
+          >
+            Showing in {order_types[order_index]} Order
+          </button>
+          <MediaListWrapper
+            is_movies_only={is_movies_only}
+            order_type={order_type}
+          />
+        </main>
+      )}
+    </MotionConfig>
   );
 }
 
