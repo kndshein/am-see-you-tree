@@ -44,36 +44,38 @@
 .info_group span {
   font-size: clamp(1rem, 1.5vw, 1.5rem);
   margin-right: 10px;
-  color: white;
+  color: $accent-lite;
   margin-bottom: 5px;
   font-family: $accent-text;
 }
 
 .dot {
-  color: $accent;
-  font-size: 2rem;
+  font-size: 1em;
+  opacity: 0.6;
 }
 
-.vote {
+.info_group .vote {
   padding: 5px 10px 2px 10px;
   background-color: $accent;
+  color: $white;
   font-weight: 700;
-  border-radius: 5px;
+  border-radius: $radius-sm;
 }
 
 .cast {
   display: flex;
   flex-flow: row wrap;
   color: $accent-lite;
+  text-transform: uppercase;
   margin-top: 10px;
 }
 
 .actor {
-  padding: 5px 7px 3px 7px;
+  padding: 3px 7px;
   margin: 10px 10px 0 0;
   font-size: clamp(1rem, 1.5vw, 1.4rem);
   border: 1px solid $accent;
-  border-radius: 5px;
+  border-radius: $radius-sm;
 }
 
 @media only screen and (max-width: 500px) {

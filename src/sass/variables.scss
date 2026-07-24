@@ -8,7 +8,22 @@ $tab-background: rgba(170, 170, 170, 0.1);
 $show: #ffa17c;
 $short: #75ffbc;
 $special: #ffe875;
+$white: rgb(255, 255, 255);
+$muted-text: grey;
+$shadow-faint: rgba(0, 0, 0, 0.1);
 
-$body-text: mr-eaves-xl-modern, sans-serif;
-$accent-text: Monaspace Krypton, sans-serif;
+$radius-sm: 5px;
+$radius-md: 10px;
+
+$transition-fast: 0.2s ease-in-out;
+$transition-quick: 0.2s ease-out;
+$transition-base: 0.3s ease-in-out;
+
+$font-size-base: 1rem;
+$font-size-lg: 2rem;
+
+$body-text: 'Space Grotesk', sans-serif;
+$accent-text:
+  Monaspace Krypton,
+  sans-serif;
 $title-text: rift, sans-serif;

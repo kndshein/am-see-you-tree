@@ -1,23 +1,27 @@
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
-import dateCalc from '../../../utils/date-calc';
-import runtimeCalc from '../../../utils/runtime-calc';
+import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
+import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
 import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
+import RatingCounter from './RatingCounter';
+import GlitchText from './GlitchText';
 
 type PropTypes = {
   tmdb_data: TmdbType;
   media_data: MediaType;
   is_active: boolean;
+  is_content_expanded: boolean;
 };
 
 export default function RightContainer({
   tmdb_data,
   media_data,
   is_active,
+  is_content_expanded,
 }: PropTypes) {
   const element = {
     visible: {
@@ -41,7 +45,10 @@ export default function RightContainer({
     },
   };
 
-  const seasonData = media_data.type === 'tv' ? tmdb_data[`season/${media_data.season}`] : undefined;
+  const season_data =
+    media_data.type === 'tv'
+      ? tmdb_data[`season/${media_data.season}`]
+      : undefined;
 
   return (
     <motion.section
@@ -56,23 +63,36 @@ export default function RightContainer({
         <>
           <motion.section className={styles.info_group} variants={element}>
             <motion.span className={styles.vote} variants={element}>
-              {Math.round((tmdb_data.vote_average ?? 0) * 10) / 10}
+              <RatingCounter
+                value={Math.round((tmdb_data.vote_average ?? 0) * 10) / 10}
+                play={is_content_expanded}
+              />
             </motion.span>
-            <motion.span className={styles.dot}>•</motion.span>
+            <motion.span className={styles.dot}>//</motion.span>
             {media_data.type === 'tv' ? (
               <motion.span variants={element}>
-                {dateCalc(seasonData?.air_date)}
+                <GlitchText
+                  final_text={dateCalc(season_data?.air_date)}
+                  seed_text={dateEpochSeed(season_data?.air_date)}
+                  play={is_content_expanded}
+                />
               </motion.span>
             ) : (
               <>
                 <motion.span variants={element}>
-                  {dateCalc(tmdb_data.release_date)}
+                  <GlitchText
+                    final_text={dateCalc(tmdb_data.release_date)}
+                    seed_text={dateEpochSeed(tmdb_data.release_date)}
+                    play={is_content_expanded}
+                  />
                 </motion.span>
-                <motion.span className={styles.dot} variants={element}>
-                  •
-                </motion.span>
+                <motion.span className={styles.dot}>//</motion.span>
                 <motion.span variants={element}>
-                  {runtimeCalc(tmdb_data.runtime)}
+                  <GlitchText
+                    final_text={runtimeCalc(tmdb_data.runtime)}
+                    seed_text={runtimeMsSeed(tmdb_data.runtime)}
+                    play={is_content_expanded}
+                  />
                 </motion.span>
               </>
             )}

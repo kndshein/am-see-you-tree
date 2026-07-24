@@ -29,7 +29,7 @@
 .arrow_right svg {
   fill: white;
   height: 50px;
-  width: 50px;
+  width: 75px;
   filter: drop-shadow(0 0 10px $accent-lite);
 }
 
@@ -42,7 +42,7 @@
   background-image: linear-gradient(
     to left,
     transparent,
-    rgba(45, 100, 114, 0.7)
+    rgba($accent, 0.7)
   );
 }
 
@@ -50,7 +50,7 @@
   background-image: linear-gradient(
     to right,
     transparent,
-    rgba(45, 100, 114, 0.7)
+    rgba($accent, 0.7)
   );
 }
 

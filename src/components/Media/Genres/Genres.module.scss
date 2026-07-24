@@ -10,7 +10,7 @@
   padding: 10px 0 10px 20px;
   margin: 10px 0 10px 0;
   background-color: $tab-background;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 5px $shadow-faint;
   p {
     margin: 0;
     font-size: clamp(0.75rem, 1vw, 1rem);
@@ -111,5 +111,5 @@
 }
 
 .none {
-  @include themifyGenre(rgb(255, 255, 255));
+  @include themifyGenre($white);
 }

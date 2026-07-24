@@ -57,6 +57,7 @@ export default function Media({
         tmdb_data={tmdb_data}
         media_data={media_data}
         is_active={is_active}
+        is_content_expanded={is_content_expanded}
       />
     </motion.section>
   );

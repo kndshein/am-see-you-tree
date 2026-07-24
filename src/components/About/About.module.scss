@@ -40,9 +40,9 @@
   padding: 30px;
   max-width: 70%;
   height: 80vh;
-  color: grey;
+  color: $muted-text;
   background-color: $main;
-  border-radius: 10px;
+  border-radius: $radius-md;
   font-size: clamp(1rem, 3vw, 1.2rem);
   letter-spacing: 0.9px;
 }
@@ -120,7 +120,7 @@
 
 /* table */
 table {
-  font-size: 1rem;
+  font-size: $font-size-base;
   border-collapse: collapse;
 }
 

@@ -1,4 +1,4 @@
-import { Fragment, useState, RefObject, useEffect } from 'react';
+import { Fragment, useState, useRef, RefObject, useEffect } from 'react';
 import { MediaType } from '../../types/Media';
 import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
@@ -25,6 +25,13 @@ export default function MediaList({
 }: PropTypes) {
   const [active_toggle, setActiveToggle] = useState<ActiveToggleType>(null);
   const [media_list, setMediaList] = useState(media_list_chrono);
+  const active_toggle_ref = useRef(active_toggle);
+  const cards_ref = useRef<HTMLElement[]>([]);
+  const apply_ref = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    active_toggle_ref.current = active_toggle;
+  }, [active_toggle]);
 
   const handleToggle: HandleToggleType = (id) => {
     const ele_active_to_be = document.getElementById(id.toString());
@@ -61,10 +68,11 @@ export default function MediaList({
     const SHORT_Y = 0.1; // how much shorter the center card gets
     const MAX_DIST = 1.4; // clamp so far-edge cards don't over-rotate
     let raf = 0;
-    let cards: HTMLElement[] = [];
     let centers: number[] = [];
 
     const apply = () => {
+      const active_toggle = active_toggle_ref.current;
+      const cards = cards_ref.current;
       const mid = el.scrollLeft + el.clientWidth / 2;
       const half = el.clientWidth / 2 || 1;
       for (let i = 0; i < cards.length; i++) {
@@ -92,10 +100,13 @@ export default function MediaList({
         )}deg) scale(${scale_x.toFixed(3)}, ${scale_y.toFixed(3)})`;
       }
     };
+    apply_ref.current = apply;
 
     const measure = () => {
-      cards = Array.from(el.querySelectorAll<HTMLElement>('.media'));
-      centers = cards.map((c) => c.offsetLeft + c.offsetWidth / 2);
+      cards_ref.current = Array.from(
+        el.querySelectorAll<HTMLElement>('.media'),
+      );
+      centers = cards_ref.current.map((c) => c.offsetLeft + c.offsetWidth / 2);
       apply();
     };
 
@@ -115,9 +126,15 @@ export default function MediaList({
       el.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', measure);
       if (raf) cancelAnimationFrame(raf);
-      cards.forEach((c) => (c.style.transform = ''));
+      cards_ref.current.forEach((c) => (c.style.transform = ''));
     };
-  }, [media_list_ref, media_list, is_movies_only, active_toggle]);
+  }, [media_list_ref, media_list, is_movies_only]);
+
+  // Re-apply the curve (without remeasuring or touching listeners) when the
+  // active card changes, so toggling doesn't flash every card flat first.
+  useEffect(() => {
+    apply_ref.current();
+  }, [active_toggle]);
 
   return (
     <div
