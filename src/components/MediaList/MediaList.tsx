@@ -136,6 +136,10 @@ export default function MediaList({
     apply_ref.current();
   }, [active_toggle]);
 
+  const visible_media_length = media_list.filter(
+    (ele) => ele.type === 'movie' || !is_movies_only,
+  ).length;
+
   return (
     <div
       className={`${styles.media_list} ${
@@ -143,30 +147,35 @@ export default function MediaList({
       }`}
       ref={media_list_ref}
     >
-      {media_list.map((ele, idx) => {
-        const shouldShow = ele.type === 'movie' || !is_movies_only;
-        if (!shouldShow) return null;
+      {(() => {
+        let display_idx = -1;
+        return media_list.map((ele, idx) => {
+          const shouldShow = ele.type === 'movie' || !is_movies_only;
+          if (!shouldShow) return null;
+          display_idx += 1;
 
-        const key = `${ele.id}${
-          ele.type === 'tv'
-            ? `_s${ele.season}_ep${ele.epiStart}-${ele.epiEnd}`
-            : ''
-        }`;
+          const key = `${ele.id}${
+            ele.type === 'tv'
+              ? `_s${ele.season}_ep${ele.epiStart}-${ele.epiEnd}`
+              : ''
+          }`;
 
-        return (
-          <Fragment key={key}>
-            <MediaWrapper
-              media_data={ele}
-              is_movies_only={is_movies_only}
-              handleToggle={handleToggle}
-              is_active={active_toggle === idx}
-              idx={idx}
-              order_type={order_type}
-              media_length={media_list.length}
-            />
-          </Fragment>
-        );
-      })}
+          return (
+            <Fragment key={key}>
+              <MediaWrapper
+                media_data={ele}
+                is_movies_only={is_movies_only}
+                handleToggle={handleToggle}
+                is_active={active_toggle === idx}
+                idx={idx}
+                display_idx={display_idx}
+                order_type={order_type}
+                media_length={visible_media_length}
+              />
+            </Fragment>
+          );
+        });
+      })()}
     </div>
   );
 }

@@ -22,6 +22,7 @@ type PropTypes = {
   handleToggle: HandleToggleType;
   is_active: boolean;
   idx: number;
+  display_idx: number;
   order_type: OrderType;
   media_length: number;
 };
@@ -32,6 +33,7 @@ export default function MediaWrapper({
   handleToggle,
   is_active,
   idx,
+  display_idx,
   order_type,
   media_length,
 }: PropTypes) {
@@ -168,7 +170,7 @@ export default function MediaWrapper({
               media_ui_type={media_ui_type}
             />
             <Index
-              idx={idx}
+              idx={display_idx}
               order_type={order_type}
               media_length={media_length}
             />
