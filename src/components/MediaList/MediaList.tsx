@@ -1,8 +1,10 @@
 import { Fragment, useState, useRef, RefObject, useEffect } from 'react';
 import { MediaType } from '../../types/Media';
+import { TmdbType } from '../../types/Tmdb';
 import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
 import media_list_json from '../../assets/media-list.json';
+import tmdb_data_map from '../../assets/tmdb-data.json';
 import styles from './MediaList.module.scss';
 import { isElementInViewport } from '../../utils/utils';
 import { OrderType } from '../../App';
@@ -17,6 +19,24 @@ const media_list_chrono = media_list_json as Array<MediaType>;
 const media_list_chrono_reversed = [
   ...media_list_json,
 ].reverse() as Array<MediaType>;
+
+// media-list.json has no date fields (it's just the curated viewing order);
+// tmdb-data.json has the dates but no ordering of its own (it's a plain
+// id-keyed lookup). Release-date order needs both: look each item's date up
+// by the same id/id__seasonN key MediaWrapper uses, then sort by it.
+function releaseDateOf(ele: MediaType): string {
+  const tmdb_key =
+    ele.type === 'tv' ? `${ele.id}__season${ele.season}` : ele.id;
+  const data = (tmdb_data_map as Record<string, TmdbType>)[tmdb_key];
+  if (!data) return '';
+  return ele.type === 'tv'
+    ? (data[`season/${ele.season}`]?.air_date ?? '')
+    : (data.release_date ?? '');
+}
+
+const media_list_release_date = [...media_list_chrono].sort((a, b) =>
+  releaseDateOf(a).localeCompare(releaseDateOf(b)),
+);
 
 export default function MediaList({
   is_movies_only,
@@ -51,6 +71,9 @@ export default function MediaList({
         break;
       case 'Reverse Chronological':
         setMediaList(media_list_chrono_reversed);
+        break;
+      case 'Release Date':
+        setMediaList(media_list_release_date);
         break;
     }
   }, [order_type]);
@@ -135,6 +158,29 @@ export default function MediaList({
   useEffect(() => {
     apply_ref.current();
   }, [active_toggle]);
+
+  // Measure the rail's actual reserved scrollbar height (varies by browser
+  // and OS, and is 0 on platforms with overlay scrollbars) so the padding
+  // compensation in MediaList.module.scss (.is_active) can offset exactly
+  // what disappears, instead of assuming a fixed pixel value.
+  useEffect(() => {
+    const el = media_list_ref.current;
+    if (!el) return;
+
+    const measureScrollbarHeight = () => {
+      // Only meaningful while the real scrollbar is showing (overflow-x:
+      // scroll); it's hidden while a card is active, which would read as 0.
+      if (active_toggle_ref.current !== null) return;
+      el.style.setProperty(
+        '--scrollbar-height',
+        `${el.offsetHeight - el.clientHeight}px`,
+      );
+    };
+
+    measureScrollbarHeight();
+    window.addEventListener('resize', measureScrollbarHeight);
+    return () => window.removeEventListener('resize', measureScrollbarHeight);
+  }, [media_list_ref]);
 
   const visible_media_length = media_list.filter(
     (ele) => ele.type === 'movie' || !is_movies_only,

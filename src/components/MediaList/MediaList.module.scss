@@ -1,5 +1,7 @@
 @use '../../sass/variables.scss' as *;
 
+$scrollbar-height: 50px;
+
 .media_list {
   display: flex;
   height: 93%;
@@ -28,14 +30,21 @@
     }
   }
 
+  // overflow:hidden drops the horizontal scrollbar entirely, which would
+  // otherwise free up its reserved height and re-center the (vertically
+  // centered) cards a few px lower. Compensate with matching bottom padding
+  // so the cards don't visibly shift when a card opens/closes. --scrollbar-
+  // height is measured per-browser/OS in MediaList.tsx (0 on platforms with
+  // overlay scrollbars); the SCSS constant is only a fallback before JS runs.
   &.is_active {
     overflow: hidden;
+    padding-bottom: calc(20px + var(--scrollbar-height, #{$scrollbar-height}));
   }
 }
 
 .media_list::-webkit-scrollbar {
   cursor: pointer;
-  height: 50px;
+  height: $scrollbar-height;
 }
 
 .media_list::-webkit-scrollbar-track-piece {

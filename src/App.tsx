@@ -7,7 +7,11 @@ import { MotionConfig } from 'motion/react';
 
 Modal.setAppElement('#root');
 
-const order_types = ['Chronological', 'Reverse Chronological'] as const;
+const order_types = [
+  'Chronological',
+  'Reverse Chronological',
+  'Release Date',
+] as const;
 
 export type OrderType = (typeof order_types)[number];
 
