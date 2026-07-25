@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
+import scoreColor from '../../../utils/score-color';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
 import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
-import RatingCounter from './RatingCounter';
+import VoteCounter from './VoteCounter';
 import GlitchText from './GlitchText';
 
 type PropTypes = {
@@ -50,6 +52,9 @@ export default function RightContainer({
       ? tmdb_data[`season/${media_data.season}`]
       : undefined;
 
+  const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
+  const [vote_color, setVoteColor] = useState(() => scoreColor(0));
+
   return (
     <motion.section
       className={styles.container}
@@ -62,13 +67,17 @@ export default function RightContainer({
       {is_active && (
         <>
           <motion.section className={styles.info_group} variants={element}>
-            <motion.span className={styles.vote} variants={element}>
-              <RatingCounter
-                value={Math.round((tmdb_data.vote_average ?? 0) * 10) / 10}
+            <motion.span
+              className={styles.vote}
+              variants={element}
+              style={{ color: vote_color, borderColor: vote_color }}
+            >
+              <VoteCounter
+                value={vote_percent}
                 play={is_content_expanded}
+                onColorChange={setVoteColor}
               />
             </motion.span>
-            <motion.span className={styles.dot}>//</motion.span>
             {media_data.type === 'tv' ? (
               <motion.span variants={element}>
                 <GlitchText

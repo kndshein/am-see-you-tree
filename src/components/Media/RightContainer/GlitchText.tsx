@@ -20,7 +20,7 @@ export default function GlitchText({
   final_text,
   seed_text,
   play,
-  duration = 2,
+  duration = 1,
   delay = 1,
 }: PropTypes) {
   const [display, setDisplay] = useState(seed_text || final_text);
