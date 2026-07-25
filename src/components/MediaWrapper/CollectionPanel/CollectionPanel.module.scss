@@ -18,7 +18,9 @@
 }
 
 // Below this there's no longer room beside the card without cramping it.
-@media (min-width: 1550px) {
+// (Bumped alongside .list's width below — the panel's right edge has to stay
+// clear of the viewport edge at the breakpoint's own width.)
+@media (min-width: 1650px) {
   .panel_wrap {
     display: flex;
   }
@@ -42,7 +44,7 @@
 
   left: 100%;
   margin-left: 24px;
-  width: 200px;
+  width: 280px;
   display: flex;
   flex-flow: column;
   gap: 8px;
@@ -64,16 +66,60 @@
   font-family: $accent-text;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
-  color: $white;
+}
 
-  &:hover .name {
-    color: $accent-lite;
-  }
+// Not interactive until its own reveal finishes (CollectionPanel.tsx) — blocks
+// click and hover alike, since pointer-events: none stops :hover from ever
+// matching in the first place.
+.item:disabled {
+  pointer-events: none;
+  cursor: default;
 }
 
 .name {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+// Scales in with a slight overshoot once the title's color shift starts —
+// display: inline-block so the scale transform has something to act on.
+.bracket {
+  display: inline-block;
   color: $white;
-  transition: $transition-quick;
+}
+
+.item:hover .bracket {
+  color: $accent-lite;
+}
+
+// Same grey/white twin trick as Genres.module.scss's .grey_layer/.color_layer:
+// grey sits in normal flow (and sizes the box), white is an absolutely
+// positioned twin that fades in on top of it — only opacity is animated, so
+// there's no color-interpolation edge case to fight.
+.title_wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.title_grey {
+  color: $muted-text;
+}
+
+// Bloom is baked into the white layer itself rather than gated separately —
+// it's invisible while opacity is still 0, and fades in with the same reveal.
+.title_white {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: $white;
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba(102, 192, 204, 0.2);
+}
+
+.item:hover .title_grey,
+.item:hover .title_white {
+  color: $accent-lite;
 }
 
 .year {

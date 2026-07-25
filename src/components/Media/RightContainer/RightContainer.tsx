@@ -18,7 +18,6 @@ type PropTypes = {
   media_data: MediaType;
   is_active: boolean;
   is_content_expanded: boolean;
-  onSynopsisRevealComplete?: () => void;
 };
 
 export default function RightContainer({
@@ -26,7 +25,6 @@ export default function RightContainer({
   media_data,
   is_active,
   is_content_expanded,
-  onSynopsisRevealComplete,
 }: PropTypes) {
   const element = {
     ...entry,
@@ -195,11 +193,7 @@ export default function RightContainer({
               names. Every entry has overview text, so this needs no guard. */}
           <motion.div variants={element}>
             <span className={styles.section_label}>Synopsis</span>
-            <Overview
-              tmdb_data={tmdb_data}
-              media_data={media_data}
-              onRevealComplete={onSynopsisRevealComplete}
-            />
+            <Overview tmdb_data={tmdb_data} media_data={media_data} />
           </motion.div>
           {media_data.type === 'tv' && (
             <motion.div variants={element}>

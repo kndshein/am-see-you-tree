@@ -1,12 +1,17 @@
-import { useState } from 'react';
-import { motion, AnimationDefinition } from 'motion/react';
+import { motion } from 'motion/react';
 import styles from './Genres.module.scss';
 import { Genre } from '../../../types/Tmdb';
-import { entry } from '../../../utils/motion';
+import {
+  entry,
+  COLOR_REVEAL_DELAY,
+  COLOR_STAGGER,
+  REVEAL_DURATION,
+} from '../../../utils/motion';
 
 type PropTypes = {
   genres?: Genre[];
   start_idx?: number; // color-stagger slots already used by earlier siblings (e.g. the poster)
+  is_content_expanded: boolean;
 };
 
 const classNameColor = (id: number) => {
@@ -46,12 +51,7 @@ const classNameColor = (id: number) => {
   }
 };
 
-// Gap between each row's color reveal, independent of how fast the rows
-// themselves fade in. Kept short: with six genres and the poster ahead of them,
-// anything larger leaves the last row grey well after the card has settled.
-const COLOR_STAGGER = 0.12;
-
-export default function Genres({ genres = [], start_idx = 0 }: PropTypes) {
+export default function Genres({ genres = [], start_idx = 0, is_content_expanded }: PropTypes) {
   // Copy before sorting
   const sorted_genres = [...genres].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -67,6 +67,7 @@ export default function Genres({ genres = [], start_idx = 0 }: PropTypes) {
           // three, though a few of them are five digits and stay as-is.
           code={String(ele.id).padStart(3, '0')}
           color_class={classNameColor(ele.id)}
+          is_content_expanded={is_content_expanded}
         />
       ))}
     </section>
@@ -78,37 +79,33 @@ type RowPropTypes = {
   name: string;
   code: string;
   color_class: string;
+  is_content_expanded: boolean;
 };
 
-// Fades/slides in grey, then (only once that entrance finishes) shifts from
-// grey to its real color. The reveal itself is staggered top-to-bottom via
-// an explicit per-row delay (COLOR_STAGGER), independent of the fade's own
-// stagger in LeftContainer.
-function GenreRow({ idx, name, code, color_class }: RowPropTypes) {
-  const [is_revealed, setIsRevealed] = useState(false);
-
-  const handleAnimationComplete = (definition: AnimationDefinition) => {
-    if (definition === 'visible') setIsRevealed(true);
-    if (definition === 'hidden') setIsRevealed(false);
-  };
-
-  const color_transition = {
-    duration: 0.6,
-    ease: 'easeOut',
-    delay: idx * COLOR_STAGGER,
-  } as const;
+// Fades/slides in grey (via the ancestor's own variant propagation), and
+// separately shifts from grey to its real color once expanded, on a fixed
+// delay staggered top-to-bottom (COLOR_STAGGER) — independent of the fade's
+// own stagger in LeftContainer, and of how long that fade actually took.
+function GenreRow({ idx, name, code, color_class, is_content_expanded }: RowPropTypes) {
+  // Closing snaps back to grey instantly rather than reusing the delayed
+  // reveal transition — otherwise a card closed before its own delay had
+  // even elapsed never actually reaches opacity: 0, so reopening it has
+  // nothing left to visibly animate and the reveal silently skips.
+  const color_transition = is_content_expanded
+    ? {
+        duration: REVEAL_DURATION,
+        ease: 'easeOut' as const,
+        delay: COLOR_REVEAL_DELAY + idx * COLOR_STAGGER,
+      }
+    : { duration: 0 };
 
   return (
-    <motion.div
-      className={styles.genre_row}
-      variants={entry}
-      onAnimationComplete={handleAnimationComplete}
-    >
+    <motion.div className={styles.genre_row} variants={entry}>
       <span className={`${styles.bar} ${styles.bar_grey}`} />
       <motion.span
         className={`${styles.bar} ${color_class}`}
         initial={{ opacity: 0 }}
-        animate={{ opacity: is_revealed ? 1 : 0 }}
+        animate={{ opacity: is_content_expanded ? 1 : 0 }}
         transition={color_transition}
       />
       <p className={styles.label}>
@@ -116,7 +113,7 @@ function GenreRow({ idx, name, code, color_class }: RowPropTypes) {
         <motion.span
           className={`${styles.color_layer} ${color_class}`}
           initial={{ opacity: 0 }}
-          animate={{ opacity: is_revealed ? 1 : 0 }}
+          animate={{ opacity: is_content_expanded ? 1 : 0 }}
           transition={color_transition}
         >
           {name}

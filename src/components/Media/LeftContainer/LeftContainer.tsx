@@ -1,21 +1,27 @@
-import { useState } from 'react';
 import styles from './LeftContainer.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
 import Genres from '../Genres/Genres';
-import { motion, AnimationDefinition } from 'motion/react';
+import { motion } from 'motion/react';
 import { container } from '../Media';
-import { entry_vertical } from '../../../utils/motion';
+import {
+  entry_vertical,
+  COLOR_REVEAL_DELAY,
+  REVEAL_DURATION,
+} from '../../../utils/motion';
 import { compactCurrency } from '../../../utils/format';
 import { MediaType } from '../../../types/Media';
 
 type PropTypes = {
   tmdb_data: TmdbType;
   media_data: MediaType;
+  is_content_expanded: boolean;
 };
 
-export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
-  const [is_poster_revealed, setIsPosterRevealed] = useState(false);
-
+export default function LeftContainer({
+  tmdb_data,
+  media_data,
+  is_content_expanded,
+}: PropTypes) {
   let poster_slug = tmdb_data.poster_path;
   if (media_data.type === 'tv') {
     const season_data = tmdb_data[`season/${media_data.season}`];
@@ -25,11 +31,6 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
     ? `https://image.tmdb.org/t/p/w342${poster_slug}`
     : '';
 
-  const handlePosterAnimationComplete = (definition: AnimationDefinition) => {
-    if (definition === 'visible') setIsPosterRevealed(true);
-    if (definition === 'hidden') setIsPosterRevealed(false);
-  };
-
   return (
     <motion.div
       className={styles.container}
@@ -38,11 +39,7 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
         visible: { ...container.visible, transition: { staggerChildren: 0.1 } },
       }}
     >
-      <motion.div
-        className={styles.poster}
-        variants={entry_vertical}
-        onAnimationComplete={handlePosterAnimationComplete}
-      >
+      <motion.div className={styles.poster} variants={entry_vertical}>
         {/* Certificates belong on posters, and it's the one field that is
             always three to five characters — it fits a corner cleanly where it
             crowded the vitals row. */}
@@ -56,8 +53,22 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
             src={poster_path}
             alt={tmdb_data.original_title || tmdb_data.original_name || 'Poster'}
             initial={{ filter: 'grayscale(1)' }}
-            animate={{ filter: is_poster_revealed ? 'grayscale(0)' : 'grayscale(1)' }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            animate={{ filter: is_content_expanded ? 'grayscale(0)' : 'grayscale(1)' }}
+            // Poster is color-stagger slot 0 — same schedule Genres.tsx starts
+            // its own rows from, so the two read as one continuous cascade.
+            // Closing snaps back to grayscale instantly (no delay) rather than
+            // reusing the reveal's own delay — otherwise a card closed before
+            // that delay elapsed never actually reaches grayscale(1), so
+            // reopening it has nothing left to visibly animate.
+            transition={
+              is_content_expanded
+                ? {
+                    duration: REVEAL_DURATION,
+                    ease: 'easeOut',
+                    delay: COLOR_REVEAL_DELAY,
+                  }
+                : { duration: 0 }
+            }
           />
         )}
       </motion.div>
@@ -85,7 +96,7 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
       )}
       {/* start_idx: 1 reserves color-stagger slot 0 for the poster above,
           so the genre color cascade picks up chronologically after it */}
-      <Genres genres={tmdb_data.genres} start_idx={1} />
+      <Genres genres={tmdb_data.genres} start_idx={1} is_content_expanded={is_content_expanded} />
     </motion.div>
   );
 }

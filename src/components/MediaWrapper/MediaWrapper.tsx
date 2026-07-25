@@ -5,7 +5,7 @@ import Tag from './Tag/Tag';
 import Title from './Title/Title';
 import Media from '../Media/Media';
 import Backdrop from './Backdrop/Backdrop';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Index from './Index/Index';
 import styles from './MediaWrapper.module.scss';
 import { motion, AnimatePresence } from 'motion/react';
@@ -56,12 +56,6 @@ export default function MediaWrapper({
       is_content_expanded: is_active,
       is_content_collapsed: !is_active,
     });
-  // The collection panel comes in only once the synopsis has actually
-  // finished revealing (see Overview.tsx), rather than a guessed delay.
-  const [is_synopsis_revealed, setIsSynopsisRevealed] = useState(false);
-  useEffect(() => {
-    if (!is_active) setIsSynopsisRevealed(false);
-  }, [is_active]);
 
   const media_ui_type: MediaUiType =
     media_data.type === 'tv' ? 'show' : media_data.type;
@@ -207,7 +201,6 @@ export default function MediaWrapper({
               media_data={media_data}
               is_active={is_active}
               is_content_expanded={is_content_expanded}
-              onSynopsisRevealComplete={() => setIsSynopsisRevealed(true)}
             />
           </motion.div>
           <AnimatePresence>
@@ -223,7 +216,7 @@ export default function MediaWrapper({
                 tmdb_data={data}
                 media_list={media_list}
                 handleJump={handleJump}
-                play={is_synopsis_revealed}
+                is_content_expanded={is_content_expanded}
               />
             )}
           </AnimatePresence>

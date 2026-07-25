@@ -12,7 +12,6 @@ type PropTypes = {
   media_data: MediaType;
   is_active: boolean;
   is_content_expanded: boolean;
-  onSynopsisRevealComplete?: () => void;
 };
 
 export const container = {
@@ -29,7 +28,6 @@ export default function Media({
   media_data,
   is_active,
   is_content_expanded,
-  onSynopsisRevealComplete,
 }: PropTypes) {
   return (
     <motion.section
@@ -55,13 +53,16 @@ export default function Media({
       }}
     >
       <TopContainer tmdb_data={tmdb_data} media_data={media_data} />
-      <LeftContainer tmdb_data={tmdb_data} media_data={media_data} />
+      <LeftContainer
+        tmdb_data={tmdb_data}
+        media_data={media_data}
+        is_content_expanded={is_content_expanded}
+      />
       <RightContainer
         tmdb_data={tmdb_data}
         media_data={media_data}
         is_active={is_active}
         is_content_expanded={is_content_expanded}
-        onSynopsisRevealComplete={onSynopsisRevealComplete}
       />
       {/* Absolutely positioned, so it escapes the grid and anchors to .content
           — but it lives here to inherit this section's variant orchestration. */}

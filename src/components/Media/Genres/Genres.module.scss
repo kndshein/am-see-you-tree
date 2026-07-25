@@ -58,7 +58,6 @@
   position: relative;
   margin: 0;
   font-size: clamp(0.75rem, 1vw, 1rem);
-  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
 }
@@ -94,8 +93,14 @@ $genres: (
   horror: rgb(160, 32, 32),
   family: rgb(177, 129, 255),
   none: $white,
-  aa: (rgb(255, 85, 85), rgb(158, 84, 255)),
-  sf: (rgb(69, 196, 255), rgb(96, 255, 81)),
+  aa: (
+    rgb(255, 85, 85),
+    rgb(158, 84, 255),
+  ),
+  sf: (
+    rgb(69, 196, 255),
+    rgb(96, 255, 81),
+  ),
 );
 
 @each $name, $value in $genres {
