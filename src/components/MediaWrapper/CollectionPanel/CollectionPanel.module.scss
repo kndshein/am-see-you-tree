@@ -53,7 +53,7 @@
 
 .label {
   @include field-label;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   margin-bottom: 2px;
 }
 
@@ -81,8 +81,7 @@
   align-items: baseline;
 }
 
-// Scales in with a slight overshoot once the title's color shift starts —
-// display: inline-block so the scale transform has something to act on.
+// Fades in once the title's color shift starts.
 .bracket {
   display: inline-block;
   color: $white;

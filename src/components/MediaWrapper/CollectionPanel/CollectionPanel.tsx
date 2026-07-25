@@ -25,10 +25,6 @@ type PropTypes = {
 
 const STAGGER = 0.08;
 
-// A slight overshoot so the brackets read as popping into place rather than
-// just fading in — distinct from the plain easeOut used everywhere else.
-const POP_EASE = [0.34, 1.56, 0.64, 1] as const;
-
 // Sits outside the card itself, just below the reticle's top-right corner
 // (see CollectionPanel.module.scss) — only for movies that belong to a TMDB
 // collection with other members already in this app's curated list, so it
@@ -124,7 +120,7 @@ function CollectionItem({
   // is what unlocks the button below, so the two drifting apart would gate
   // interactivity on the wrong moment.
   const bracket_transition = is_content_expanded
-    ? { duration: REVEAL_DURATION, ease: POP_EASE, delay: stagger_delay }
+    ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: stagger_delay }
     : { duration: 0 };
 
   return (
@@ -137,11 +133,8 @@ function CollectionItem({
       <span className={styles.name}>
         <motion.span
           className={styles.bracket}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{
-            scale: is_content_expanded ? 1 : 0,
-            opacity: is_content_expanded ? 1 : 0,
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: is_content_expanded ? 1 : 0 }}
           transition={bracket_transition}
           // Both brackets and the title share stagger_delay/REVEAL_DURATION,
           // so this fires right as the whole reveal actually finishes.
@@ -162,11 +155,8 @@ function CollectionItem({
         </span>
         <motion.span
           className={styles.bracket}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{
-            scale: is_content_expanded ? 1 : 0,
-            opacity: is_content_expanded ? 1 : 0,
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: is_content_expanded ? 1 : 0 }}
           transition={bracket_transition}
         >
           ]
