@@ -1,0 +1,41 @@
+@use '../../../sass/variables.scss' as *;
+
+// Sits in the Media grid's bottom padding (Media.module.scss reserves 40px),
+// aligned to its right edge rather than the title strip on the left. Motion
+// owns the reveal (Record.tsx), so no opacity transition here.
+.record {
+  position: absolute;
+  right: 30px;
+  bottom: 14px;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-end;
+  gap: 4px 18px;
+  font-family: $accent-text;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba($accent-lite, 0.45);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+// Same reason as the HUD: the global `*` rule matches these spans directly and
+// would otherwise drop them back to body text.
+.record * {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.key {
+  margin-right: 6px;
+  color: rgba($accent-lite, 0.25);
+}
+
+@media only screen and (max-width: 800px) {
+  .record {
+    left: 20px;
+    right: 20px;
+  }
+}

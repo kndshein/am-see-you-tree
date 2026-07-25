@@ -3,6 +3,7 @@ import { TmdbType } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
 import { motion } from 'motion/react';
 import { container } from '../Media';
+import { entry } from '../../../utils/motion';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -10,27 +11,6 @@ type PropTypes = {
 };
 
 export default function TopContainer({ tmdb_data, media_data }: PropTypes) {
-  const text = {
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        x: {
-          duration: 0.2,
-        },
-      },
-    },
-    hidden: {
-      opacity: 0,
-      x: -100,
-      transition: {
-        x: {
-          duration: 0.2,
-        },
-      },
-    },
-  };
-
   const titleText =
     media_data.type === 'tv'
       ? tmdb_data.original_name || ''
@@ -46,7 +26,7 @@ export default function TopContainer({ tmdb_data, media_data }: PropTypes) {
     >
       <motion.h2
         className={`${styles.title} ${media_data.theme?.title || ''}`}
-        variants={text}
+        variants={entry}
       >
         {media_data.type !== 'tv' && media_data.theme?.title
           ? titleText.split('').map((letter: string, idx: number) => (
@@ -54,14 +34,23 @@ export default function TopContainer({ tmdb_data, media_data }: PropTypes) {
             ))
           : titleText}
       </motion.h2>
-      <motion.p className={styles.tagline} variants={text}>
+      <motion.p className={styles.tagline} variants={entry}>
+        {/* The slot holds different things per type, so the label names what is
+            actually in it rather than being generic. Movies with no tagline get
+            no label, to avoid heading an empty line. */}
         {media_data.type === 'tv' ? (
           <>
+            <span className={styles.tagline_label}>Coverage</span>
             <span className={styles.season}>Season {media_data.season}</span>,
             Episodes {media_data.epiStart} - {media_data.epiEnd}
           </>
         ) : (
-          tmdb_data.tagline || ''
+          tmdb_data.tagline && (
+            <>
+              <span className={styles.tagline_label}>Tagline</span>
+              {tmdb_data.tagline}
+            </>
+          )
         )}
       </motion.p>
     </motion.section>

@@ -22,6 +22,15 @@ $transition-base: 0.3s ease-in-out;
 $font-size-base: 1rem;
 $font-size-lg: 2rem;
 
+// Small dim caps naming a value or a list. Callers set their own font-size,
+// since these sit inside blocks of very different scales.
+@mixin field-label {
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba($accent-lite, 0.45);
+}
+
 $body-text: 'Space Grotesk', sans-serif;
 $accent-text:
   Monaspace Krypton,

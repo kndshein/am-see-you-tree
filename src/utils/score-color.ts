@@ -14,10 +14,7 @@ const HUE_STOPS: Array<[percent: number, hue: number]> = [
   [100, 130],
 ];
 
-// `alpha` mutes the color without touching the hue ramp. The vote chip needs
-// it because its entrance animation writes an inline opacity, so CSS opacity
-// isn't available to it.
-export default function scoreColor(percent: number, alpha = 1): string {
+export default function scoreColor(percent: number): string {
   const clamped = Math.max(0, Math.min(100, percent));
 
   for (let i = 0; i < HUE_STOPS.length - 1; i++) {
@@ -25,10 +22,10 @@ export default function scoreColor(percent: number, alpha = 1): string {
     const [p1, h1] = HUE_STOPS[i + 1];
     if (clamped <= p1) {
       const t = (clamped - p0) / (p1 - p0);
-      return `hsla(${h0 + (h1 - h0) * t}, 90%, 55%, ${alpha})`;
+      return `hsl(${h0 + (h1 - h0) * t}, 90%, 55%)`;
     }
   }
 
   const [, last_hue] = HUE_STOPS[HUE_STOPS.length - 1];
-  return `hsla(${last_hue}, 90%, 55%, ${alpha})`;
+  return `hsl(${last_hue}, 90%, 55%)`;
 }

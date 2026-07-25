@@ -35,46 +35,70 @@
 .info_group {
   display: flex;
   flex-flow: row wrap;
-  align-items: center;
+  // Top-aligned rather than centred: each field is now a label stacked over a
+  // value, so the labels line up as one row and the values as another.
+  align-items: flex-start;
   width: 100%;
   letter-spacing: 2px;
   margin-bottom: -5px;
 }
 
-// Direct children only. VoteCounter and GlitchText each nest a span inside
-// these, and a descendant selector would put the gap on those too — inside
-// the vote chip rather than between the fields.
+// Direct children only — each of these is one labelled field. VoteCounter and
+// GlitchText nest a span inside them, and a descendant selector would put the
+// field gap on those too, splitting a label from its own value.
 .info_group > span {
+  display: inline-flex;
+  flex-flow: column;
   font-size: clamp(1rem, 1.5vw, 1.5rem);
-  margin-right: 10px;
+  margin-right: 26px;
   color: $accent-lite;
   margin-bottom: 5px;
   font-family: $accent-text;
 }
 
-.dot {
-  font-size: 1em;
-  opacity: 0.6;
+// Dimmed so the values stay dominant; the label is there to be scanned past.
+.label {
+  @include field-label;
+  margin-bottom: 3px;
+  font-size: 0.55em;
+}
+
+// Lets a field carry a secondary figure on the same line as its main value.
+.value_row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.sub_value {
+  font-size: 0.5em;
+  letter-spacing: 1px;
+  color: rgba($accent-lite, 0.5);
+}
+
+// Names the block that follows it, so the gap above is the separator from the
+// previous block and the gap below is small enough to bind it to its own.
+.section_label {
+  @include field-label;
+  display: block;
+  margin: 26px 0 6px;
+  font-size: 0.7rem;
 }
 
 // VoteCounter and GlitchText write their text into a bare inner <span>. The
 // global `*` rule (index.scss) matches those spans directly, and a direct
-// match wins over anything inherited from the chip or row, so the typography
-// has to be re-inherited explicitly.
+// match wins over anything inherited from the field, so the typography has to
+// be re-inherited explicitly.
 .info_group span span {
   font: inherit;
   letter-spacing: inherit;
 }
 
-// Score-colored chip with the digits knocked out of it: the background is
-// driven live by the count-up (RightContainer) and the text is painted in the
-// page background so it reads as punched through. Contrast trade-offs at the
-// low end of the ramp are documented on VOTE_ALPHA.
-.info_group .vote {
-  padding: 7px 10px 3px;
-  color: $background;
-  font-weight: 700;
-  border-radius: $radius-sm;
+// ...except the labels, which set their own and would otherwise be overwritten
+// by the rule above.
+.info_group span span.label {
+  font-size: 0.55em;
+  letter-spacing: 2px;
 }
 
 .cast {

@@ -4,6 +4,7 @@ import { MediaType } from '../../types/Media';
 import TopContainer from './TopContainer/TopContainer';
 import LeftContainer from './LeftContainer/LeftContainer';
 import RightContainer from './RightContainer/RightContainer';
+import Record from '../MediaWrapper/Record/Record';
 import { motion } from 'motion/react';
 
 type PropTypes = {
@@ -59,6 +60,9 @@ export default function Media({
         is_active={is_active}
         is_content_expanded={is_content_expanded}
       />
+      {/* Absolutely positioned, so it escapes the grid and anchors to .content
+          — but it lives here to inherit this section's variant orchestration. */}
+      {is_active && <Record media_data={media_data} />}
     </motion.section>
   );
 }

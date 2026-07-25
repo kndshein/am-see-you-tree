@@ -1,7 +1,7 @@
 @use '../../../sass/variables.scss' as *;
 
+// No top margin: the Episodes label above owns the spacing for this block.
 .container {
-  margin-top: 20px;
   height: 100%;
 }
 

@@ -3,6 +3,7 @@ import { TmdbType, Episode } from '../../../types/Tmdb';
 import { ShowType } from '../../../types/Media';
 import { motion } from 'motion/react';
 import { calculateDelay } from '../../../utils/utils';
+import { entry_soft } from '../../../utils/motion';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -25,7 +26,9 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
           opacity: 1,
           transition: {
             delayChildren: calculateDelay(overview_text),
-            staggerChildren: 0.2,
+            // A season can run to 19 rows here, so the step stays modest or the
+            // last one arrives long after the card has settled.
+            staggerChildren: 0.1,
           },
         },
         hidden: {
@@ -39,21 +42,7 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
           <motion.section
             className={styles.episode_container}
             key={ele.episode_number ?? idx}
-            variants={{
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: {
-                  y: {
-                    duration: 0.15,
-                  },
-                },
-              },
-              hidden: {
-                opacity: 0,
-                y: -100,
-              },
-            }}
+            variants={entry_soft}
           >
             <div className={styles.still_wrapper}>
               {stillPath && (

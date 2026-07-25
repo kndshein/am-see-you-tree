@@ -1,16 +1,22 @@
 @use '../../sass/variables.scss' as *;
 
-$scrollbar-height: 50px;
-
 .media_list {
   display: flex;
   height: 93%;
   padding: 20px 0;
   overflow-x: scroll;
   overflow-y: hidden;
-  scrollbar-color: $accent-lite $main;
-  scrollbar-width: thin;
   scroll-behavior: smooth;
+
+  // The progress hairline under the rail (MediaListWrapper) is the scroll
+  // affordance instead. Hiding the bar also means nothing reflows when a card
+  // expands and locks the rail, so no height compensation is needed.
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &::after {
     content: '';
@@ -30,37 +36,9 @@ $scrollbar-height: 50px;
     }
   }
 
-  // overflow:hidden drops the horizontal scrollbar entirely, which would
-  // otherwise free up its reserved height and re-center the (vertically
-  // centered) cards a few px lower. Compensate with matching bottom padding
-  // so the cards don't visibly shift when a card opens/closes. --scrollbar-
-  // height is measured per-browser/OS in MediaList.tsx (0 on platforms with
-  // overlay scrollbars); the SCSS constant is only a fallback before JS runs.
+  // Locks the rail to programmatic scrolling only. Nothing to compensate for
+  // now that no scrollbar height is ever reserved.
   &.is_active {
     overflow: hidden;
-    padding-bottom: calc(20px + var(--scrollbar-height, #{$scrollbar-height}));
   }
-}
-
-.media_list::-webkit-scrollbar {
-  cursor: pointer;
-  height: $scrollbar-height;
-}
-
-.media_list::-webkit-scrollbar-track-piece {
-  background-color: $main;
-  border: 23px solid $background;
-}
-
-.media_list::-webkit-scrollbar-track-piece:hover {
-  background-color: $main-lite;
-}
-
-.media_list::-webkit-scrollbar-thumb {
-  background-color: $accent-lite;
-  border: 20px solid $background;
-}
-
-.media_list::-webkit-scrollbar-thumb:hover {
-  background-color: white;
 }

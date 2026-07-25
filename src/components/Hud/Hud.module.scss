@@ -13,6 +13,14 @@ $hud-dim: rgba(102, 204, 162, 0.22);
   text-transform: uppercase;
 }
 
+// The global `*` rule (index.scss) sets a font and tracking on every element
+// directly, and a direct match beats anything inherited from .hud — so the
+// readouts have to opt back in explicitly or they render as body text.
+.hud * {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
 // Darkens the edges so the flat screen reads as a curved visor.
 .vignette {
   position: absolute;
@@ -93,7 +101,16 @@ $corner-inset: 14px;
   position: absolute;
   width: $corner-size;
   height: $corner-size;
-  border: $corner-thick solid rgba(255, 255, 255, 0.3);
+  border: $corner-thick solid rgba(255, 255, 255, 0.45);
+  // Two stacked shadows: a tight bright core plus a wide soft halo reads as
+  // bloom, where a single shadow just reads as a blur.
+  //
+  // drop-shadow rather than box-shadow because these are L-shapes — box-shadow
+  // would halo the full square instead of the visible strokes. Cheap despite
+  // being a filter: four static 34px elements, rasterized once, versus the
+  // full-surface chain this replaces on every backdrop.
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 .corner_tl {
@@ -136,6 +153,27 @@ $corner-inset: 14px;
   color: $hud;
 }
 
+// Right cell of the top bar: the fixed label, then the live readouts beneath.
+.tracking {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.tracking_live {
+  display: flex;
+  gap: 14px;
+  opacity: 0.75;
+}
+
+// Applied by StatusReadout when a card is open, so the state change reads at a
+// glance rather than needing the word to be parsed.
+.locked {
+  color: rgb(255, 106, 61);
+}
+
 // Sits inboard of the left rail and clear of the bottom-left corner bracket.
 .readout {
   position: absolute;
@@ -166,11 +204,40 @@ $corner-inset: 14px;
   color: rgba(255, 255, 255, 0.45);
 }
 
-// Mirrors .readout across the viewport, inboard of the right rail.
-.version {
+// Everything below the divider describes the shown set as a whole, rather than
+// counting it: the years it covers and how it's currently ordered and filtered.
+.readout_span {
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px solid $hud-dim;
+}
+
+.readout_mode {
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+// Mirrors .readout across the viewport, inboard of the right rail. Groups the
+// two provenance lines — which data snapshot, which build — and leaves the
+// bottom centre free.
+.build {
   position: absolute;
   right: 60px;
   bottom: 22px;
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+  gap: 3px;
   font-size: 11px;
   color: $hud;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.build_source {
+  opacity: 0.6;
+}
+
+.build_version {
+  color: rgba(255, 255, 255, 0.5);
 }

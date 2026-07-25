@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimationDefinition } from 'motion/react';
 import styles from './Genres.module.scss';
 import { Genre } from '../../../types/Tmdb';
+import { entry } from '../../../utils/motion';
 
 type PropTypes = {
   genres?: Genre[];
@@ -46,8 +47,9 @@ const classNameColor = (id: number) => {
 };
 
 // Gap between each row's color reveal, independent of how fast the rows
-// themselves fade in.
-const COLOR_STAGGER = 0.3;
+// themselves fade in. Kept short: with six genres and the poster ahead of them,
+// anything larger leaves the last row grey well after the card has settled.
+const COLOR_STAGGER = 0.12;
 
 export default function Genres({ genres = [], start_idx = 0 }: PropTypes) {
   // Copy before sorting
@@ -55,11 +57,15 @@ export default function Genres({ genres = [], start_idx = 0 }: PropTypes) {
 
   return (
     <section className={styles.genres}>
+      <span className={styles.list_label}>Genres</span>
       {sorted_genres.map((ele, idx) => (
         <GenreRow
           key={ele.id}
           idx={start_idx + idx}
           name={ele.name}
+          // TMDB's own genre id, shown as a code alongside the name. Padded to
+          // three, though a few of them are five digits and stay as-is.
+          code={String(ele.id).padStart(3, '0')}
           color_class={classNameColor(ele.id)}
         />
       ))}
@@ -70,6 +76,7 @@ export default function Genres({ genres = [], start_idx = 0 }: PropTypes) {
 type RowPropTypes = {
   idx: number;
   name: string;
+  code: string;
   color_class: string;
 };
 
@@ -77,7 +84,7 @@ type RowPropTypes = {
 // grey to its real color. The reveal itself is staggered top-to-bottom via
 // an explicit per-row delay (COLOR_STAGGER), independent of the fade's own
 // stagger in LeftContainer.
-function GenreRow({ idx, name, color_class }: RowPropTypes) {
+function GenreRow({ idx, name, code, color_class }: RowPropTypes) {
   const [is_revealed, setIsRevealed] = useState(false);
 
   const handleAnimationComplete = (definition: AnimationDefinition) => {
@@ -94,26 +101,7 @@ function GenreRow({ idx, name, color_class }: RowPropTypes) {
   return (
     <motion.div
       className={styles.genre_row}
-      variants={{
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: {
-            x: {
-              duration: 0.1,
-            },
-          },
-        },
-        hidden: {
-          opacity: 0,
-          x: -100,
-          transition: {
-            x: {
-              duration: 0.1,
-            },
-          },
-        },
-      }}
+      variants={entry}
       onAnimationComplete={handleAnimationComplete}
     >
       <span className={`${styles.bar} ${styles.bar_grey}`} />
@@ -134,6 +122,7 @@ function GenreRow({ idx, name, color_class }: RowPropTypes) {
           {name}
         </motion.span>
       </p>
+      <span className={styles.code}>{code}</span>
     </motion.div>
   );
 }

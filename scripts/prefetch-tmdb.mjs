@@ -64,6 +64,7 @@ function trim(item, full) {
     tagline: full.tagline,
     overview: full.overview,
     vote_average: full.vote_average,
+    vote_count: full.vote_count,
     release_date: full.release_date,
     runtime: full.runtime,
     genres: (full.genres ?? []).map(({ id, name }) => ({ id, name })),
@@ -91,6 +92,9 @@ function trim(item, full) {
           episode_number: ep.episode_number,
           name: ep.name,
           overview: ep.overview,
+          // Per-episode, so a partial season (epiStart..epiEnd) can be totalled
+          // accurately rather than assumed from an average.
+          runtime: ep.runtime,
         })),
       };
     }

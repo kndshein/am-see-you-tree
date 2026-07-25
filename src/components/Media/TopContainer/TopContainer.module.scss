@@ -34,13 +34,26 @@
   background-color: $accent-lite;
 }
 
+// Top margin carries the separation from the title, so the label reads as
+// belonging to the tagline below it rather than trailing the title above.
 .tagline {
-  margin: 10px 5px 10px 0;
+  margin: 26px 5px 10px 0;
   color: $main-lite;
   font-size: clamp(1.2rem, 1.5vw, 1.5rem);
   font-style: italic;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+// Stacked above the tagline rather than inline, matching the info_group fields.
+// font-style is reset because .tagline is italic and the labels are not.
+.tagline_label {
+  @include field-label;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 400;
 }
 
 .season {

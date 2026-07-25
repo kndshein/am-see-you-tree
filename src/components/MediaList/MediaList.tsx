@@ -11,6 +11,12 @@ import MediaWrapper from '../MediaWrapper/MediaWrapper';
 import styles from './MediaList.module.scss';
 import { useTmdbData } from '../../utils/tmdb-data';
 import { buildMediaList, isShown } from '../../utils/media-lists';
+import {
+  scroll_progress,
+  focused_position,
+  card_count,
+  is_locked,
+} from '../../utils/hud-telemetry';
 import { OrderType } from '../../App';
 
 type PropTypes = {
@@ -73,8 +79,9 @@ export default function MediaList({
     let raf = 0;
     let centers: number[] = [];
     // Cached so the per-frame path never reads layout. Only a resize can change
-    // it — the rail itself doesn't move when it scrolls.
+    // these — the rail itself doesn't move or resize when it scrolls.
     let rail_left = 0;
+    let max_scroll = 0;
     // Raw pointer vs the eased position the cards actually follow. Tilt stays
     // off until the pointer is first seen, so the resting curve is untouched;
     // `engage` then fades it in so the first movement doesn't land as a step.
@@ -181,6 +188,26 @@ export default function MediaList({
 
       prev_lo = lo;
       prev_hi = hi;
+
+      // Telemetry for the HUD. `max_scroll` is cached by measure() so this
+      // stays a pure write — no layout reads added to the per-frame path.
+      scroll_progress.set(
+        max_scroll > 0 ? Math.min(1, Math.max(0, el.scrollLeft / max_scroll)) : 0,
+      );
+
+      // Whichever card sits nearest the centre. upperBound gives the first one
+      // past it, so the answer is that card or the one before it.
+      if (cards.length) {
+        const after = Math.min(cards.length - 1, upperBound(mid));
+        const before = Math.max(0, after - 1);
+        const nearest =
+          Math.abs(centers[before] - mid) <= Math.abs(centers[after] - mid)
+            ? before
+            : after;
+        focused_position.set(nearest + 1);
+      } else {
+        focused_position.set(0);
+      }
     };
     apply_ref.current = apply;
 
@@ -193,6 +220,8 @@ export default function MediaList({
         (c, i) => i === 0 || c >= centers[i - 1],
       );
       rail_left = el.getBoundingClientRect().left;
+      max_scroll = el.scrollWidth - el.clientWidth;
+      card_count.set(cards_ref.current.length);
       needs_full = true;
       apply();
     };
@@ -268,30 +297,8 @@ export default function MediaList({
   // may sit outside the band, where the incremental path would never revisit it.
   useEffect(() => {
     apply_ref.current(true);
+    is_locked.set(active_toggle !== null);
   }, [active_toggle]);
-
-  // Measure the rail's actual reserved scrollbar height (varies by browser
-  // and OS, and is 0 on platforms with overlay scrollbars) so the padding
-  // compensation in MediaList.module.scss (.is_active) can offset exactly
-  // what disappears, instead of assuming a fixed pixel value.
-  useEffect(() => {
-    const el = media_list_ref.current;
-    if (!el) return;
-
-    const measureScrollbarHeight = () => {
-      // Only meaningful while the real scrollbar is showing (overflow-x:
-      // scroll); it's hidden while a card is active, which would read as 0.
-      if (active_toggle_ref.current !== null) return;
-      el.style.setProperty(
-        '--scrollbar-height',
-        `${el.offsetHeight - el.clientHeight}px`,
-      );
-    };
-
-    measureScrollbarHeight();
-    window.addEventListener('resize', measureScrollbarHeight);
-    return () => window.removeEventListener('resize', measureScrollbarHeight);
-  }, [media_list_ref]);
 
   // Let a plain (vertical) wheel scroll drive the horizontal rail, instead
   // of requiring Shift+wheel. Trackpad horizontal swipes (deltaX already

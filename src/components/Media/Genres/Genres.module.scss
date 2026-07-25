@@ -6,9 +6,18 @@
   width: 100%;
 }
 
+.list_label {
+  @include field-label;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+}
+
 .genre_row {
   position: relative;
-  padding: 10px 0 10px 20px;
+  // Right padding reserves the gutter .code sits in, so a long genre name
+  // can't run underneath it.
+  padding: 10px 46px 10px 20px;
   margin: 10px 0 10px 0;
   background-color: $tab-background;
   box-shadow: 0 0 5px $shadow-faint;
@@ -16,6 +25,19 @@
   &:last-child {
     margin-bottom: 0;
   }
+}
+
+// TMDB's numeric id for the genre, parked in the right gutter.
+.code {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  font-family: $accent-text;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: rgba(110, 110, 110, 0.8);
 }
 
 // Grey bar sits underneath at all times; the colored bar fades in on top of
@@ -47,11 +69,14 @@
   color: $muted-text;
 }
 
+// Pinned to both edges so it occupies exactly the grey layer's width and wraps
+// at the same points. Left free to wrap: a nowrap here drifts out of register
+// with the grey twin underneath as soon as a name needs two lines.
 .color_layer {
   position: absolute;
   top: 0;
   left: 0;
-  white-space: nowrap;
+  right: 0;
 }
 
 $genres: (

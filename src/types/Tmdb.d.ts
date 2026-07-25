@@ -13,6 +13,7 @@ export interface Episode {
   episode_number: number;
   name: string;
   overview: string;
+  runtime?: number | null;
 }
 
 export interface SeasonData {
@@ -30,6 +31,7 @@ export interface TmdbType {
   tagline?: string;
   overview?: string;
   vote_average: number;
+  vote_count?: number;
   release_date?: string;
   runtime?: number;
   genres: Genre[];

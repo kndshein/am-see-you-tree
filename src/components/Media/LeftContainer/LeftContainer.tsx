@@ -4,6 +4,7 @@ import { TmdbType } from '../../../types/Tmdb';
 import Genres from '../Genres/Genres';
 import { motion, AnimationDefinition } from 'motion/react';
 import { container } from '../Media';
+import { entry_vertical } from '../../../utils/motion';
 import { MediaType } from '../../../types/Media';
 
 type PropTypes = {
@@ -38,26 +39,7 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
     >
       <motion.div
         className={styles.poster}
-        variants={{
-          visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-              y: {
-                duration: 0.2,
-              },
-            },
-          },
-          hidden: {
-            opacity: 0,
-            y: -100,
-            transition: {
-              y: {
-                duration: 0.2,
-              },
-            },
-          },
-        }}
+        variants={entry_vertical}
         onAnimationComplete={handlePosterAnimationComplete}
       >
         {poster_path && (

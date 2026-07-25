@@ -6,6 +6,7 @@ import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
 import scoreColor from '../../../utils/score-color';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
+import { entry } from '../../../utils/motion';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
@@ -18,14 +19,13 @@ type PropTypes = {
   is_content_expanded: boolean;
 };
 
-// Mutes the vote chip against the dark backdrop. Has to be color alpha, not
-// CSS opacity, because the entrance variant animates opacity inline.
-//
-// A translucent chip darkens toward the backdrop it sits on, which costs the
-// knocked-out digits contrast: roughly 1.9:1 at the red end of the ramp
-// against ~9:1 at green. That trade is intended — raise the lightness of the
-// low HUE_STOPS before raising this.
-const VOTE_ALPHA = 0.5;
+// A raw five-digit count sitting beside a percentage reads as a second, larger
+// score. Abbreviating keeps it obviously subordinate.
+function compactCount(count: number): string {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}m`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}k`;
+  return String(count);
+}
 
 export default function RightContainer({
   tmdb_data,
@@ -34,24 +34,11 @@ export default function RightContainer({
   is_content_expanded,
 }: PropTypes) {
   const element = {
+    ...entry,
+    // Same movement as everything else, plus a stagger for the fields it wraps.
     visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        staggerChildren: 0.05,
-        x: {
-          duration: 0.1,
-        },
-      },
-    },
-    hidden: {
-      opacity: 0,
-      x: -100,
-      transition: {
-        opacity: {
-          duration: 0,
-        },
-      },
+      ...entry.visible,
+      transition: { ...entry.visible.transition, staggerChildren: 0.05 },
     },
   };
 
@@ -65,9 +52,7 @@ export default function RightContainer({
   // to the DOM node, keeping the per-frame count-up from re-rendering this
   // whole subtree (cast, Overview, Episodes).
   const vote_value = useMotionValue(0);
-  const vote_color = useTransform(vote_value, (latest) =>
-    scoreColor(latest, VOTE_ALPHA),
-  );
+  const vote_color = useTransform(vote_value, (latest) => scoreColor(latest));
 
   return (
     <motion.section
@@ -80,20 +65,41 @@ export default function RightContainer({
       {/* Only render them when active to reduce calculation while collapsed */}
       {is_active && (
         <>
-          <motion.section className={styles.info_group} variants={element}>
-            <motion.span
-              className={styles.vote}
-              variants={element}
-              style={{ backgroundColor: vote_color }}
-            >
-              <VoteCounter
-                value={vote_percent}
-                play={is_content_expanded}
-                motion_value={vote_value}
-              />
+          {/* Staggered harder than the rest: these are four short values on one
+              line, so they need the spacing to register as arriving in turn. */}
+          <motion.section
+            className={styles.info_group}
+            variants={{
+              ...entry,
+              visible: {
+                ...entry.visible,
+                transition: {
+                  ...entry.visible.transition,
+                  staggerChildren: 0.18,
+                },
+              },
+            }}
+          >
+            <motion.span variants={element}>
+              <span className={styles.label}>Rating</span>
+              <span className={styles.value_row}>
+                <motion.span style={{ color: vote_color }}>
+                  <VoteCounter
+                    value={vote_percent}
+                    play={is_content_expanded}
+                    motion_value={vote_value}
+                  />
+                </motion.span>
+                {typeof tmdb_data.vote_count === 'number' && (
+                  <span className={styles.sub_value}>
+                    {compactCount(tmdb_data.vote_count)}
+                  </span>
+                )}
+              </span>
             </motion.span>
             {media_data.type === 'tv' ? (
               <motion.span variants={element}>
+                <span className={styles.label}>Aired</span>
                 <GlitchText
                   final_text={dateCalc(season_data?.air_date)}
                   seed_text={dateEpochSeed(season_data?.air_date)}
@@ -103,14 +109,15 @@ export default function RightContainer({
             ) : (
               <>
                 <motion.span variants={element}>
+                  <span className={styles.label}>Released</span>
                   <GlitchText
                     final_text={dateCalc(tmdb_data.release_date)}
                     seed_text={dateEpochSeed(tmdb_data.release_date)}
                     play={is_content_expanded}
                   />
                 </motion.span>
-                <motion.span className={styles.dot}>//</motion.span>
                 <motion.span variants={element}>
+                  <span className={styles.label}>Runtime</span>
                   <GlitchText
                     final_text={runtimeCalc(tmdb_data.runtime)}
                     seed_text={runtimeMsSeed(tmdb_data.runtime)}
@@ -135,9 +142,18 @@ export default function RightContainer({
                 );
               })}
           </motion.section>
-          <Overview tmdb_data={tmdb_data} media_data={media_data} />
+          {/* Label and content share one variant child, so they enter together
+              instead of the label arriving a stagger step ahead of what it
+              names. Every entry has overview text, so this needs no guard. */}
+          <motion.div variants={element}>
+            <span className={styles.section_label}>Synopsis</span>
+            <Overview tmdb_data={tmdb_data} media_data={media_data} />
+          </motion.div>
           {media_data.type === 'tv' && (
-            <Episodes tmdb_data={tmdb_data} media_data={media_data} />
+            <motion.div variants={element}>
+              <span className={styles.section_label}>Episodes</span>
+              <Episodes tmdb_data={tmdb_data} media_data={media_data} />
+            </motion.div>
           )}
         </>
       )}
