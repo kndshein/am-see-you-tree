@@ -16,7 +16,7 @@ $shadow-faint: rgba(0, 0, 0, 0.1);
 
 // Gap between stacked blocks in the expanded card's left column. Sits just
 // above the 10px used between rows inside a block.
-$block-gap: 12px;
+$block-gap: 18px;
 
 // Half the gutter between the expanded card's two main columns (each column
 // contributes one side via padding/margin, not `grid-gap`, so the layout still

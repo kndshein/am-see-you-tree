@@ -11,34 +11,50 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  background-color: $accent-lite;
+  background-color: rgba($accent-lite, 0.3);
   box-shadow: 0 0 15px $background;
 }
 
 .poster img {
+  // Inline is the default for <img>, which reserves a few px of descender
+  // space below the baseline — that's the sliver of .poster's background
+  // color that shows beneath it. Block removes the gap outright.
+  display: block;
   object-fit: contain;
   width: 100%;
 }
 
-// Label and figure pushed to opposite edges so the numbers align in a column,
-// which is what makes two rows readable at this size.
 // $block-gap is shared with .genres so the poster / finances / genres stack
 // sits on one rhythm. Set just above the 10px that separates rows *inside* a
 // block, which is enough to read as a break between blocks without the column
 // feeling loose.
 .finances {
   margin-top: $block-gap;
+  padding: 8px 10px 6px;
+  border: 1px solid rgba($accent-lite, 0.3);
+  border-radius: $radius-sm;
   font-family: $accent-text;
   font-size: 0.8rem;
   letter-spacing: 1px;
   color: $accent-lite;
 }
 
+// A dotted leader (like a table of contents) ties the label to its figure
+// instead of relying on `justify-content: space-between` alone, which read as
+// two numbers loose in the column rather than one connected row.
 .finance_row {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: baseline;
+  gap: 6px;
   padding: 3px 0;
+}
+
+.finance_leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted rgba($accent-lite, 0.4);
+  // Lifts the dots to sit mid-line rather than jammed against the text baseline.
+  margin-bottom: 4px;
 }
 
 // Same size as the figure it sits beside — the two read as one line rather
@@ -46,6 +62,7 @@
 .finance_label {
   @include field-label;
   font-size: 1em;
+  white-space: nowrap;
 }
 
 // No border: it sits over artwork, and the backing plate is enough to separate

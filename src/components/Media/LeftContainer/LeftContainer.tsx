@@ -70,12 +70,14 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
           {tmdb_data.budget && (
             <span className={styles.finance_row}>
               <span className={styles.finance_label}>Budget</span>
+              <span className={styles.finance_leader} />
               <span>{compactCurrency(tmdb_data.budget)}</span>
             </span>
           )}
           {tmdb_data.revenue && (
             <span className={styles.finance_row}>
               <span className={styles.finance_label}>Box Office</span>
+              <span className={styles.finance_leader} />
               <span>{compactCurrency(tmdb_data.revenue)}</span>
             </span>
           )}
