@@ -52,6 +52,10 @@
   align-items: baseline;
   gap: 6px;
   padding: 1px 0;
+  // Explicit rather than the font's own `normal` metrics — same reasoning as
+  // field-label's own line-height (variables.scss) — inherited by the label,
+  // leader, and the currency value, none of which carry their own class.
+  line-height: 1.2;
 }
 
 .finance_leader {

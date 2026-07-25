@@ -52,6 +52,7 @@
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.5px;
+  line-height: 1.2;
   white-space: nowrap;
   color: rgba(110, 110, 110, 0.8);
 }
@@ -81,6 +82,10 @@
   overflow-wrap: break-word;
   margin: 0;
   font-size: clamp(0.75rem, 1vw, 1rem);
+  // Explicit for the same reason as field-label's own line-height (see that
+  // mixin's comment) — this text isn't styled through it, but sits in the
+  // same fixed-height column.
+  line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 1.5px;
 }

@@ -47,6 +47,13 @@ $font-size-lg: 2rem;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: rgba($accent-lite, 0.45);
+  // Explicit rather than the font's own `normal` metrics: Chrome and Firefox
+  // compute `normal` line-height differently for this custom font, and
+  // LeftContainer's column (grid row sized to a fixed pixel budget, not to
+  // content) has no slack to absorb that — a few px per label, compounded
+  // over a title/finance rows/genre rows, was enough to overflow only in
+  // Chrome even though the exact same content fit in Firefox.
+  line-height: 1.2;
 }
 
 $body-text: 'Space Grotesk', sans-serif;
