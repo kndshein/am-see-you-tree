@@ -134,8 +134,27 @@ export default function MediaList({
     // Clamps `d`, so the steepest rotation is MAX_DIST * MAX_ANGLE = 47.6deg
     // and everything past the clamp shares one angle.
     const MAX_DIST = 1.4;
+    // Extra rotateY layered on top of the curve so a card's face turns toward
+    // the pointer. Horizontal only: the rail itself is horizontal, and adding
+    // a vertical tilt on top of it reads as noise.
+    const TILT_Y = 6; // degrees at full horizontal offset
+    // Fraction of the remaining distance covered per frame. Low values give
+    // the cards weight: they trail the pointer and coast to a stop.
+    const EASE = 0.06;
+    const SETTLE = 0.5; // px; closer than this, snap and stop the loop
+
     let raf = 0;
     let centers: number[] = [];
+    // Cached so the per-frame path never reads layout. Only a resize can change
+    // it — the rail itself doesn't move when it scrolls.
+    let rail_left = 0;
+    // Raw pointer vs the eased position the cards actually follow. Tilt stays
+    // off until the pointer is first seen, so the resting curve is untouched;
+    // `engage` then fades it in so the first movement doesn't land as a step.
+    let has_pointer = false;
+    let engage = 0;
+    let pointer_x = 0;
+    let eased_x = window.innerWidth / 2;
     // Cards lay out left-to-right, so `centers` ascends and the cards still
     // inside the un-clamped band are one contiguous range. If that ever stops
     // holding (the `.reverse` row-reverse rule, say), fall back to the whole list.
@@ -146,12 +165,12 @@ export default function MediaList({
     let prev_hi = 0;
     let needs_full = true;
 
-    const transformFor = (d: number) => {
+    const transformFor = (d: number, tilt_y = 0) => {
       const ad = Math.abs(d);
       const center = 1 - ad / MAX_DIST; // 1 at center → 0 at edges
       const scale_x = 1 - SQUISH_X * (1 - center); // 1.0 at center → 1.1 at edges
       const scale_y = 1 - SHORT_Y * center; // 0.9 at center → 1.0 at edges
-      const angle = -d * MAX_ANGLE;
+      const angle = -d * MAX_ANGLE + tilt_y;
       // Per-card 3D perspective and rotation without container perspective trap
       return `perspective(1000px) rotateY(${angle.toFixed(
         2,
@@ -160,9 +179,13 @@ export default function MediaList({
 
     // `d` is clamped, so everything past the band resolves to one of exactly
     // two transforms however far off-centre it sits. Derived through the same
-    // function as the live ones so the two paths can't drift apart.
+    // function as the live ones so the two paths can't drift apart. These carry
+    // no tilt: the band already extends 1.4 viewport-widths, so anything using
+    // them is well offscreen and tilting it would only cost writes.
     const CLAMPED_LEFT = transformFor(-MAX_DIST);
     const CLAMPED_RIGHT = transformFor(MAX_DIST);
+
+    const clampUnit = (n: number) => Math.max(-1, Math.min(1, n));
 
     // First index whose centre sits past `value`.
     const upperBound = (value: number) => {
@@ -220,7 +243,13 @@ export default function MediaList({
           -MAX_DIST,
           Math.min(MAX_DIST, (centers[i] - mid) / half),
         );
-        write(i, transformFor(d));
+        let tilt_y = 0;
+        if (engage > 0) {
+          // Offset of the pointer from this card's centre, in viewport space.
+          const card_x = centers[i] - el.scrollLeft + rail_left;
+          tilt_y = clampUnit((eased_x - card_x) / half) * TILT_Y * engage;
+        }
+        write(i, transformFor(d, tilt_y));
       }
 
       prev_lo = lo;
@@ -236,24 +265,49 @@ export default function MediaList({
       centers_ascending = centers.every(
         (c, i) => i === 0 || c >= centers[i - 1],
       );
+      rail_left = el.getBoundingClientRect().left;
       needs_full = true;
       apply();
     };
 
-    const onScroll = () => {
+    const isSettled = () => Math.abs(pointer_x - eased_x) < SETTLE;
+
+    // Scrolling needs a single frame; the pointer needs frames until the eased
+    // position catches up, which is what gives the tilt its trailing weight.
+    const runFrame = () => {
+      raf = 0;
+      if (has_pointer) {
+        eased_x += (pointer_x - eased_x) * EASE;
+        if (engage < 1) engage = Math.min(1, engage + EASE);
+        if (isSettled()) eased_x = pointer_x;
+      }
+      apply();
+      if (has_pointer && (!isSettled() || engage < 1)) schedule();
+    };
+
+    const schedule = () => {
       if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        apply();
-      });
+      raf = requestAnimationFrame(runFrame);
+    };
+
+    const onScroll = () => schedule();
+
+    // `mousemove`, not `pointermove`: touch has no hover, and a drag shouldn't
+    // whip the cards around mid-scroll.
+    const onMouseMove = (event: MouseEvent) => {
+      pointer_x = event.clientX;
+      has_pointer = true;
+      schedule();
     };
 
     measure();
     el.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('resize', measure);
 
     return () => {
       el.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', measure);
       if (raf) cancelAnimationFrame(raf);
       cards_ref.current.forEach((c) => (c.style.transform = ''));
