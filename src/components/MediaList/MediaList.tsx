@@ -182,6 +182,26 @@ export default function MediaList({
     return () => window.removeEventListener('resize', measureScrollbarHeight);
   }, [media_list_ref]);
 
+  // Let a plain (vertical) wheel scroll drive the horizontal rail, instead
+  // of requiring Shift+wheel. Trackpad horizontal swipes (deltaX already
+  // nonzero) are left untouched so their native momentum/feel is unchanged.
+  useEffect(() => {
+    const el = media_list_ref.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (active_toggle_ref.current !== null) return; // rail is locked while a card is open
+      if (e.deltaX !== 0 || e.deltaY === 0) return;
+      e.preventDefault();
+      // Instant, not the element's CSS scroll-behavior:smooth, so it tracks
+      // the wheel 1:1 instead of easing/queuing on every tick.
+      el.scrollBy({ left: e.deltaY, behavior: 'instant' });
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [media_list_ref]);
+
   const visible_media_length = media_list.filter(
     (ele) => ele.type === 'movie' || !is_movies_only,
   ).length;
