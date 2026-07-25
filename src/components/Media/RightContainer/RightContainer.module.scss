@@ -4,7 +4,7 @@
   display: flex;
   flex-flow: column;
   padding-right: 20px;
-  margin-left: 15px;
+  margin-left: $grid-gutter;
   overflow-y: auto;
   scrollbar-color: $accent-lite $main;
   scrollbar-width: thin;
@@ -30,6 +30,34 @@
 
 .container::-webkit-scrollbar-thumb:hover {
   background-color: white;
+}
+
+// Moved up from beside the title: a tagline is almost always short, which
+// otherwise left the corner next to it empty. Sits first in the column so it
+// still reads as introducing the vitals below it.
+.tagline {
+  margin: 0 5px 20px 0;
+  color: $main-lite;
+  font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+  font-style: italic;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+// Stacked above the tagline rather than inline, matching the info_group fields.
+// font-style is reset because .tagline is italic and the labels are not.
+.tagline_label {
+  @include field-label;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.season {
+  font-weight: 700;
+  color: $show;
 }
 
 .info_group {

@@ -65,6 +65,27 @@ export default function RightContainer({
       {/* Only render them when active to reduce calculation while collapsed */}
       {is_active && (
         <>
+          <motion.p className={styles.tagline} variants={element}>
+            {/* The slot holds different things per type, so the label names what
+                is actually in it rather than being generic. Movies with no
+                tagline get no label, to avoid heading an empty line. */}
+            {media_data.type === 'tv' ? (
+              <>
+                <span className={styles.tagline_label}>Coverage</span>
+                <span className={styles.season}>
+                  Season {media_data.season}
+                </span>
+                , Episodes {media_data.epiStart} - {media_data.epiEnd}
+              </>
+            ) : (
+              tmdb_data.tagline && (
+                <>
+                  <span className={styles.tagline_label}>Tagline</span>
+                  {tmdb_data.tagline}
+                </>
+              )
+            )}
+          </motion.p>
           {/* Staggered harder than the rest: these are four short values on one
               line, so they need the spacing to register as arriving in turn. */}
           <motion.section

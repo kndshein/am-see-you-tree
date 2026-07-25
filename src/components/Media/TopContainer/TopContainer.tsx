@@ -34,25 +34,6 @@ export default function TopContainer({ tmdb_data, media_data }: PropTypes) {
             ))
           : titleText}
       </motion.h2>
-      <motion.p className={styles.tagline} variants={entry}>
-        {/* The slot holds different things per type, so the label names what is
-            actually in it rather than being generic. Movies with no tagline get
-            no label, to avoid heading an empty line. */}
-        {media_data.type === 'tv' ? (
-          <>
-            <span className={styles.tagline_label}>Coverage</span>
-            <span className={styles.season}>Season {media_data.season}</span>,
-            Episodes {media_data.epiStart} - {media_data.epiEnd}
-          </>
-        ) : (
-          tmdb_data.tagline && (
-            <>
-              <span className={styles.tagline_label}>Tagline</span>
-              {tmdb_data.tagline}
-            </>
-          )
-        )}
-      </motion.p>
     </motion.section>
   );
 }

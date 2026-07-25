@@ -18,6 +18,13 @@ $shadow-faint: rgba(0, 0, 0, 0.1);
 // above the 10px used between rows inside a block.
 $block-gap: 12px;
 
+// Half the gutter between the expanded card's two main columns (each column
+// contributes one side via padding/margin, not `grid-gap`, so the layout still
+// degrades cleanly to a single flex column on mobile). The title row uses the
+// full gutter as its own bottom margin, so the row gap reads the same as the
+// column gap.
+$grid-gutter: 15px;
+
 $radius-sm: 5px;
 $radius-md: 10px;
 
