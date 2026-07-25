@@ -137,35 +137,97 @@ code {
   text-align: center;
 }
 
+// All three order names sit in the button at once (dim), with the active one
+// lit — so switching is a single click, but nothing about it is a surprise:
+// what it is, and what it'll become, are both on screen at rest.
 .order_type_btn {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  row-gap: 2px;
   cursor: pointer;
   background: none;
   border: none;
-  color: $accent-lite;
   padding: 5px;
+  font-family: $accent-text;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: clamp(0.65rem, 2vw, 0.8rem);
   transition: 0.1s linear;
+}
 
-  // The button is a stretched flex item, so it spans the full width and a
-  // plain border-bottom would run straight across the HUD's side rails and
-  // corner brackets. Fading both ends keeps the rule clear of them.
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      $accent 25%,
-      $accent 75%,
-      transparent
-    );
-  }
+// Sits directly under the button, standing in for its old static bottom
+// border, carrying live scroll position instead. Inset 60px to match the
+// HUD's own gutter (Hud.module.scss's .top_bar/.readout/.build) — that's the
+// reserved centre gap the button already sits in, flanked by the fixed
+// "MCU // DATABASE" / "STARK INDUSTRIES" readouts; full-bleed ran underneath
+// that flanking text instead of staying in the gap meant for it.
+//
+// Nav is `position: fixed; bottom: 0`, so it takes no height out of the flex
+// flow — this button (and this bar right after it) are really the first thing
+// in it, landing at y=0. The HUD's top_bar is pushed down to clear that block
+// instead of this bar being pushed down to clear the HUD — see top_bar's own
+// comment in Hud.module.scss.
+.progress {
+  flex-shrink: 0;
+  height: 2px;
+  margin: 0 60px;
+  background-color: rgba($accent, 0.3);
+  overflow: hidden;
+  // Same fade the button's old border used (transparent, solid by 25%, back to
+  // transparent by 75%). A mask on the track rather than a gradient baked into
+  // either background: .progress_fill scales via `transform`, which would
+  // visually stretch/compress a gradient baked into it as scroll changes — a
+  // mask lives in the track's own fixed coordinate space, so it fades the
+  // whole composited bar (track + fill) the same way at any scroll position.
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 25%,
+    black 75%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 25%,
+    black 75%,
+    transparent
+  );
+}
 
-  &:hover {
-    color: white;
+.progress_fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  background-color: $accent-lite;
+}
+
+.order_type_option {
+  color: rgba($main-lite, 0.6);
+  transition: color 0.1s linear;
+
+  // Standing in for a real separator element: explicit color/weight here so
+  // it stays dim regardless of whether the option on either side is active.
+  &:not(:last-child)::after {
+    content: '//';
+    margin: 0 10px;
+    color: rgba($main-lite, 0.3);
+    font-weight: 400;
   }
+}
+
+.order_type_option.active {
+  color: $accent-lite;
+  font-weight: 700;
+}
+
+.order_type_btn:hover .order_type_option {
+  color: $main-lite;
+}
+
+.order_type_btn:hover .order_type_option.active {
+  color: white;
 }

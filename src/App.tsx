@@ -3,19 +3,25 @@ import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Nav from './components/Nav/Nav';
 import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
-import { MotionConfig } from 'motion/react';
+import { motion, MotionConfig } from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
 import { buildMediaList, summarizeMedia } from './utils/media-lists';
+import { scroll_progress } from './utils/hud-telemetry';
 
 Modal.setAppElement('#root');
 
 const order_types = [
-  'Chronological',
   'Reverse Chronological',
+  'Chronological',
   'Release Date',
 ] as const;
 
 export type OrderType = (typeof order_types)[number];
+
+// Not order_types[0] — that's cycle order (button-display order), not default.
+// Keeping the default as its own named lookup means the two can't drift apart
+// just because one of them gets reordered.
+const DEFAULT_ORDER_TYPE: OrderType = 'Chronological';
 
 const order_param_map: Record<string, OrderType> = {
   reverse: 'Reverse Chronological',
@@ -26,9 +32,10 @@ function getInitialOrderIndex() {
   const order_param = new URLSearchParams(window.location.search).get(
     'order'
   );
-  const order_type = order_param ? order_param_map[order_param] : undefined;
-  if (!order_type) return 0;
-  return order_types.indexOf(order_type);
+  const order_type = order_param
+    ? order_param_map[order_param]
+    : undefined;
+  return order_types.indexOf(order_type ?? DEFAULT_ORDER_TYPE);
 }
 
 function App() {
@@ -107,9 +114,27 @@ function App() {
                   return prevState + 1;
                 })
               }
+              aria-label={`Sort order: ${order_types[order_index]}. Click to switch to the next order.`}
             >
-              Showing in {order_types[order_index]} Order
+              {order_types.map((type, idx) => (
+                <span
+                  key={type}
+                  className={`order_type_option ${
+                    idx === order_index ? 'active' : ''
+                  }`}
+                >
+                  {type}
+                </span>
+              ))}
             </button>
+            {/* Doubles as the button's bottom border — same full-bleed span
+                its old fading underline used, just live instead of static. */}
+            <div className="progress">
+              <motion.div
+                className="progress_fill"
+                style={{ scaleX: scroll_progress }}
+              />
+            </div>
             <MediaListWrapper
               is_movies_only={is_movies_only}
               order_type={order_type}

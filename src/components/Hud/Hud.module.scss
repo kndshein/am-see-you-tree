@@ -142,9 +142,18 @@ $corner-inset: 14px;
   border-top: 0;
 }
 
+// Pushed down from an original 20px: Nav (Nav.module.scss) is fixed to the
+// viewport bottom and takes no height out of the app's flex flow, so the
+// order-type button and the progress bar right after it (index.scss) are
+// really the first content in that flow and land at y=0 — inside this band.
+// This used to be tolerable (the button's old bottom border was a faint 1px
+// gradient), but the progress bar is a solid, animated line, and z-index: 40
+// always paints this text in front of it, so it read as a strike-through.
+// 40px clears the button + bar block with some margin, blind (no way to
+// measure the actual render here) — flag it if it still needs tuning.
 .top_bar {
   position: absolute;
-  top: 20px;
+  top: 40px;
   left: 60px;
   right: 60px;
   display: flex;
