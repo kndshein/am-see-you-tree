@@ -109,8 +109,8 @@ export default function MediaWrapper({
                 className={styles.overlay}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                // Previously this popped out with no fade, because the
-                // conditional unmounted it immediately.
+                // AnimatePresence keeps this mounted long enough to fade;
+                // the bare conditional would unmount it immediately.
                 exit={{ opacity: 0, transition: { duration: 0.3 } }}
                 transition={{ duration: 0.7 }}
               ></motion.div>

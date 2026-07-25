@@ -22,8 +22,8 @@ export default function Reticle({ is_expanded }: PropTypes) {
       className={styles.reticle}
       initial={false}
       animate={is_expanded ? 'lock' : 'idle'}
-      // Wrapped in AnimatePresence by MediaWrapper, so the brackets retract
-      // on close rather than disappearing the instant the card deactivates.
+      // MediaWrapper wraps this in AnimatePresence, which holds the unmount
+      // until the brackets have retracted back to their idle offsets.
       exit="idle"
       aria-hidden="true"
     >

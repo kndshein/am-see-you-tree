@@ -41,9 +41,9 @@
   margin-bottom: -5px;
 }
 
-// Direct children only: VoteCounter and GlitchText each render an inner span
-// to write into, and a descendant selector gave those the gap too — which
-// showed up as dead space inside the vote counter's border.
+// Direct children only. VoteCounter and GlitchText each nest a span inside
+// these, and a descendant selector would put the gap on those too — inside
+// the vote chip rather than between the fields.
 .info_group > span {
   font-size: clamp(1rem, 1.5vw, 1.5rem);
   margin-right: 10px;
@@ -57,20 +57,19 @@
   opacity: 0.6;
 }
 
-// VoteCounter and GlitchText each render a bare inner <span> purely as a
-// target to write text into. The global `*` rule (index.scss) matches those
-// directly, and a direct match beats values inherited from the chip/row — so
-// the digits lost their weight, font and tracking. Hand them back.
+// VoteCounter and GlitchText write their text into a bare inner <span>. The
+// global `*` rule (index.scss) matches those spans directly, and a direct
+// match wins over anything inherited from the chip or row, so the typography
+// has to be re-inherited explicitly.
 .info_group span span {
   font: inherit;
   letter-spacing: inherit;
 }
 
-// Score-colored chip with the digits knocked out of it. The background color
-// is driven live by the count-up (RightContainer), so the text is set to the
-// page background to read as punched through. Note the chip is deliberately
-// translucent (VOTE_ALPHA), which costs contrast at the red/low-score end of
-// the ramp — see the note in RightContainer.
+// Score-colored chip with the digits knocked out of it: the background is
+// driven live by the count-up (RightContainer) and the text is painted in the
+// page background so it reads as punched through. Contrast trade-offs at the
+// low end of the ramp are documented on VOTE_ALPHA.
 .info_group .vote {
   padding: 7px 10px 3px;
   color: $background;

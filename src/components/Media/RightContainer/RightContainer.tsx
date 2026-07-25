@@ -18,11 +18,13 @@ type PropTypes = {
   is_content_expanded: boolean;
 };
 
-// Mutes the vote chip against the dark backdrop. Applied as color alpha
-// rather than CSS opacity, which the entrance animation would overwrite.
-// Deliberately low: a translucent chip over a dark background darkens toward
-// it, so the knocked-out digits lose contrast (~1.9:1 at the red end of the
-// ramp vs ~9:1 at green). Traded for the glassier look on purpose.
+// Mutes the vote chip against the dark backdrop. Has to be color alpha, not
+// CSS opacity, because the entrance variant animates opacity inline.
+//
+// A translucent chip darkens toward the backdrop it sits on, which costs the
+// knocked-out digits contrast: roughly 1.9:1 at the red end of the ramp
+// against ~9:1 at green. That trade is intended — raise the lightness of the
+// low HUE_STOPS before raising this.
 const VOTE_ALPHA = 0.5;
 
 export default function RightContainer({
@@ -59,10 +61,9 @@ export default function RightContainer({
       : undefined;
 
   const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
-  // The count-up drives this MotionValue rather than React state: motion
-  // writes the derived color straight to the DOM node, so climbing from 0 to
-  // the real score doesn't re-render this whole subtree (cast, Overview,
-  // Episodes) once per frame.
+  // A MotionValue, not React state: motion writes the derived color straight
+  // to the DOM node, keeping the per-frame count-up from re-rendering this
+  // whole subtree (cast, Overview, Episodes).
   const vote_value = useMotionValue(0);
   const vote_color = useTransform(vote_value, (latest) =>
     scoreColor(latest, VOTE_ALPHA),

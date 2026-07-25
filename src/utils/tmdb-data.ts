@@ -4,14 +4,13 @@ import { TmdbType } from '../types/Tmdb';
 
 export type TmdbMap = Record<string, TmdbType>;
 
-// tmdb-data.json is ~330kB — a little under half the bundle back when
-// components imported it directly, and it was parsed as JavaScript rather than
-// as JSON. `?url` keeps it out of the module graph: Vite emits it as a
-// content-hashed asset and hands back the path, so it downloads on its own and
-// goes through the much faster JSON.parse route.
+// tmdb-data.json is ~330kB. Importing it directly would put all of that in the
+// JS bundle, where it is parsed as JavaScript; `?url` keeps it out of the
+// module graph, so Vite emits it as a content-hashed asset and hands back the
+// path. It then downloads on its own and goes through the faster JSON.parse.
 //
-// Cached at module scope so a remount (or StrictMode's double-invoke) reuses
-// the same request instead of issuing a second one.
+// Cached at module scope so a remount, or StrictMode's double-invoke, reuses
+// the one request.
 let inflight: Promise<TmdbMap> | null = null;
 
 export function loadTmdbData(): Promise<TmdbMap> {
@@ -26,9 +25,9 @@ export function loadTmdbData(): Promise<TmdbMap> {
   return inflight;
 }
 
-// Defaults to empty rather than null: consumers already handle a missing entry
-// (MediaWrapper's `has_data`), so anything rendered outside the provider falls
-// back to the existing "couldn't load this title" path instead of crashing.
+// Empty default rather than null. Consumers already handle a missing entry
+// (MediaWrapper's `has_data`), so anything rendered outside the provider lands
+// on the "couldn't load this title" path rather than crashing.
 export const TmdbContext = createContext<TmdbMap>({});
 
 export function useTmdbData() {

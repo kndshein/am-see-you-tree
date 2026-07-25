@@ -41,11 +41,11 @@ $scanline: 9px;
   background-color: $background;
 }
 
-// `content-visibility: auto` on `.media` (index.scss) already stops offscreen
-// cards from animating, but the ~10 cards actually onscreen still paint. The
-// scanlines therefore pan via `transform` on an inner layer rather than via
-// `background-position`, which isn't GPU-composited and repainted this whole
-// (1000px x 100vh) surface every frame.
+// The scanlines pan via `transform` on an inner layer, which the compositor
+// can handle without repainting. `background-position` is not composited and
+// would repaint this whole 1000px x 100vh surface every frame — and while
+// `content-visibility: auto` on `.media` (index.scss) spares offscreen cards,
+// the ~10 onscreen ones would still pay it.
 .screen_overlay {
   position: absolute;
   left: 0px;
@@ -72,7 +72,7 @@ $scanline: 9px;
       transparent $scanline
     );
     background-size: 100% $scanline;
-    // ~45px/s, matching the old 20s-across-the-element rate at ~100vh.
+    // One tile per 0.2s, i.e. ~45px/s.
     animation: pan-overlay 0.2s infinite linear;
   }
 }
@@ -93,11 +93,10 @@ $scanline: 9px;
 //   filter: saturate(125%);
 // }
 
-// `$transition-base` names no property, so it resolved to `all` — which meant
-// expanding a card animated the blur *radius*, re-running the convolution on a
-// 1280px-wide image at a new radius every frame for 0.3s. Restricting the
-// transition to opacity lets the blur apply in one step (rasterized once)
-// while the fade still carries the visual change.
+// Transition opacity only, never `all`. `$transition-base` names no property,
+// so bare use of it would animate the blur *radius* too — re-running the
+// convolution on a 1280px-wide image at a new radius every frame. Applying the
+// blur in one step lets it rasterize once while the fade carries the change.
 .backdrop {
   object-fit: cover;
   width: 100%;

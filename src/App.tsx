@@ -41,9 +41,9 @@ function App() {
     setIsDOMLoaded(true);
   }
 
-  // Runs alongside the DOM-load wait below, not after it. The card data used
-  // to be bundled into the JS, so it was simply present; now it can fail, and
-  // that has to surface as something other than a permanently empty screen.
+  // Runs alongside the DOM-load wait below, not after it. The fetch can fail,
+  // and the gate renders nothing until it resolves, so a failure has to
+  // surface as something other than a permanently empty screen.
   useEffect(() => {
     let cancelled = false;
     loadTmdbData().then(

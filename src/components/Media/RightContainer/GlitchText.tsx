@@ -21,8 +21,8 @@ export default function GlitchText({
   duration = 1,
   delay = 1,
 }: PropTypes) {
-  // Written straight to the DOM: this ticks every frame, and going through
-  // React state re-rendered RightContainer's whole subtree each time.
+  // Written straight to the DOM: this ticks every frame, and React state would
+  // re-render RightContainer's whole subtree each time.
   const ref = useRef<HTMLSpanElement>(null);
   const should_reduce_motion = useReducedMotion();
 
@@ -49,8 +49,8 @@ export default function GlitchText({
     // the animation; the front half is pure scramble/length morph.
     const reveal_start = 0.45;
 
-    // motion owns the timing, delay and cleanup; `progress` arrives already
-    // eased, so this only has to describe what a single frame looks like.
+    // motion owns the timing, delay and cleanup, and `progress` arrives
+    // already eased — this only describes what a single frame looks like.
     const controls = animate(0, 1, {
       duration,
       delay,

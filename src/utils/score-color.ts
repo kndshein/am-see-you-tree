@@ -14,9 +14,9 @@ const HUE_STOPS: Array<[percent: number, hue: number]> = [
   [100, 130],
 ];
 
-// `alpha` lets a caller mute the color without touching the hue ramp — used
-// by the vote chip, which can't just set CSS opacity because its entrance
-// animation writes an inline opacity of its own.
+// `alpha` mutes the color without touching the hue ramp. The vote chip needs
+// it because its entrance animation writes an inline opacity, so CSS opacity
+// isn't available to it.
 export default function scoreColor(percent: number, alpha = 1): string {
   const clamped = Math.max(0, Math.min(100, percent));
 

@@ -79,10 +79,9 @@ export default function MediaList({
   const [active_toggle, setActiveToggle] = useState<ActiveToggleType>(null);
   const tmdb_data = useTmdbData();
 
-  // Release-date order depends on the fetched dates, so it can no longer be
-  // built at module scope. Deriving both lists instead of holding one in state
-  // also means the first render already matches `order_type`, which matters
-  // now that ?order= can select release order before anything mounts.
+  // Release-date order needs the fetched dates, so it has to be built inside
+  // the component. Deriving the list rather than holding it in state keeps the
+  // first render consistent with `order_type`, which ?order= can preselect.
   const media_list_release_date = useMemo(
     () =>
       mergeTvFragments(media_list_chrono).sort((a, b) =>
@@ -129,10 +128,12 @@ export default function MediaList({
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const MAX_ANGLE = 34; // degrees the edge cards rotate inward
-    const SQUISH_X = -0.1; // how much narrower the edge cards get
-    const SHORT_Y = 0.1; // how much shorter the center card gets
-    const MAX_DIST = 1.4; // clamp so far-edge cards don't over-rotate
+    const MAX_ANGLE = 34; // degrees of rotateY per unit of `d`
+    const SQUISH_X = -0.1; // negative, so edge cards render 1.1x wider
+    const SHORT_Y = 0.1; // center card renders 0.9x shorter
+    // Clamps `d`, so the steepest rotation is MAX_DIST * MAX_ANGLE = 47.6deg
+    // and everything past the clamp shares one angle.
+    const MAX_DIST = 1.4;
     let raf = 0;
     let centers: number[] = [];
     // Cards lay out left-to-right, so `centers` ascends and the cards still
@@ -148,8 +149,8 @@ export default function MediaList({
     const transformFor = (d: number) => {
       const ad = Math.abs(d);
       const center = 1 - ad / MAX_DIST; // 1 at center → 0 at edges
-      const scale_x = 1 - SQUISH_X * (1 - center); // sides narrower
-      const scale_y = 1 - SHORT_Y * center; // center shorter
+      const scale_x = 1 - SQUISH_X * (1 - center); // 1.0 at center → 1.1 at edges
+      const scale_y = 1 - SHORT_Y * center; // 0.9 at center → 1.0 at edges
       const angle = -d * MAX_ANGLE;
       // Per-card 3D perspective and rotation without container perspective trap
       return `perspective(1000px) rotateY(${angle.toFixed(
@@ -195,8 +196,9 @@ export default function MediaList({
             : value;
       };
 
-      // While the old and new bands overlap, a card can only have left via the
-      // side it was already nearest, so the two edge ranges cover every change.
+      // While last frame's band and this one overlap, a card can only have left
+      // via the side it was already nearest, so the two edge ranges cover every
+      // change.
       // A disjoint jump (scrollbar drag) breaks that, so redo everything.
       const disjoint = hi <= prev_lo || lo >= prev_hi;
 

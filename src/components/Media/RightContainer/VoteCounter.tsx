@@ -14,10 +14,9 @@ type PropTypes = {
   motion_value: MotionValue<number>; // owned by the parent, which maps it to the live score color
 };
 
-// Counts up from 0% to the actual rating once `play` turns true (the card
-// is actually visible), instead of just fading in a static number. The count
-// lives in a MotionValue and the digits are written straight to the DOM, so
-// none of this re-renders React on a per-frame basis.
+// Counts up from 0% to the actual rating once `play` turns true (i.e. the
+// card is visible). The count lives in a MotionValue and the digits are
+// written straight to the DOM, so nothing here re-renders React per frame.
 export default function VoteCounter({
   value,
   play,
@@ -35,11 +34,10 @@ export default function VoteCounter({
   }, []);
 
   useEffect(() => {
-    // The MotionValue is owned by the parent, so it outlives this component
-    // and still holds the previous run's final score when a card is reopened.
-    // Rewind before doing anything else: otherwise `animate` starts and ends
-    // on the same number, and since a MotionValue only notifies subscribers on
-    // an actual change, nothing would ever overwrite the "0%" below.
+    // The parent owns the MotionValue, so it outlives this component and still
+    // holds the previous run's final score when a card is reopened. Rewind
+    // first: `animate` would otherwise start and end on the same number, and a
+    // MotionValue only notifies on a real change, leaving the "0%" below.
     motion_value.set(0);
     write(0);
 

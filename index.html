@@ -8,11 +8,11 @@
       content="Marvel Cinematic Universe films information in chronological order"
     />
     <!--
-      Typekit (rift, used for h1/h2 and the season numerals). Loaded here rather
-      than via `@import` in index.scss: an @import isn't discovered until the
+      Typekit (rift, for h1/h2 and the season numerals). Keep this here rather
+      than as an @import in index.scss: an @import is only discovered once the
       importing file has been fetched and parsed, which serializes the two
       requests. The app renders on `window load` (App.tsx), so that extra round
-      trip pushed back first content directly.
+      trip delays first content directly.
     -->
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link rel="stylesheet" href="https://use.typekit.net/ncb2bkr.css" />
