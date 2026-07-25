@@ -3,6 +3,10 @@
 .container {
   display: flex;
   flex-flow: column;
+  // The container owns the space between top-level blocks (tagline,
+  // info_group, cast, synopsis, episodes) so no block has to push its
+  // neighbor via its own margin.
+  gap: 26px;
   padding-right: 20px;
   margin-left: $grid-gutter;
   overflow-y: auto;
@@ -36,7 +40,7 @@
 // otherwise left the corner next to it empty. Sits first in the column so it
 // still reads as introducing the vitals below it.
 .tagline {
-  margin: 0 5px 20px 0;
+  margin: 0 5px 0 0;
   color: rgba($white, 0.75);
   font-size: clamp(0.95rem, 1.15vw, 1.15rem);
   font-style: italic;
@@ -107,12 +111,13 @@
   color: rgba($accent-lite, 0.5);
 }
 
-// Names the block that follows it, so the gap above is the separator from the
-// previous block and the gap below is small enough to bind it to its own.
+// Names the block it's in — the space above (from the previous block) now
+// comes from .container's own gap, so this only carries its own small
+// separation from the content it labels.
 .section_label {
   @include field-label;
   display: block;
-  margin: 26px 0 6px;
+  margin: 0 0 6px;
   font-size: 0.7rem;
 }
 

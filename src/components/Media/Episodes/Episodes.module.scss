@@ -11,7 +11,7 @@
   margin: 20px 0 20px 0;
   background-color: rgba($main, 0.5);
   border-radius: $radius-sm;
-  font-size: clamp(1rem, 0.8vw, 1.2rem);
+  font-size: clamp(0.85rem, 0.65vw, 1rem);
 }
 
 .episode_container:first-child {
@@ -51,6 +51,16 @@
 .name {
   font-weight: inherit;
   color: white;
+}
+
+// Score-driven color only (no count-up here, unlike the card's own Rating
+// field) — mono readout font sets it apart from the episode title beside it.
+.episode_rating {
+  margin-left: 8px;
+  font-family: $accent-text;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  font-weight: 400;
 }
 
 .overview {

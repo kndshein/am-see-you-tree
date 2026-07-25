@@ -15,6 +15,8 @@ export interface Episode {
   name: string;
   overview: string;
   runtime?: number | null;
+  vote_average?: number;
+  vote_count?: number;
 }
 
 export interface SeasonData {

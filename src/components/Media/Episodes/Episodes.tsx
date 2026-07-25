@@ -4,6 +4,7 @@ import { ShowType } from '../../../types/Media';
 import { motion } from 'motion/react';
 import { calculateDelay } from '../../../utils/utils';
 import { entry_soft } from '../../../utils/motion';
+import scoreColor from '../../../utils/score-color';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -38,6 +39,10 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
     >
       {episodesList.map((ele: Episode, idx: number) => {
         const stillPath = ele.still_path || seasonData?.poster_path;
+        const episode_percent = ele.vote_count
+          ? Math.round((ele.vote_average ?? 0) * 10)
+          : null;
+
         return (
           <motion.section
             className={styles.episode_container}
@@ -59,6 +64,14 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
                   className={styles.number}
                 >{`Season ${ele.season_number}, Episode ${ele.episode_number} - `}</span>
                 <span className={styles.name}>{ele.name}</span>
+                {episode_percent !== null && (
+                  <span
+                    className={styles.episode_rating}
+                    style={{ color: scoreColor(episode_percent) }}
+                  >
+                    {episode_percent}%
+                  </span>
+                )}
               </div>
               <p className={styles.overview}>{ele.overview}</p>
             </div>

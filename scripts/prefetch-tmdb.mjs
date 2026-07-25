@@ -143,6 +143,8 @@ function trim(item, full) {
           // Per-episode, so a partial season (epiStart..epiEnd) can be totalled
           // accurately rather than assumed from an average.
           runtime: ep.runtime,
+          vote_average: ep.vote_average || undefined,
+          vote_count: ep.vote_count || undefined,
         })),
       };
     }
