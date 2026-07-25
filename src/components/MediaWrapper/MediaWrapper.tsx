@@ -14,7 +14,7 @@ import Season from './Season/Season';
 import Reticle from './Reticle/Reticle';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
-import tmdb_data_map from '../../assets/tmdb-data.json';
+import { useTmdbData } from '../../utils/tmdb-data';
 
 type PropTypes = {
   media_data: MediaType;
@@ -50,11 +50,12 @@ export default function MediaWrapper({
   const media_ui_type: MediaUiType =
     media_data.type === 'tv' ? 'show' : media_data.type;
 
+  const tmdb_data_map = useTmdbData();
   const tmdb_key =
     media_data.type === 'tv'
       ? `${media_data.id}__season${media_data.season}`
       : media_data.id;
-  const data: TmdbType = (tmdb_data_map as Record<string, TmdbType>)[tmdb_key];
+  const data: TmdbType = tmdb_data_map[tmdb_key];
   const has_data = !!data;
 
   const is_ready = is_active || inView;

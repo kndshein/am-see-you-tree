@@ -121,6 +121,14 @@ code {
   box-sizing: border-box;
 }
 
+.load_error {
+  margin: auto;
+  color: $main-lite;
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
 .order_type_btn {
   cursor: pointer;
   background: none;

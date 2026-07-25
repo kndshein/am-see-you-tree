@@ -1,12 +1,18 @@
-import { Fragment, useState, useRef, RefObject, useEffect } from 'react';
+import {
+  Fragment,
+  useState,
+  useRef,
+  RefObject,
+  useEffect,
+  useMemo,
+} from 'react';
 import { MediaType, ShowType } from '../../types/Media';
-import { TmdbType } from '../../types/Tmdb';
 import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
 import media_list_json from '../../assets/media-list.json';
-import tmdb_data_map from '../../assets/tmdb-data.json';
 import styles from './MediaList.module.scss';
 import { isElementInViewport } from '../../utils/utils';
+import { useTmdbData, TmdbMap } from '../../utils/tmdb-data';
 import { OrderType } from '../../App';
 
 type PropTypes = {
@@ -24,10 +30,10 @@ const media_list_chrono_reversed = [
 // tmdb-data.json has the dates but no ordering of its own (it's a plain
 // id-keyed lookup). Release-date order needs both: look each item's date up
 // by the same id/id__seasonN key MediaWrapper uses, then sort by it.
-function releaseDateOf(ele: MediaType): string {
+function releaseDateOf(ele: MediaType, tmdb_data: TmdbMap): string {
   const tmdb_key =
     ele.type === 'tv' ? `${ele.id}__season${ele.season}` : ele.id;
-  const data = (tmdb_data_map as Record<string, TmdbType>)[tmdb_key];
+  const data = tmdb_data[tmdb_key];
   if (!data) return '';
   return ele.type === 'tv'
     ? (data[`season/${ele.season}`]?.air_date ?? '')
@@ -65,17 +71,37 @@ function mergeTvFragments(list: Array<MediaType>): Array<MediaType> {
   return merged;
 }
 
-const media_list_release_date = mergeTvFragments(media_list_chrono).sort(
-  (a, b) => releaseDateOf(a).localeCompare(releaseDateOf(b)),
-);
-
 export default function MediaList({
   is_movies_only,
   order_type,
   media_list_ref,
 }: PropTypes) {
   const [active_toggle, setActiveToggle] = useState<ActiveToggleType>(null);
-  const [media_list, setMediaList] = useState(media_list_chrono);
+  const tmdb_data = useTmdbData();
+
+  // Release-date order depends on the fetched dates, so it can no longer be
+  // built at module scope. Deriving both lists instead of holding one in state
+  // also means the first render already matches `order_type`, which matters
+  // now that ?order= can select release order before anything mounts.
+  const media_list_release_date = useMemo(
+    () =>
+      mergeTvFragments(media_list_chrono).sort((a, b) =>
+        releaseDateOf(a, tmdb_data).localeCompare(releaseDateOf(b, tmdb_data)),
+      ),
+    [tmdb_data],
+  );
+
+  const media_list = useMemo(() => {
+    switch (order_type) {
+      case 'Reverse Chronological':
+        return media_list_chrono_reversed;
+      case 'Release Date':
+        return media_list_release_date;
+      default:
+        return media_list_chrono;
+    }
+  }, [order_type, media_list_release_date]);
+
   const active_toggle_ref = useRef(active_toggle);
   const cards_ref = useRef<HTMLElement[]>([]);
   const apply_ref = useRef<(full?: boolean) => void>(() => {});
@@ -94,20 +120,6 @@ export default function MediaList({
 
     setActiveToggle(id === active_toggle ? null : id);
   };
-
-  useEffect(() => {
-    switch (order_type) {
-      case 'Chronological':
-        setMediaList(media_list_chrono);
-        break;
-      case 'Reverse Chronological':
-        setMediaList(media_list_chrono_reversed);
-        break;
-      case 'Release Date':
-        setMediaList(media_list_release_date);
-        break;
-    }
-  }, [order_type]);
 
   // Per-card 3D concave "visor" curve:
   // Each card receives per-card perspective & rotateY so background cards keep their
