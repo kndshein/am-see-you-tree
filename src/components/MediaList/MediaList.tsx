@@ -11,7 +11,6 @@ import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
 import media_list_json from '../../assets/media-list.json';
 import styles from './MediaList.module.scss';
-import { isElementInViewport } from '../../utils/utils';
 import { useTmdbData, TmdbMap } from '../../utils/tmdb-data';
 import { OrderType } from '../../App';
 
@@ -110,13 +109,6 @@ export default function MediaList({
   }, [active_toggle]);
 
   const handleToggle: HandleToggleType = (id) => {
-    const ele_active_to_be = document.getElementById(id.toString());
-
-    // Bring the toggled card into view if it isn't already.
-    if (!!ele_active_to_be && !isElementInViewport(ele_active_to_be)) {
-      ele_active_to_be.scrollIntoView({ behavior: 'smooth' });
-    }
-
     setActiveToggle(id === active_toggle ? null : id);
   };
 
@@ -313,6 +305,27 @@ export default function MediaList({
       cards_ref.current.forEach((c) => (c.style.transform = ''));
     };
   }, [media_list_ref, media_list, is_movies_only]);
+
+  // An opened card lifts out into a fullscreen overlay, so slide the gap it
+  // leaves behind into the middle of the rail. Runs after the state change, so
+  // the rail is already locked (overflow: hidden) and the animation isn't
+  // started under one overflow mode and finished under another — programmatic
+  // scrolling still works while locked, which is what keeps the user out of it.
+  // scrollTo clamps to the scrollable range itself, so cards near either end
+  // settle as close to centre as that side allows.
+  useEffect(() => {
+    if (active_toggle === null) return;
+    const el = media_list_ref.current;
+    // Cards are keyed by their index in the unfiltered list, which isn't their
+    // position among the rendered ones, so this can't index into cards_ref.
+    const card = document.getElementById(active_toggle.toString());
+    if (!el || !card) return;
+
+    el.scrollTo({
+      left: card.offsetLeft + card.offsetWidth / 2 - el.clientWidth / 2,
+      behavior: 'smooth',
+    });
+  }, [active_toggle, media_list_ref]);
 
   // Re-apply the curve (without remeasuring or touching listeners) when the
   // active card changes, so toggling doesn't flash every card flat first.
