@@ -3,6 +3,9 @@
 // matching annotated git tag — so neither of those is ever hand-maintained and
 // they can't drift from the notes.
 //
+// Only runs on the release branch: a tag cut from a feature branch names a
+// commit that may never reach main.
+//
 // Does not push. Tags are hard to retract once shared, so that stays manual.
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -13,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PATCH_NOTES_PATH = resolve(root, 'src/assets/patch-notes.json');
 const PACKAGE_PATH = resolve(root, 'package.json');
+const RELEASE_BRANCH = 'main';
 
 const git = (...args) =>
   execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
@@ -39,6 +43,14 @@ if (!/^\d+\.\d+\.\d+$/.test(version)) {
 const tag = `v${version}`;
 
 // --- refuse to tag something that isn't what's committed ---------------------
+
+const branch = git('rev-parse', '--abbrev-ref', 'HEAD');
+if (branch !== RELEASE_BRANCH) {
+  fail(
+    `on "${branch}" — releases are only cut from "${RELEASE_BRANCH}".\n` +
+      'Merge first, then run this again.',
+  );
+}
 
 // The tag points at HEAD, so uncommitted work would not be part of the release
 // it claims to name. package.json is exempt because this script rewrites it.
