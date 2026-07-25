@@ -5,6 +5,7 @@ import Genres from '../Genres/Genres';
 import { motion, AnimationDefinition } from 'motion/react';
 import { container } from '../Media';
 import { entry_vertical } from '../../../utils/motion';
+import { compactCurrency } from '../../../utils/format';
 import { MediaType } from '../../../types/Media';
 
 type PropTypes = {
@@ -42,6 +43,14 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
         variants={entry_vertical}
         onAnimationComplete={handlePosterAnimationComplete}
       >
+        {/* Certificates belong on posters, and it's the one field that is
+            always three to five characters — it fits a corner cleanly where it
+            crowded the vitals row. */}
+        {tmdb_data.certification && (
+          <span className={styles.certification}>
+            {tmdb_data.certification}
+          </span>
+        )}
         {poster_path && (
           <motion.img
             src={poster_path}
@@ -52,6 +61,26 @@ export default function LeftContainer({ tmdb_data, media_data }: PropTypes) {
           />
         )}
       </motion.div>
+      {/* Real content, so it sits in the column proper rather than on the
+          record strip — but small, because it's reference rather than headline.
+          TMDB has no figures for most shows and shorts; the block is dropped
+          entirely rather than showing zeroes. */}
+      {(tmdb_data.budget || tmdb_data.revenue) && (
+        <motion.section className={styles.finances} variants={entry_vertical}>
+          {tmdb_data.budget && (
+            <span className={styles.finance_row}>
+              <span className={styles.finance_label}>Budget</span>
+              <span>{compactCurrency(tmdb_data.budget)}</span>
+            </span>
+          )}
+          {tmdb_data.revenue && (
+            <span className={styles.finance_row}>
+              <span className={styles.finance_label}>Box Office</span>
+              <span>{compactCurrency(tmdb_data.revenue)}</span>
+            </span>
+          )}
+        </motion.section>
+      )}
       {/* start_idx: 1 reserves color-stagger slot 0 for the poster above,
           so the genre color cascade picks up chronologically after it */}
       <Genres genres={tmdb_data.genres} start_idx={1} />

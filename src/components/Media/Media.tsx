@@ -62,7 +62,9 @@ export default function Media({
       />
       {/* Absolutely positioned, so it escapes the grid and anchors to .content
           — but it lives here to inherit this section's variant orchestration. */}
-      {is_active && <Record media_data={media_data} />}
+      {is_active && (
+        <Record media_data={media_data} tmdb_data={tmdb_data} />
+      )}
     </motion.section>
   );
 }

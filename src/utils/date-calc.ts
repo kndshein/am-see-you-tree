@@ -26,7 +26,9 @@ export default function dateCalc(date_str?: string): string {
 
   if (!month) return date_str;
 
-  return `${day}.${month}.${year}`;
+  // Space-separated rather than dot-separated: a labelled field sits next to
+  // other labelled fields, and dots inside the value blur where one ends.
+  return `${day} ${month} ${year}`;
 }
 
 // Seconds-since-epoch representation of the same date, used as the

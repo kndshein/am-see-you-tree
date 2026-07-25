@@ -183,12 +183,19 @@ for (const tmdb_path of wanted) {
     ]),
   );
 
+  const graded_path = resolve(OUT_DIR, variants.graded.file);
   const paths = Object.values(variants).map((v) => resolve(OUT_DIR, v.file));
   const present = await Promise.all(paths.map(exists));
 
   // Output is keyed by the source path, and TMDB filenames are per-upload — so
   // an existing file is by definition still correct for that source.
   if (!force && present.every(Boolean)) {
+    // Still record the real dimensions — the card prints them, so they have to
+    // come from the file rather than from the target constants above (a small
+    // source is left at its own size).
+    const { width, height } = await sharp(graded_path).metadata();
+    manifest[tmdb_path].width = width;
+    manifest[tmdb_path].height = height;
     skipped++;
     continue;
   }
@@ -224,9 +231,15 @@ for (const tmdb_path of wanted) {
     if (recomb) pipeline = pipeline.recomb(recomb);
     if (blur) pipeline = pipeline.blur(blur);
 
-    const output = await pipeline.webp({ quality: WEBP_QUALITY }).toBuffer();
-    await writeFile(resolve(OUT_DIR, file), output);
-    bytes_out += output.length;
+    const { data, info } = await pipeline
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer({ resolveWithObject: true });
+    await writeFile(resolve(OUT_DIR, file), data);
+    bytes_out += data.length;
+    if (file === variants.graded.file) {
+      manifest[tmdb_path].width = info.width;
+      manifest[tmdb_path].height = info.height;
+    }
   }
 
   processed++;

@@ -1,15 +1,18 @@
 @use '../../../sass/variables.scss' as *;
 
-// Sits in the Media grid's bottom padding (Media.module.scss reserves 40px),
-// aligned to its right edge rather than the title strip on the left. Motion
-// owns the reveal (Record.tsx), so no opacity transition here.
+// Sits in the Media grid's bottom padding (Media.module.scss reserves 40px).
+// Spans both edges — inset past the 80px strip the rotated title occupies — so
+// the two groups have something to push apart from. Motion owns the reveal
+// (Record.tsx), so no opacity transition here.
 .record {
   position: absolute;
+  left: 80px;
   right: 30px;
   bottom: 14px;
   display: flex;
   flex-flow: row wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: flex-end;
   gap: 4px 18px;
   font-family: $accent-text;
   font-size: 11px;
@@ -19,6 +22,17 @@
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
+}
+
+.group {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 4px 18px;
+}
+
+// Keeps the right-hand pair hugging the right edge if it wraps.
+.group_end {
+  justify-content: flex-end;
 }
 
 // Same reason as the HUD: the global `*` rule matches these spans directly and

@@ -4,6 +4,7 @@ import { MediaType } from '../../../types/Media';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
 import scoreColor from '../../../utils/score-color';
+import { compactCount } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
 import { entry } from '../../../utils/motion';
@@ -18,14 +19,6 @@ type PropTypes = {
   is_active: boolean;
   is_content_expanded: boolean;
 };
-
-// A raw five-digit count sitting beside a percentage reads as a second, larger
-// score. Abbreviating keeps it obviously subordinate.
-function compactCount(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}m`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}k`;
-  return String(count);
-}
 
 export default function RightContainer({
   tmdb_data,
@@ -53,6 +46,13 @@ export default function RightContainer({
   // whole subtree (cast, Overview, Episodes).
   const vote_value = useMotionValue(0);
   const vote_color = useTransform(vote_value, (latest) => scoreColor(latest));
+
+  // Stored comma-joined (two directors is common), split back out so each gets
+  // its own pill alongside the cast.
+  const authors = (tmdb_data.author ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
 
   return (
     <motion.section
@@ -127,21 +127,38 @@ export default function RightContainer({
               </>
             )}
           </motion.section>
-          <motion.section className={styles.cast} variants={element}>
-            {(tmdb_data.credits?.cast ?? [])
-              .slice(0, 5)
-              .map((actor: CastMember, idx: number) => {
-                return (
-                  <motion.span
-                    className={styles.actor}
-                    key={actor.name || idx}
-                    variants={element}
-                  >
-                    {actor.name}
-                  </motion.span>
-                );
-              })}
-          </motion.section>
+          {/* One list of people: whoever made it, then who's in it. The label
+              shares a variant child with the pills so it doesn't arrive a
+              stagger step ahead of them. */}
+          <motion.div variants={element}>
+            <span className={styles.section_label}>
+              {media_data.type === 'tv' ? 'Creators & Cast' : 'Directors & Cast'}
+            </span>
+            <section className={styles.cast}>
+              {authors.map((name) => (
+                <motion.span
+                  className={`${styles.actor} ${styles.director}`}
+                  key={`author-${name}`}
+                  variants={element}
+                >
+                  {name}
+                </motion.span>
+              ))}
+              {(tmdb_data.credits?.cast ?? [])
+                .slice(0, 5)
+                .map((actor: CastMember, idx: number) => {
+                  return (
+                    <motion.span
+                      className={styles.actor}
+                      key={actor.name || idx}
+                      variants={element}
+                    >
+                      {actor.name}
+                    </motion.span>
+                  );
+                })}
+            </section>
+          </motion.div>
           {/* Label and content share one variant child, so they enter together
               instead of the label arriving a stagger step ahead of what it
               names. Every entry has overview text, so this needs no guard. */}

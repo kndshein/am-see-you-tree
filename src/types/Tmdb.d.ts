@@ -33,6 +33,15 @@ export interface TmdbType {
   vote_average: number;
   vote_count?: number;
   release_date?: string;
+  // US age rating.
+  certification?: string;
+  imdb_id?: string;
+  original_language?: string;
+  // Director for films, creator(s) for shows.
+  author?: string;
+  // Films only, and absent when TMDB has no figure.
+  budget?: number;
+  revenue?: number;
   runtime?: number;
   genres: Genre[];
   credits: {

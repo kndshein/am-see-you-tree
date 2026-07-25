@@ -8,6 +8,7 @@
 }
 
 .poster {
+  position: relative;
   width: 100%;
   overflow: hidden;
   background-color: $accent-lite;
@@ -17,6 +18,50 @@
 .poster img {
   object-fit: contain;
   width: 100%;
+}
+
+// Label and figure pushed to opposite edges so the numbers align in a column,
+// which is what makes two rows readable at this size.
+// $block-gap is shared with .genres so the poster / finances / genres stack
+// sits on one rhythm. Set just above the 10px that separates rows *inside* a
+// block, which is enough to read as a break between blocks without the column
+// feeling loose.
+.finances {
+  margin-top: $block-gap;
+  font-family: $accent-text;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: $accent-lite;
+}
+
+.finance_row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.finance_label {
+  @include field-label;
+  font-size: 0.75em;
+}
+
+// No border: it sits over artwork, and the backing plate is enough to separate
+// it. Dimmed so it reads as a stamp on the poster rather than a value competing
+// with the vitals row. Top-left because poster art almost always carries title
+// and billing text along the bottom.
+.certification {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 1;
+  padding: 4px 8px 3px;
+  font-family: $accent-text;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: rgba($accent-lite, 0.72);
+  background-color: rgba($background, 0.72);
+  border-radius: $radius-sm;
 }
 
 @media only screen and (max-width: 500px) {

@@ -1,10 +1,13 @@
 import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
+import { TmdbType } from '../../../types/Tmdb';
+import { backdropVariantsOf } from '../../../utils/backdrop';
 import { entry } from '../../../utils/motion';
 import styles from './Record.module.scss';
 
 type PropTypes = {
   media_data: MediaType;
+  tmdb_data: TmdbType;
 };
 
 const pad = (value: number, width = 2) => String(value).padStart(width, '0');
@@ -15,7 +18,7 @@ const pad = (value: number, width = 2) => String(value).padStart(width, '0');
 //
 // No `animate` of its own: it sits in Media's variant tree and inherits the
 // visible/hidden label and the stagger timing from it.
-export default function Record({ media_data }: PropTypes) {
+export default function Record({ media_data, tmdb_data }: PropTypes) {
   // Ids are `<tmdb id>-<slug>`, e.g. 1771-captain-america-the-first-avenger.
   // Falls back to the whole string if an id ever lands without the prefix.
   const [tmdb_id] = media_data.id.split('-');
@@ -27,6 +30,10 @@ export default function Record({ media_data }: PropTypes) {
         )}`
       : media_data.type;
 
+  // Dimensions come off the generated file (see the manifest), so this reports
+  // what was actually shipped rather than what the pipeline aimed for.
+  const backdrop = backdropVariantsOf(media_data, tmdb_data);
+
   return (
     <motion.div
       className={styles.record}
@@ -36,13 +43,39 @@ export default function Record({ media_data }: PropTypes) {
         hidden: {},
       }}
     >
-      <motion.span variants={entry}>
-        <span className={styles.key}>ID</span>TMDB.{tmdb_id}
-      </motion.span>
-      <motion.span variants={entry}>
-        <span className={styles.key}>CLS</span>
-        {classification}
-      </motion.span>
+      {/* Two groups pushed to opposite ends: what the entry *is* on the left,
+          how it was *rendered* on the right. The wrappers are plain spans, so
+          variant propagation still reaches each field directly and the stagger
+          runs across all five in order. */}
+      <span className={styles.group}>
+        <motion.span variants={entry}>
+          <span className={styles.key}>ID</span>TMDB.{tmdb_id}
+        </motion.span>
+        <motion.span variants={entry}>
+          <span className={styles.key}>CLS</span>
+          {classification}
+        </motion.span>
+        {tmdb_data.imdb_id && (
+          <motion.span variants={entry}>
+            <span className={styles.key}>IMDB</span>
+            {tmdb_data.imdb_id}
+          </motion.span>
+        )}
+      </span>
+      <span className={`${styles.group} ${styles.group_end}`}>
+        {tmdb_data.original_language && (
+          <motion.span variants={entry}>
+            <span className={styles.key}>LANG</span>
+            {tmdb_data.original_language}
+          </motion.span>
+        )}
+        {backdrop && (
+          <motion.span variants={entry}>
+            <span className={styles.key}>IMG</span>
+            {backdrop.width}&times;{backdrop.height} WEBP
+          </motion.span>
+        )}
+      </span>
     </motion.div>
   );
 }

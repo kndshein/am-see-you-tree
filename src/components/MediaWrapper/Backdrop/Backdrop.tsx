@@ -2,9 +2,7 @@ import Loading from '../../Loading/Loading';
 import styles from './Backdrop.module.scss';
 import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
-import backdrop_manifest from '../../../assets/backdrops.json';
-
-type BackdropVariants = { graded: string; plain: string; blurred: string };
+import { backdropPathOf, backdropVariantsOf } from '../../../utils/backdrop';
 
 interface Props {
   data: any;
@@ -25,26 +23,15 @@ export default function Backdrop({
   has_been_hovered,
   is_active,
 }: Props) {
-  let backdrop_path = data.poster_path;
-  if (data.backdrop_path) {
-    backdrop_path = data.backdrop_path;
-    if (media_data.type == 'tv') {
-      const alt_backdrop_path = data.images.backdrops[media_data.season - 1];
-      backdrop_path = alt_backdrop_path
-        ? alt_backdrop_path.file_path
-        : data.backdrop_path;
-    }
-  }
   // Prefer the locally processed images: cropped to the shape this box actually
   // paints (so nothing is enlarged) and with the card grade already baked in,
   // which is why no CSS filter runs here any more. Falls back to TMDB if
   // scripts/process-backdrops.mjs hasn't produced one — a missing file would
   // otherwise leave the card permanently un-loaded.
-  const local = (backdrop_manifest as Record<string, BackdropVariants>)[
-    backdrop_path
-  ];
+  const local = backdropVariantsOf(media_data, data);
   const backdrop_src =
-    local?.graded ?? `https://image.tmdb.org/t/p/w1280${backdrop_path}`;
+    local?.graded ??
+    `https://image.tmdb.org/t/p/w1280${backdropPathOf(media_data, data)}`;
 
   return (
     <>

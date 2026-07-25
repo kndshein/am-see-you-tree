@@ -33,8 +33,12 @@ function sanitizeMediaId(id) {
 
 function buildUrl(item, apiKey) {
   const media_type = item.type === 'tv' ? 'tv' : 'movie';
+  // `release_dates` / `content_ratings` carry the age certification, which
+  // lives nowhere else on the main response.
   const append =
-    item.type === 'tv' ? `,season/${item.season},images` : ',collection';
+    item.type === 'tv'
+      ? `,season/${item.season},images,content_ratings,external_ids`
+      : ',collection,release_dates';
   const id = sanitizeMediaId(item.id);
   return (
     `https://api.themoviedb.org/3/${media_type}/${id}` +
@@ -55,6 +59,34 @@ async function fetchOne(item, apiKey) {
 // total (full cast, keywords, collections, etc.); trimming drops that to a
 // bundle-friendly size. If a component starts reading a new field, add it here
 // and re-run `npm run prefetch`.
+// US age certification. Movies file it per-release under `release_dates`;
+// shows keep a single rating per country under `content_ratings`.
+function certificationOf(item, full) {
+  if (item.type === 'tv') {
+    const us = (full.content_ratings?.results ?? []).find(
+      (row) => row.iso_3166_1 === 'US',
+    );
+    return us?.rating || undefined;
+  }
+  const us = (full.release_dates?.results ?? []).find(
+    (row) => row.iso_3166_1 === 'US',
+  );
+  const rated = (us?.release_dates ?? []).find((r) => r.certification);
+  return rated?.certification || undefined;
+}
+
+// Movies credit a director; shows credit whoever created them.
+function authorOf(item, full) {
+  if (item.type === 'tv') {
+    const names = (full.created_by ?? []).map((person) => person.name);
+    return names.length ? names.join(', ') : undefined;
+  }
+  const directors = (full.credits?.crew ?? [])
+    .filter((person) => person.job === 'Director')
+    .map((person) => person.name);
+  return directors.length ? directors.join(', ') : undefined;
+}
+
 function trim(item, full) {
   const trimmed = {
     poster_path: full.poster_path,
@@ -67,6 +99,14 @@ function trim(item, full) {
     vote_count: full.vote_count,
     release_date: full.release_date,
     runtime: full.runtime,
+    certification: certificationOf(item, full),
+    imdb_id: full.imdb_id || full.external_ids?.imdb_id || undefined,
+    original_language: full.original_language || undefined,
+    author: authorOf(item, full),
+    // Movie-only, and frequently 0 when TMDB simply doesn't have the figure —
+    // left undefined in that case so the card can omit the field entirely.
+    budget: full.budget || undefined,
+    revenue: full.revenue || undefined,
     genres: (full.genres ?? []).map(({ id, name }) => ({ id, name })),
     credits: {
       cast: (full.credits?.cast ?? []).slice(0, 5).map(({ name }) => ({ name })),
