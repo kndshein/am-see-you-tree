@@ -1,7 +1,7 @@
 {
   "name": "am-see-you-v2",
   "private": true,
-  "version": "4.9.0",
+  "version": "4.9.3",
   "type": "module",
   "scripts": {
     "prefetch": "node scripts/prefetch-tmdb.mjs",
@@ -9,7 +9,8 @@
     "dev": "vite",
     "prebuild": "npm run prefetch",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "@fontsource/monaspace-krypton": "^5.3.0",

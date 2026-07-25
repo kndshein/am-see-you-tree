@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Nav from './components/Nav/Nav';
 import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
 import { MotionConfig } from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
+import { buildMediaList, countMedia } from './utils/media-lists';
 
 Modal.setAppElement('#root');
 
@@ -70,6 +71,14 @@ function App() {
 
   const order_type = order_types[order_index];
 
+  // Built through the same helper the rail uses, so the HUD tally always
+  // describes exactly what is on screen — including release-date order, which
+  // merges TV fragments and so shows fewer cards than the other two.
+  const counts = useMemo(
+    () => countMedia(buildMediaList(order_type, tmdb_data ?? {}), is_movies_only),
+    [order_type, tmdb_data, is_movies_only],
+  );
+
   return (
     <MotionConfig reducedMotion="user">
       {is_DOM_loaded && has_load_error && (
@@ -101,7 +110,7 @@ function App() {
               is_movies_only={is_movies_only}
               order_type={order_type}
             />
-            <Hud />
+            <Hud counts={counts} />
           </main>
         </TmdbContext.Provider>
       )}

@@ -6,12 +6,11 @@ import {
   useEffect,
   useMemo,
 } from 'react';
-import { MediaType, ShowType } from '../../types/Media';
 import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
-import media_list_json from '../../assets/media-list.json';
 import styles from './MediaList.module.scss';
-import { useTmdbData, TmdbMap } from '../../utils/tmdb-data';
+import { useTmdbData } from '../../utils/tmdb-data';
+import { buildMediaList, isShown } from '../../utils/media-lists';
 import { OrderType } from '../../App';
 
 type PropTypes = {
@@ -19,56 +18,6 @@ type PropTypes = {
   order_type: OrderType;
   media_list_ref: RefObject<HTMLDivElement | null>;
 };
-
-const media_list_chrono = media_list_json as Array<MediaType>;
-const media_list_chrono_reversed = [
-  ...media_list_json,
-].reverse() as Array<MediaType>;
-
-// media-list.json has no date fields (it's just the curated viewing order);
-// tmdb-data.json has the dates but no ordering of its own (it's a plain
-// id-keyed lookup). Release-date order needs both: look each item's date up
-// by the same id/id__seasonN key MediaWrapper uses, then sort by it.
-function releaseDateOf(ele: MediaType, tmdb_data: TmdbMap): string {
-  const tmdb_key =
-    ele.type === 'tv' ? `${ele.id}__season${ele.season}` : ele.id;
-  const data = tmdb_data[tmdb_key];
-  if (!data) return '';
-  return ele.type === 'tv'
-    ? (data[`season/${ele.season}`]?.air_date ?? '')
-    : (data.release_date ?? '');
-}
-
-// A season can appear as several entries in media-list.json when a movie was
-// watched partway through it (e.g. eps 1-7, then a movie, then eps 8-16).
-// That split only reflects viewing order, so for release-date order we merge
-// same show/season entries back into one card spanning their combined
-// episode range.
-function mergeTvFragments(list: Array<MediaType>): Array<MediaType> {
-  const merged: Array<MediaType> = [];
-  const season_idx = new Map<string, number>();
-
-  for (const ele of list) {
-    if (ele.type !== 'tv') {
-      merged.push(ele);
-      continue;
-    }
-
-    const key = `${ele.id}__season${ele.season}`;
-    const existing_idx = season_idx.get(key);
-    if (existing_idx === undefined) {
-      season_idx.set(key, merged.length);
-      merged.push({ ...ele });
-      continue;
-    }
-
-    const existing = merged[existing_idx] as ShowType;
-    existing.epiStart = Math.min(existing.epiStart, ele.epiStart);
-    existing.epiEnd = Math.max(existing.epiEnd, ele.epiEnd);
-  }
-
-  return merged;
-}
 
 export default function MediaList({
   is_movies_only,
@@ -81,24 +30,10 @@ export default function MediaList({
   // Release-date order needs the fetched dates, so it has to be built inside
   // the component. Deriving the list rather than holding it in state keeps the
   // first render consistent with `order_type`, which ?order= can preselect.
-  const media_list_release_date = useMemo(
-    () =>
-      mergeTvFragments(media_list_chrono).sort((a, b) =>
-        releaseDateOf(a, tmdb_data).localeCompare(releaseDateOf(b, tmdb_data)),
-      ),
-    [tmdb_data],
+  const media_list = useMemo(
+    () => buildMediaList(order_type, tmdb_data),
+    [order_type, tmdb_data],
   );
-
-  const media_list = useMemo(() => {
-    switch (order_type) {
-      case 'Reverse Chronological':
-        return media_list_chrono_reversed;
-      case 'Release Date':
-        return media_list_release_date;
-      default:
-        return media_list_chrono;
-    }
-  }, [order_type, media_list_release_date]);
 
   const active_toggle_ref = useRef(active_toggle);
   const cards_ref = useRef<HTMLElement[]>([]);
@@ -379,7 +314,7 @@ export default function MediaList({
   }, [media_list_ref]);
 
   const visible_media_length = media_list.filter(
-    (ele) => ele.type === 'movie' || !is_movies_only,
+    (ele) => isShown(ele, is_movies_only),
   ).length;
 
   return (
@@ -392,7 +327,7 @@ export default function MediaList({
       {(() => {
         let display_idx = -1;
         return media_list.map((ele, idx) => {
-          const shouldShow = ele.type === 'movie' || !is_movies_only;
+          const shouldShow = isShown(ele, is_movies_only);
           if (!shouldShow) return null;
           display_idx += 1;
 

@@ -135,3 +135,42 @@ $corner-inset: 14px;
   font-size: 11px;
   color: $hud;
 }
+
+// Sits inboard of the left rail and clear of the bottom-left corner bracket.
+.readout {
+  position: absolute;
+  left: 60px;
+  bottom: 22px;
+  display: flex;
+  flex-flow: column;
+  gap: 3px;
+  font-size: 11px;
+  color: $hud;
+}
+
+.readout_total {
+  margin-bottom: 3px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid $hud-dim;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.readout_row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 108px;
+}
+
+.readout_value {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+// Mirrors .readout across the viewport, inboard of the right rail.
+.version {
+  position: absolute;
+  right: 60px;
+  bottom: 22px;
+  font-size: 11px;
+  color: $hud;
+}

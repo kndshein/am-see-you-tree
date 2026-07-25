@@ -130,13 +130,32 @@ code {
 }
 
 .order_type_btn {
+  position: relative;
   cursor: pointer;
   background: none;
   border: none;
-  border-bottom: 1px solid $accent;
   color: $accent-lite;
   padding: 5px;
   transition: 0.1s linear;
+
+  // The button is a stretched flex item, so it spans the full width and a
+  // plain border-bottom would run straight across the HUD's side rails and
+  // corner brackets. Fading both ends keeps the rule clear of them.
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      $accent 25%,
+      $accent 75%,
+      transparent
+    );
+  }
 
   &:hover {
     color: white;
