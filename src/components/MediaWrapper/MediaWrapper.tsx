@@ -8,7 +8,7 @@ import Backdrop from './Backdrop/Backdrop';
 import React, { useState } from 'react';
 import Index from './Index/Index';
 import styles from './MediaWrapper.module.scss';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
 import Reticle from './Reticle/Reticle';
@@ -101,18 +101,20 @@ export default function MediaWrapper({
             is_active ? styles.active : ''
           } ${is_content_expanded ? styles.expanded_layout : ''}`}
         >
-          {is_content_expanded && (
-            <motion.div
-              className={styles.overlay}
-              animate={{
-                opacity: 1,
-                transition: {
-                  duration: 0.7,
-                },
-              }}
-              initial={{ opacity: 0 }}
-            ></motion.div>
-          )}
+          <AnimatePresence>
+            {is_content_expanded && (
+              <motion.div
+                key="overlay"
+                className={styles.overlay}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                // Previously this popped out with no fade, because the
+                // conditional unmounted it immediately.
+                exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                transition={{ duration: 0.7 }}
+              ></motion.div>
+            )}
+          </AnimatePresence>
           <motion.div
             className={styles.content}
             layout
@@ -187,7 +189,11 @@ export default function MediaWrapper({
               is_content_expanded={is_content_expanded}
             />
           </motion.div>
-          {is_active && <Reticle is_expanded={is_content_expanded} />}
+          <AnimatePresence>
+            {is_active && (
+              <Reticle key="reticle" is_expanded={is_content_expanded} />
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

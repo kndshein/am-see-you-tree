@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
-import { cubicBezier } from 'motion/react';
+import { useEffect, useRef } from 'react';
+import { animate, useReducedMotion } from 'motion/react';
 
 const GLITCH_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.:';
-// Same ease-out curve as RatingCounter: slows down at the end.
-const ease_out = cubicBezier(0.33, 1, 0.68, 1);
 
 type PropTypes = {
   final_text: string;
@@ -23,25 +21,27 @@ export default function GlitchText({
   duration = 1,
   delay = 1,
 }: PropTypes) {
-  const [display, setDisplay] = useState(seed_text || final_text);
+  // Written straight to the DOM: this ticks every frame, and going through
+  // React state re-rendered RightContainer's whole subtree each time.
+  const ref = useRef<HTMLSpanElement>(null);
+  const should_reduce_motion = useReducedMotion();
 
   useEffect(() => {
-    if (!play) return;
+    const node = ref.current;
+    if (!node || !play) return;
 
     if (!final_text) {
-      setDisplay('');
+      node.textContent = '';
       return;
     }
 
-    setDisplay(seed_text || final_text);
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplay(final_text);
+    if (should_reduce_motion) {
+      node.textContent = final_text;
       return;
     }
 
-    let raf = 0;
-    const duration_ms = duration * 1000;
+    node.textContent = seed_text || final_text;
+
     const final_len = final_text.length;
     const seed_len = seed_text.length || final_len;
 
@@ -49,38 +49,38 @@ export default function GlitchText({
     // the animation; the front half is pure scramble/length morph.
     const reveal_start = 0.45;
 
-    const tick = (start: number, now: number) => {
-      const t = Math.min(1, (now - start) / duration_ms);
-      const eased_t = ease_out(t);
-      const reveal_t = Math.max(0, (eased_t - reveal_start) / (1 - reveal_start));
-      const reveal_count = Math.floor(reveal_t * final_len);
-      const current_len = Math.round(seed_len + (final_len - seed_len) * eased_t);
+    // motion owns the timing, delay and cleanup; `progress` arrives already
+    // eased, so this only has to describe what a single frame looks like.
+    const controls = animate(0, 1, {
+      duration,
+      delay,
+      ease: [0.33, 1, 0.68, 1], // same ease-out as VoteCounter
+      onUpdate: (progress) => {
+        const reveal_t = Math.max(
+          0,
+          (progress - reveal_start) / (1 - reveal_start),
+        );
+        const reveal_count = Math.floor(reveal_t * final_len);
+        const current_len = Math.round(
+          seed_len + (final_len - seed_len) * progress,
+        );
 
-      let next = '';
-      for (let i = 0; i < current_len; i++) {
-        next +=
-          i < reveal_count && i < final_len
-            ? final_text[i]
-            : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-      }
-      setDisplay(next);
+        let next = '';
+        for (let i = 0; i < current_len; i++) {
+          next +=
+            i < reveal_count && i < final_len
+              ? final_text[i]
+              : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+        }
+        node.textContent = next;
+      },
+      onComplete: () => {
+        node.textContent = final_text;
+      },
+    });
 
-      if (t < 1) {
-        raf = requestAnimationFrame((frame_now) => tick(start, frame_now));
-      } else {
-        setDisplay(final_text);
-      }
-    };
+    return () => controls.stop();
+  }, [play, final_text, seed_text, duration, delay, should_reduce_motion]);
 
-    const timeout = window.setTimeout(() => {
-      raf = requestAnimationFrame((start) => tick(start, start));
-    }, delay * 1000);
-
-    return () => {
-      window.clearTimeout(timeout);
-      cancelAnimationFrame(raf);
-    };
-  }, [play, final_text, seed_text, duration, delay]);
-
-  return <>{display}</>;
+  return <span ref={ref}>{seed_text || final_text}</span>;
 }

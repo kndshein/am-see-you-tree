@@ -15,10 +15,24 @@ const order_types = [
 
 export type OrderType = (typeof order_types)[number];
 
+const order_param_map: Record<string, OrderType> = {
+  reverse: 'Reverse Chronological',
+  release: 'Release Date',
+};
+
+function getInitialOrderIndex() {
+  const order_param = new URLSearchParams(window.location.search).get(
+    'order'
+  );
+  const order_type = order_param ? order_param_map[order_param] : undefined;
+  if (!order_type) return 0;
+  return order_types.indexOf(order_type);
+}
+
 function App() {
   const [is_DOM_loaded, setIsDOMLoaded] = useState(false);
   const [is_movies_only, setIsMoviesOnly] = useState(true);
-  const [order_index, setOrderIndex] = useState(0);
+  const [order_index, setOrderIndex] = useState(getInitialOrderIndex);
 
   function handleDOMLoad() {
     setIsDOMLoaded(true);

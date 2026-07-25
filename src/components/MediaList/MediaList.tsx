@@ -1,5 +1,5 @@
 import { Fragment, useState, useRef, RefObject, useEffect } from 'react';
-import { MediaType } from '../../types/Media';
+import { MediaType, ShowType } from '../../types/Media';
 import { TmdbType } from '../../types/Tmdb';
 import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
@@ -34,8 +34,39 @@ function releaseDateOf(ele: MediaType): string {
     : (data.release_date ?? '');
 }
 
-const media_list_release_date = [...media_list_chrono].sort((a, b) =>
-  releaseDateOf(a).localeCompare(releaseDateOf(b)),
+// A season can appear as several entries in media-list.json when a movie was
+// watched partway through it (e.g. eps 1-7, then a movie, then eps 8-16).
+// That split only reflects viewing order, so for release-date order we merge
+// same show/season entries back into one card spanning their combined
+// episode range.
+function mergeTvFragments(list: Array<MediaType>): Array<MediaType> {
+  const merged: Array<MediaType> = [];
+  const season_idx = new Map<string, number>();
+
+  for (const ele of list) {
+    if (ele.type !== 'tv') {
+      merged.push(ele);
+      continue;
+    }
+
+    const key = `${ele.id}__season${ele.season}`;
+    const existing_idx = season_idx.get(key);
+    if (existing_idx === undefined) {
+      season_idx.set(key, merged.length);
+      merged.push({ ...ele });
+      continue;
+    }
+
+    const existing = merged[existing_idx] as ShowType;
+    existing.epiStart = Math.min(existing.epiStart, ele.epiStart);
+    existing.epiEnd = Math.max(existing.epiEnd, ele.epiEnd);
+  }
+
+  return merged;
+}
+
+const media_list_release_date = mergeTvFragments(media_list_chrono).sort(
+  (a, b) => releaseDateOf(a).localeCompare(releaseDateOf(b)),
 );
 
 export default function MediaList({
@@ -47,7 +78,7 @@ export default function MediaList({
   const [media_list, setMediaList] = useState(media_list_chrono);
   const active_toggle_ref = useRef(active_toggle);
   const cards_ref = useRef<HTMLElement[]>([]);
-  const apply_ref = useRef<() => void>(() => {});
+  const apply_ref = useRef<(full?: boolean) => void>(() => {});
 
   useEffect(() => {
     active_toggle_ref.current = active_toggle;
@@ -92,36 +123,94 @@ export default function MediaList({
     const MAX_DIST = 1.4; // clamp so far-edge cards don't over-rotate
     let raf = 0;
     let centers: number[] = [];
+    // Cards lay out left-to-right, so `centers` ascends and the cards still
+    // inside the un-clamped band are one contiguous range. If that ever stops
+    // holding (the `.reverse` row-reverse rule, say), fall back to the whole list.
+    let centers_ascending = true;
+    // The band written last frame, so a card leaving it can be parked on its
+    // clamped transform exactly once instead of every frame.
+    let prev_lo = 0;
+    let prev_hi = 0;
+    let needs_full = true;
 
-    const apply = () => {
+    const transformFor = (d: number) => {
+      const ad = Math.abs(d);
+      const center = 1 - ad / MAX_DIST; // 1 at center → 0 at edges
+      const scale_x = 1 - SQUISH_X * (1 - center); // sides narrower
+      const scale_y = 1 - SHORT_Y * center; // center shorter
+      const angle = -d * MAX_ANGLE;
+      // Per-card 3D perspective and rotation without container perspective trap
+      return `perspective(1000px) rotateY(${angle.toFixed(
+        2,
+      )}deg) scale(${scale_x.toFixed(3)}, ${scale_y.toFixed(3)})`;
+    };
+
+    // `d` is clamped, so everything past the band resolves to one of exactly
+    // two transforms however far off-centre it sits. Derived through the same
+    // function as the live ones so the two paths can't drift apart.
+    const CLAMPED_LEFT = transformFor(-MAX_DIST);
+    const CLAMPED_RIGHT = transformFor(MAX_DIST);
+
+    // First index whose centre sits past `value`.
+    const upperBound = (value: number) => {
+      let low = 0;
+      let high = centers.length;
+      while (low < high) {
+        const probe = (low + high) >> 1;
+        if (centers[probe] > value) high = probe;
+        else low = probe + 1;
+      }
+      return low;
+    };
+
+    const apply = (full = false) => {
       const active_toggle = active_toggle_ref.current;
       const cards = cards_ref.current;
       const mid = el.scrollLeft + el.clientWidth / 2;
       const half = el.clientWidth / 2 || 1;
-      for (let i = 0; i < cards.length; i++) {
+      const reach = half * MAX_DIST;
+
+      const lo = centers_ascending ? upperBound(mid - reach) : 0;
+      const hi = centers_ascending ? upperBound(mid + reach) : cards.length;
+
+      const write = (i: number, value: string) => {
         const card = cards[i];
-
+        if (!card) return;
         // If this card is active, clear transform so it morphs cleanly to fullscreen overlay
-        if (active_toggle !== null && card.id === active_toggle.toString()) {
-          card.style.transform = 'none';
-          continue;
-        }
+        card.style.transform =
+          active_toggle !== null && card.id === active_toggle.toString()
+            ? 'none'
+            : value;
+      };
 
+      // While the old and new bands overlap, a card can only have left via the
+      // side it was already nearest, so the two edge ranges cover every change.
+      // A disjoint jump (scrollbar drag) breaks that, so redo everything.
+      const disjoint = hi <= prev_lo || lo >= prev_hi;
+
+      if (full || needs_full || disjoint) {
+        for (let i = 0; i < lo; i++) write(i, CLAMPED_LEFT);
+        for (let i = hi; i < cards.length; i++) write(i, CLAMPED_RIGHT);
+        needs_full = false;
+      } else {
+        for (let i = prev_lo; i < Math.min(lo, prev_hi); i++) {
+          write(i, CLAMPED_LEFT);
+        }
+        for (let i = Math.max(hi, prev_lo); i < prev_hi; i++) {
+          write(i, CLAMPED_RIGHT);
+        }
+      }
+
+      for (let i = lo; i < hi; i++) {
         const d = Math.max(
           -MAX_DIST,
           Math.min(MAX_DIST, (centers[i] - mid) / half),
         );
-        const ad = Math.abs(d);
-        const center = 1 - ad / MAX_DIST; // 1 at center → 0 at edges
-        const scale_x = 1 - SQUISH_X * (1 - center); // sides narrower
-        const scale_y = 1 - SHORT_Y * center; // center shorter
-        const angle = -d * MAX_ANGLE;
-
-        // Per-card 3D perspective and rotation without container perspective trap
-        card.style.transform = `perspective(1000px) rotateY(${angle.toFixed(
-          2,
-        )}deg) scale(${scale_x.toFixed(3)}, ${scale_y.toFixed(3)})`;
+        write(i, transformFor(d));
       }
+
+      prev_lo = lo;
+      prev_hi = hi;
     };
     apply_ref.current = apply;
 
@@ -130,6 +219,10 @@ export default function MediaList({
         el.querySelectorAll<HTMLElement>('.media'),
       );
       centers = cards_ref.current.map((c) => c.offsetLeft + c.offsetWidth / 2);
+      centers_ascending = centers.every(
+        (c, i) => i === 0 || c >= centers[i - 1],
+      );
+      needs_full = true;
       apply();
     };
 
@@ -155,8 +248,10 @@ export default function MediaList({
 
   // Re-apply the curve (without remeasuring or touching listeners) when the
   // active card changes, so toggling doesn't flash every card flat first.
+  // Full pass: the card that just stopped being active is holding `none` and
+  // may sit outside the band, where the incremental path would never revisit it.
   useEffect(() => {
-    apply_ref.current();
+    apply_ref.current(true);
   }, [active_toggle]);
 
   // Measure the rail's actual reserved scrollbar height (varies by browser

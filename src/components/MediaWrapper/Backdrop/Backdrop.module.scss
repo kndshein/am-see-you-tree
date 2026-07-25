@@ -1,5 +1,9 @@
 @use '../../../sass/variables.scss' as *;
 
+// Height of one scanline tile; the pan animation translates by exactly this
+// so the loop is seamless.
+$scanline: 9px;
+
 :global(.media):hover,
 :global(.media):focus {
   &:not(:global(.expanded-layout)) {
@@ -37,27 +41,40 @@
   background-color: $background;
 }
 
+// `content-visibility: auto` on `.media` (index.scss) already stops offscreen
+// cards from animating, but the ~10 cards actually onscreen still paint. The
+// scanlines therefore pan via `transform` on an inner layer rather than via
+// `background-position`, which isn't GPU-composited and repainted this whole
+// (1000px x 100vh) surface every frame.
 .screen_overlay {
-  opacity: 0;
-  background: linear-gradient(
-    $accent-lite,
-    $accent 3px,
-    transparent 3px,
-    transparent 9px
-  );
-  background-size: 100% 9px;
-  height: 100%;
-  width: 100%;
-  // Animating background-position isn't GPU-composited, so it repaints every
-  // frame. That's fine here: `content-visibility: auto` on `.media` (index.scss)
-  // makes the browser skip rendering — including this animation — for offscreen
-  // cards, so only the handful actually in the viewport keep painting.
-  animation: pan-overlay 20s infinite linear;
   position: absolute;
-  opacity: 0.1;
   left: 0px;
   top: 0px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  opacity: 0.1;
   z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    // One extra tile of height so translating by exactly one tile ($scanline)
+    // loops seamlessly, independent of the element's actual height.
+    height: calc(100% + #{$scanline});
+    background: linear-gradient(
+      $accent-lite,
+      $accent 3px,
+      transparent 3px,
+      transparent $scanline
+    );
+    background-size: 100% $scanline;
+    // ~45px/s, matching the old 20s-across-the-element rate at ~100vh.
+    animation: pan-overlay 0.2s infinite linear;
+  }
 }
 
 // Taken out, but kept for reference in case this feature could be reimplemented
@@ -76,26 +93,39 @@
 //   filter: saturate(125%);
 // }
 
+// `$transition-base` names no property, so it resolved to `all` — which meant
+// expanding a card animated the blur *radius*, re-running the convolution on a
+// 1280px-wide image at a new radius every frame for 0.3s. Restricting the
+// transition to opacity lets the blur apply in one step (rasterized once)
+// while the fade still carries the visual change.
 .backdrop {
   object-fit: cover;
   width: 100%;
   height: 100%;
-  transition: $transition-base;
+  transition: opacity $transition-base;
 }
 
 :global(.media):global(.expanded-layout) .backdrop {
   filter: blur(20px);
   opacity: 0.15;
-  transition: $transition-base;
+  transition: opacity $transition-base;
 }
 
 @keyframes pan-overlay {
   from {
-    background-position: 0% 0%;
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    background-position: 0% -100%;
+    transform: translate3d(0, -$scanline, 0);
+  }
+}
+
+// MotionConfig's reducedMotion="user" (App.tsx) only governs motion
+// components, not CSS keyframes, so this one opts out on its own.
+@media (prefers-reduced-motion: reduce) {
+  .screen_overlay::before {
+    animation: none;
   }
 }
 

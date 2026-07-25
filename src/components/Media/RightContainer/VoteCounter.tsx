@@ -1,49 +1,67 @@
-import { useEffect, useState } from 'react';
-import { animate } from 'motion/react';
-import scoreColor from '../../../utils/score-color';
+import { useCallback, useEffect, useRef } from 'react';
+import {
+  animate,
+  useMotionValueEvent,
+  useReducedMotion,
+  MotionValue,
+} from 'motion/react';
 
 type PropTypes = {
   value: number; // target percentage (0-100)
   play: boolean;
   duration?: number;
   delay?: number; // seconds to wait before starting, so it's not mid/done by the time it's visible
-  onColorChange?: (color: string) => void;
+  motion_value: MotionValue<number>; // owned by the parent, which maps it to the live score color
 };
 
 // Counts up from 0% to the actual rating once `play` turns true (the card
-// is actually visible), instead of just fading in a static number. Reports
-// the score-driven color at every step so the parent can sweep the
-// text/border color live as the number climbs.
+// is actually visible), instead of just fading in a static number. The count
+// lives in a MotionValue and the digits are written straight to the DOM, so
+// none of this re-renders React on a per-frame basis.
 export default function VoteCounter({
   value,
   play,
   duration = 1,
   delay = 1,
-  onColorChange,
+  motion_value,
 }: PropTypes) {
-  const [display, setDisplay] = useState(0);
+  const text_ref = useRef<HTMLSpanElement>(null);
+  const should_reduce_motion = useReducedMotion();
+
+  const write = useCallback((latest: number) => {
+    if (text_ref.current) {
+      text_ref.current.textContent = `${Math.round(latest)}%`;
+    }
+  }, []);
 
   useEffect(() => {
+    // The MotionValue is owned by the parent, so it outlives this component
+    // and still holds the previous run's final score when a card is reopened.
+    // Rewind before doing anything else: otherwise `animate` starts and ends
+    // on the same number, and since a MotionValue only notifies subscribers on
+    // an actual change, nothing would ever overwrite the "0%" below.
+    motion_value.set(0);
+    write(0);
+
     if (!play) return;
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplay(value);
-      onColorChange?.(scoreColor(value));
+    if (should_reduce_motion) {
+      motion_value.set(value);
+      write(value);
       return;
     }
 
-    const controls = animate(0, value, {
+    const controls = animate(motion_value, value, {
       duration,
       delay,
       ease: [0.33, 1, 0.68, 1], // cubic-bezier ease-out: slows down at the end
-      onUpdate: (latest) => {
-        setDisplay(latest);
-        onColorChange?.(scoreColor(latest));
-      },
     });
 
     return () => controls.stop();
-  }, [play, value, duration, delay, onColorChange]);
+  }, [play, value, duration, delay, motion_value, should_reduce_motion, write]);
 
-  return <>{Math.round(display)}%</>;
+  // Only fires on real changes, hence the explicit `write` calls above.
+  useMotionValueEvent(motion_value, 'change', write);
+
+  return <span ref={text_ref}>0%</span>;
 }

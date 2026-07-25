@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
@@ -7,7 +6,7 @@ import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
 import scoreColor from '../../../utils/score-color';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
 import GlitchText from './GlitchText';
@@ -18,6 +17,13 @@ type PropTypes = {
   is_active: boolean;
   is_content_expanded: boolean;
 };
+
+// Mutes the vote chip against the dark backdrop. Applied as color alpha
+// rather than CSS opacity, which the entrance animation would overwrite.
+// Deliberately low: a translucent chip over a dark background darkens toward
+// it, so the knocked-out digits lose contrast (~1.9:1 at the red end of the
+// ramp vs ~9:1 at green). Traded for the glassier look on purpose.
+const VOTE_ALPHA = 0.5;
 
 export default function RightContainer({
   tmdb_data,
@@ -53,7 +59,14 @@ export default function RightContainer({
       : undefined;
 
   const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
-  const [vote_color, setVoteColor] = useState(() => scoreColor(0));
+  // The count-up drives this MotionValue rather than React state: motion
+  // writes the derived color straight to the DOM node, so climbing from 0 to
+  // the real score doesn't re-render this whole subtree (cast, Overview,
+  // Episodes) once per frame.
+  const vote_value = useMotionValue(0);
+  const vote_color = useTransform(vote_value, (latest) =>
+    scoreColor(latest, VOTE_ALPHA),
+  );
 
   return (
     <motion.section
@@ -70,12 +83,12 @@ export default function RightContainer({
             <motion.span
               className={styles.vote}
               variants={element}
-              style={{ color: vote_color, borderColor: vote_color }}
+              style={{ backgroundColor: vote_color }}
             >
               <VoteCounter
                 value={vote_percent}
                 play={is_content_expanded}
-                onColorChange={setVoteColor}
+                motion_value={vote_value}
               />
             </motion.span>
             {media_data.type === 'tv' ? (
@@ -122,10 +135,10 @@ export default function RightContainer({
               })}
           </motion.section>
           <Overview tmdb_data={tmdb_data} media_data={media_data} />
+          {media_data.type === 'tv' && (
+            <Episodes tmdb_data={tmdb_data} media_data={media_data} />
+          )}
         </>
-      )}
-      {media_data.type === 'tv' && (
-        <Episodes tmdb_data={tmdb_data} media_data={media_data} />
       )}
     </motion.section>
   );
