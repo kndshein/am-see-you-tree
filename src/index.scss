@@ -56,6 +56,12 @@ code {
   content-visibility: auto;
   contain-intrinsic-size: auto 250px auto 600px;
 
+  // See index.html's inline script: content-visibility + this card's own
+  // per-frame transform (MediaList.tsx) only conflicts in Chromium.
+  .is-chromium & {
+    content-visibility: visible;
+  }
+
   &:not(.collapsed-layout) {
     z-index: 2;
     border: 2px dashed $accent-lite;

@@ -17,6 +17,22 @@
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link rel="stylesheet" href="https://use.typekit.net/ncb2bkr.css" />
     <title>Am See You</title>
+    <script>
+      // Chromium (Chrome, Edge, Opera, ...) loses track of whether an element
+      // is still "relevant to the user" when it has content-visibility: auto
+      // and also gets a JS-driven `transform` every frame (MediaList.tsx's
+      // rail curve) — cards intermittently go invisible depending on mouse
+      // position. Firefox/Safari don't share this bug, so content-visibility
+      // (index.scss's .media — it fixes a real horizontal-scroll jitter)
+      // stays everywhere else; Chromium alone gets it turned back off. Runs
+      // synchronously in <head>, before first paint, so there's no flash of
+      // the wrong behavior.
+      document.documentElement.classList.toggle(
+        'is-chromium',
+        /Chrome|Chromium|CriOS/.test(navigator.userAgent) &&
+          !/Firefox|FxiOS/.test(navigator.userAgent)
+      );
+    </script>
   </head>
   <body>
     <div id="root"></div>
