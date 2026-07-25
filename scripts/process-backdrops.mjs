@@ -22,6 +22,7 @@ import sharp from 'sharp';
 import { readFile, writeFile, mkdir, readdir, rm, access } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchWithRetry } from './fetch-retry.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MEDIA_LIST_PATH = resolve(root, 'src/assets/media-list.json');
@@ -200,19 +201,13 @@ for (const tmdb_path of wanted) {
     continue;
   }
 
-  const response = await fetch(`https://image.tmdb.org/t/p/original${tmdb_path}`);
+  const response = await fetchWithRetry(
+    `https://image.tmdb.org/t/p/original${tmdb_path}`,
+  );
   if (!response.ok) {
-    console.error(`  skip ${tmdb_path}: HTTP ${response.status}`);
-    // Only disown it when there is nothing on disk to keep. Under --force the
-    // files may already be present and perfectly good — dropping them from the
-    // manifest here would have the prune step delete them over a transient 404.
-    if (!present.some(Boolean)) {
-      delete manifest[tmdb_path];
-      for (const { file } of Object.values(variants)) {
-        expected_files.delete(file);
-      }
-    }
-    continue;
+    // A missing backdrop means a card with no image — crash the build rather
+    // than ship broken output silently.
+    throw new Error(`Failed to fetch ${tmdb_path}: HTTP ${response.status}`);
   }
 
   const source = Buffer.from(await response.arrayBuffer());

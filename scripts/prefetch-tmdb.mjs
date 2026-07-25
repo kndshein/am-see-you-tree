@@ -11,6 +11,7 @@ import { readFile, writeFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { fetchWithRetry } from './fetch-retry.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -48,7 +49,7 @@ function buildUrl(item, apiKey) {
 }
 
 async function fetchOne(item, apiKey) {
-  const res = await fetch(buildUrl(item, apiKey));
+  const res = await fetchWithRetry(buildUrl(item, apiKey));
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText} for ${item.id}`);
   }
@@ -192,19 +193,17 @@ async function main() {
 
   const entries = [...unique.entries()];
   const result = {};
-  const failures = [];
   let done = 0;
 
-  // Simple fixed-size worker pool over the queue of unique cards.
+  // Simple fixed-size worker pool over the queue of unique cards. A single
+  // failed fetch means a card with no data, which breaks the site — so any
+  // failure here propagates and crashes the whole run rather than being
+  // logged and skipped.
   let cursor = 0;
   async function worker() {
     while (cursor < entries.length) {
       const [key, item] = entries[cursor++];
-      try {
-        result[key] = trim(item, await fetchOne(item, apiKey));
-      } catch (err) {
-        failures.push({ key, message: err.message });
-      }
+      result[key] = trim(item, await fetchOne(item, apiKey));
       done++;
       process.stdout.write(`\rFetched ${done}/${entries.length}`);
     }
@@ -213,13 +212,6 @@ async function main() {
     Array.from({ length: Math.min(CONCURRENCY, entries.length) }, worker)
   );
   process.stdout.write('\n');
-
-  // Safety: don't clobber a good file with nothing if the network was down for
-  // every request (e.g. offline). Partial success still writes.
-  if (Object.keys(result).length === 0 && entries.length > 0) {
-    console.error('\nAll fetches failed — leaving existing data untouched.');
-    process.exit(1);
-  }
 
   // Stable key order keeps the generated file diff-friendly.
   const ordered = Object.fromEntries(
@@ -242,10 +234,6 @@ async function main() {
     ) + '\n'
   );
 
-  if (failures.length) {
-    console.warn(`\n${failures.length} failed:`);
-    for (const f of failures) console.warn(`  ${f.key}: ${f.message}`);
-  }
   console.log(
     `Wrote ${Object.keys(ordered).length} entries to ${OUTPUT_PATH}`
   );
