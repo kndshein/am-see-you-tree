@@ -102,6 +102,11 @@ function trim(item, full) {
     runtime: full.runtime,
     certification: certificationOf(item, full),
     imdb_id: full.imdb_id || full.external_ids?.imdb_id || undefined,
+    // Movies only — TMDB never sets this for tv. Powers the "rest of the
+    // collection" panel on the expanded card.
+    collection: full.belongs_to_collection
+      ? { id: full.belongs_to_collection.id, name: full.belongs_to_collection.name }
+      : undefined,
     original_language: full.original_language || undefined,
     author: authorOf(item, full),
     // Movie-only, and frequently 0 when TMDB simply doesn't have the figure —

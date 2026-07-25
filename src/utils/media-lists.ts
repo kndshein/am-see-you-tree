@@ -38,6 +38,27 @@ export function releaseDateOf(ele: MediaType, tmdb_data: TmdbMap): string {
     : (data.release_date ?? '');
 }
 
+// Other movies in the same TMDB collection (e.g. "Iron Man Collection") that
+// are also in this app's own curated list — so every entry returned is
+// guaranteed to be something the rail can actually jump to. TV never has a
+// collection, so this only ever matches other movie/short/special entries.
+export function collectionSiblingsOf(
+  ele: MediaType,
+  tmdb_data: TmdbMap,
+): Array<MediaType> {
+  const collection_id = tmdb_data[tmdbKeyOf(ele)]?.collection?.id;
+  if (!collection_id) return [];
+
+  return media_list_chrono
+    .filter((item) => item.type !== 'tv' && item.id !== ele.id)
+    .filter(
+      (item) => tmdb_data[tmdbKeyOf(item)]?.collection?.id === collection_id,
+    )
+    .sort((a, b) =>
+      releaseDateOf(a, tmdb_data).localeCompare(releaseDateOf(b, tmdb_data)),
+    );
+}
+
 // A season can appear as several entries in media-list.json when a movie was
 // watched partway through it (e.g. eps 1-7, then a movie, then eps 8-16).
 // That split only reflects viewing order, so for release-date order we merge

@@ -37,6 +37,8 @@ export interface TmdbType {
   // US age rating.
   certification?: string;
   imdb_id?: string;
+  // Movies only. Absent for standalone titles with no franchise collection.
+  collection?: { id: number; name: string };
   original_language?: string;
   // Director for films, creator(s) for shows.
   author?: string;

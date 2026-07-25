@@ -10,7 +10,11 @@ import { ActiveToggleType, HandleToggleType } from '../../types/Toggles';
 import MediaWrapper from '../MediaWrapper/MediaWrapper';
 import styles from './MediaList.module.scss';
 import { useTmdbData } from '../../utils/tmdb-data';
-import { buildMediaList, isShown } from '../../utils/media-lists';
+import {
+  buildMediaList,
+  collectionSiblingsOf,
+  isShown,
+} from '../../utils/media-lists';
 import {
   scroll_progress,
   focused_position,
@@ -31,6 +35,12 @@ export default function MediaList({
   media_list_ref,
 }: PropTypes) {
   const [active_toggle, setActiveToggle] = useState<ActiveToggleType>(null);
+  // A jump target that hasn't scrolled past before has never mounted its
+  // Backdrop, so its image hasn't started loading. Marking it "ready" the
+  // moment the jump starts — not only once it's actually active — gives it
+  // the close-wait window as a head start, the same lead time a card that
+  // scrolled into view naturally already had before being clicked.
+  const [pending_jump, setPendingJump] = useState<ActiveToggleType>(null);
   const tmdb_data = useTmdbData();
 
   // Release-date order needs the fetched dates, so it has to be built inside
@@ -45,12 +55,40 @@ export default function MediaList({
   const cards_ref = useRef<HTMLElement[]>([]);
   const apply_ref = useRef<(full?: boolean) => void>(() => {});
 
+  // A slow connection can easily blow past the close-wait window, so the
+  // collection panel's own backdrops start loading the moment the card that
+  // shows it opens — not only once one is actually clicked. By the time a
+  // click happens, the image has had the whole time the card sat open to load.
+  const collection_preload_ids = useMemo(() => {
+    if (active_toggle === null) return null;
+    const active_media = media_list[active_toggle];
+    if (!active_media) return null;
+    const siblings = collectionSiblingsOf(active_media, tmdb_data);
+    return siblings.length ? new Set(siblings.map((s) => s.id)) : null;
+  }, [active_toggle, media_list, tmdb_data]);
+
   useEffect(() => {
     active_toggle_ref.current = active_toggle;
   }, [active_toggle]);
 
   const handleToggle: HandleToggleType = (id) => {
     setActiveToggle(id === active_toggle ? null : id);
+  };
+
+  // Every other "open a card" path starts from nothing active — the fullscreen
+  // dark overlay physically covers the rest of the rail while a card is open,
+  // so a direct active-card-to-active-card click has never been reachable
+  // before, and MediaWrapper's local expand/collapse state (driven by
+  // Framer's onLayoutAnimationComplete) isn't built to handle it. Closing
+  // first and opening the target shortly after reuses that same
+  // already-working closed-to-open path instead of a novel direct swap.
+  const handleJump: HandleToggleType = (id) => {
+    setActiveToggle(null);
+    setPendingJump(id);
+    window.setTimeout(() => {
+      setActiveToggle(id);
+      setPendingJump(null);
+    }, 400);
   };
 
   // Per-card 3D concave "visor" curve:
@@ -348,8 +386,14 @@ export default function MediaList({
             <Fragment key={key}>
               <MediaWrapper
                 media_data={ele}
+                media_list={media_list}
                 is_movies_only={is_movies_only}
                 handleToggle={handleToggle}
+                handleJump={handleJump}
+                force_ready={
+                  pending_jump === idx ||
+                  (collection_preload_ids?.has(ele.id) ?? false)
+                }
                 is_active={active_toggle === idx}
                 idx={idx}
                 display_idx={display_idx}
