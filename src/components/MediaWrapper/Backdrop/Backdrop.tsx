@@ -2,12 +2,19 @@ import Loading from '../../Loading/Loading';
 import styles from './Backdrop.module.scss';
 import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
+import backdrop_manifest from '../../../assets/backdrops.json';
+
+type BackdropVariants = { graded: string; plain: string; blurred: string };
 
 interface Props {
   data: any;
   media_data: MediaType;
   is_backdrop_loaded: boolean;
   setIsBackdropLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  // True once the card has been hovered at least once. Gates the full-color
+  // variant so it is never requested for cards nobody points at.
+  has_been_hovered: boolean;
+  is_active: boolean;
 }
 
 export default function Backdrop({
@@ -15,6 +22,8 @@ export default function Backdrop({
   media_data,
   is_backdrop_loaded,
   setIsBackdropLoaded,
+  has_been_hovered,
+  is_active,
 }: Props) {
   let backdrop_path = data.poster_path;
   if (data.backdrop_path) {
@@ -26,6 +35,17 @@ export default function Backdrop({
         : data.backdrop_path;
     }
   }
+  // Prefer the locally processed images: cropped to the shape this box actually
+  // paints (so nothing is enlarged) and with the card grade already baked in,
+  // which is why no CSS filter runs here any more. Falls back to TMDB if
+  // scripts/process-backdrops.mjs hasn't produced one — a missing file would
+  // otherwise leave the card permanently un-loaded.
+  const local = (backdrop_manifest as Record<string, BackdropVariants>)[
+    backdrop_path
+  ];
+  const backdrop_src =
+    local?.graded ?? `https://image.tmdb.org/t/p/w1280${backdrop_path}`;
+
   return (
     <>
       {!is_backdrop_loaded && <Loading />}
@@ -33,16 +53,35 @@ export default function Backdrop({
         <div className={styles.screen_overlay}></div>
         <img
           className={styles.backdrop}
-          // w1280 keeps the brief sharp moment on expand crisp, and reusing
-          // this one already-decoded image (rather than swapping sizes on
-          // expand) avoids a reload flash. `original` was multi-MB and stalled
-          // decode on scroll; `decoding="async"` keeps decode off the main
-          // thread.
-          src={`https://image.tmdb.org/t/p/w1280${backdrop_path}`}
+          // `decoding="async"` keeps decode off the main thread during scroll.
+          src={backdrop_src}
           alt={data.original_title}
           decoding="async"
           onLoad={() => setIsBackdropLoaded(true)}
+          onError={() => setIsBackdropLoaded(true)}
         />
+        {/* The ungraded twin, cross-faded in on hover. Mounted only after the
+            first hover, so it costs nothing until someone points at the card. */}
+        {has_been_hovered && local?.plain && (
+          <img
+            className={styles.backdrop_plain}
+            src={local.plain}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
+        )}
+        {/* Pre-blurred twin for the expanded state, so no CSS blur has to run
+            over this surface. Only mounted once the card is open. */}
+        {is_active && local?.blurred && (
+          <img
+            className={styles.backdrop_blurred}
+            src={local.blurred}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
+        )}
       </motion.div>
     </>
   );

@@ -10,8 +10,11 @@ $scanline: 9px;
     .backdrop_motion {
       opacity: 1;
     }
-    .backdrop_wrapper {
-      filter: none;
+    // Reveals the ungraded twin stacked on top. A baked grade can't be undone
+    // in CSS, so this cross-fades between two images rather than clearing a
+    // filter — an opacity change, which composites without repainting.
+    .backdrop_plain {
+      opacity: 1;
     }
 
     // Scanlines are hover-only. Animating them on every visible card meant ~10
@@ -38,11 +41,12 @@ $scanline: 9px;
   }
 }
 
+// scripts/process-backdrops.mjs bakes every treatment into the WebP variants,
+// so this surface carries no filter at all — not the grade, not the blur.
 .backdrop_wrapper {
   position: absolute;
   top: 0;
   left: -155%;
-  filter: brightness(0.69) sepia(100%) hue-rotate(165deg);
   width: 1000px;
   height: 100vh;
   z-index: -1;
@@ -115,10 +119,30 @@ $scanline: 9px;
   transition: opacity $transition-base;
 }
 
-:global(.media):global(.expanded-layout) .backdrop {
-  filter: blur(20px);
-  opacity: 0.15;
+// The alternate twins, stacked directly over .backdrop: the ungraded one for
+// hover, the pre-blurred one for the expanded state. Same box and object-fit as
+// the original so all three register exactly.
+.backdrop_plain,
+.backdrop_blurred {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   transition: opacity $transition-base;
+  pointer-events: none;
+}
+
+// Cross-fades to the pre-blurred twin instead of running `filter: blur(20px)`
+// over this surface. A blur is a convolution the compositor has to redo; this
+// is two opacity changes.
+:global(.media):global(.expanded-layout) .backdrop {
+  opacity: 0;
+}
+
+:global(.media):global(.expanded-layout) .backdrop_blurred {
+  opacity: 0.15;
 }
 
 @keyframes pan-overlay {

@@ -41,6 +41,9 @@ export default function MediaWrapper({
     triggerOnce: true,
   });
   const [is_backdrop_loaded, setIsBackdropLoaded] = useState(false);
+  // Latches on first hover so Backdrop can fetch its full-color twin. Kept
+  // here rather than in Backdrop because this is the element hover applies to.
+  const [has_been_hovered, setHasBeenHovered] = useState(false);
   const [{ is_content_expanded, is_content_collapsed }, setContentStatus] =
     useState({
       is_content_expanded: is_active,
@@ -89,6 +92,7 @@ export default function MediaWrapper({
       }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => setHasBeenHovered(true)}
     >
       {!is_ready ? (
         <Loading />
@@ -166,6 +170,8 @@ export default function MediaWrapper({
               media_data={media_data}
               is_backdrop_loaded={is_backdrop_loaded}
               setIsBackdropLoaded={setIsBackdropLoaded}
+              has_been_hovered={has_been_hovered}
+              is_active={is_active}
             />
             <Title tmdb_data={data} media_data={media_data} />
             <Tag
