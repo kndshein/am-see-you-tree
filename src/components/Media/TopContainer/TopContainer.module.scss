@@ -6,8 +6,8 @@
   display: flex;
   flex-flow: column nowrap;
   // Matches the combined 30px gutter between the two columns below, so the
-  // row gap reads the same as the column gap instead of looking tighter.
-  margin-bottom: $grid-gutter * 2;
+  // row gap reads the same as the column gap instead of looking tighter. But slightly smaller since the font has a lot of vertical empty space
+  margin-bottom: $grid-gutter * 1.5;
 }
 
 .title {

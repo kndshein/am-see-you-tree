@@ -162,7 +162,10 @@ export default function RightContainer({
                   key={`author-${name}`}
                   variants={element}
                 >
-                  {name}
+                  <span className={styles.actor_role}>
+                    {media_data.type === 'tv' ? 'Creator' : 'Director'}
+                  </span>
+                  <span className={styles.actor_name}>{name}</span>
                 </motion.span>
               ))}
               {(tmdb_data.credits?.cast ?? [])
@@ -174,7 +177,12 @@ export default function RightContainer({
                       key={actor.name || idx}
                       variants={element}
                     >
-                      {actor.name}
+                      {actor.character && (
+                        <span className={styles.actor_role}>
+                          {actor.character}
+                        </span>
+                      )}
+                      <span className={styles.actor_name}>{actor.name}</span>
                     </motion.span>
                   );
                 })}

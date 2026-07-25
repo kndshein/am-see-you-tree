@@ -5,6 +5,7 @@ export interface Genre {
 
 export interface CastMember {
   name: string;
+  character?: string;
 }
 
 export interface Episode {

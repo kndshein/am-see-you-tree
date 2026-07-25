@@ -144,10 +144,28 @@
 }
 
 .actor {
-  padding: 3px 7px 2px;
-  font-size: clamp(1rem, 1.5vw, 1.4rem);
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  line-height: 1;
+  padding: 7px 8px 5px;
   border: 1px solid $accent;
   border-radius: $radius-sm;
+}
+
+.actor_name {
+  font-size: clamp(1rem, 1.5vw, 1.4rem);
+}
+
+// Character (or Director/Creator, for the pills below them), in the same mono
+// readout font as the rest of the HUD's field values — visually distinct from
+// the actor's own name below it, and dim like a caption rather than competing.
+.actor_role {
+  font-family: $accent-text;
+  font-size: 0.6em;
+  letter-spacing: 1px;
+  color: rgba($accent-lite, 0.6);
+  margin-bottom: 1px;
 }
 
 // Same pill, HUD green — so the people who made it read as a distinct group
@@ -155,6 +173,10 @@
 .actor.director {
   color: $hud-green;
   border-color: rgba($hud-green, 0.55);
+}
+
+.actor.director .actor_role {
+  color: rgba($hud-green, 0.6);
 }
 
 @media only screen and (max-width: 500px) {
