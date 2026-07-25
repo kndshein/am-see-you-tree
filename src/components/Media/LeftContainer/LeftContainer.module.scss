@@ -41,9 +41,11 @@
   padding: 3px 0;
 }
 
+// Same size as the figure it sits beside — the two read as one line rather
+// than a caption and a value, which is what the row layout implies.
 .finance_label {
   @include field-label;
-  font-size: 0.75em;
+  font-size: 1em;
 }
 
 // No border: it sits over artwork, and the backing plate is enough to separate
