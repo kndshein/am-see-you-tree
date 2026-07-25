@@ -28,8 +28,13 @@
 // sits on one rhythm. Set just above the 10px that separates rows *inside* a
 // block, which is enough to read as a break between blocks without the column
 // feeling loose.
+//
+// The +4px is optical, not structural: this gap runs from the poster's hard
+// image edge to this block's border, whereas the identical one below it ends
+// at the genres label's line box, which carries its own leading above the cap
+// height. Measured equal, this one reads visibly tighter — so it gets nudged.
 .finances {
-  margin-top: $block-gap;
+  margin-top: $block-gap + 1px;
   padding: 5px 10px;
   border: 1px solid rgba($accent-lite, 0.3);
   border-radius: $radius-sm;
@@ -83,10 +88,53 @@
   border-radius: $radius-sm;
 }
 
+// The column is min(30%, 250px) of a shrinking viewport, so it eventually
+// falls under the ~175px this row needs to sit on one line and the figure gets
+// crushed against its label. The ceiling is higher than the column maths alone
+// suggests because Media's padding is discontinuous: above 800px it reserves
+// the 80px rotated-title gutter (110px horizontal in total), and at <=800px it
+// drops to 20px — so the column is actually *narrower* just above 800px than
+// just below it, and the squeeze persists well past that breakpoint.
+//
+// Stacking the figure under the label fixes it; the leader has nothing left to
+// span once stacked, so it goes. The band has a floor because below 500px the
+// grid collapses and the column gets the full width back — see the rule after.
+@media only screen and (min-width: 501px) and (max-width: 900px) {
+  .finance_row {
+    flex-flow: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .finance_leader {
+    display: none;
+  }
+
+  // nowrap only exists to hold the label on one line beside the leader, and
+  // once stacked there is nothing left to align to. At the bottom of this band
+  // "BOX OFFICE" at 2px tracking is wider than the panel's own content box, so
+  // nowrap made it spill out of the border — pull the tracking in so it
+  // usually fits on one line anyway, and let it wrap when it still doesn't.
+  .finance_label {
+    letter-spacing: 1px;
+    white-space: normal;
+  }
+}
+
 @media only screen and (max-width: 500px) {
   .container {
-    margin-bottom: 20px;
+    // The single-column gap is Media's own now, so no bottom margin here —
+    // otherwise this section sat a different distance from its neighbour than
+    // every other one.
     overflow: unset; // To unset the overflow scroll
     padding-right: 0;
+  }
+
+  // Once the card is one column, this block stops being a sidebar item and
+  // reads as another top-level section, so it steps up from the column's
+  // internal $block-gap to the same $section-gap everything else uses.
+  // Keeps the optical nudge for the same reason as above.
+  .finances {
+    margin-top: $section-gap + 4px;
   }
 }

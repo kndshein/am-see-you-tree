@@ -110,6 +110,16 @@ code {
   }
 }
 
+// The rail is a horizontal scroller, so this margin is the gap *between*
+// collapsed cards. At 30px on a phone-width viewport a 250px card plus its gap
+// takes essentially the whole screen and the next card barely peeks in, which
+// costs the main affordance that there is more to scroll to.
+@media only screen and (max-width: 500px) {
+  .media {
+    margin-left: 12px;
+  }
+}
+
 .app {
   display: flex;
   flex-flow: column;

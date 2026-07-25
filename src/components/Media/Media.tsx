@@ -6,6 +6,7 @@ import LeftContainer from './LeftContainer/LeftContainer';
 import RightContainer from './RightContainer/RightContainer';
 import Record from '../MediaWrapper/Record/Record';
 import { motion } from 'motion/react';
+import { CARD_DELAY_CHILDREN, CARD_STAGGER } from '../../utils/motion';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -37,8 +38,8 @@ export default function Media({
         visible: {
           opacity: 1,
           transition: {
-            delayChildren: 0.3,
-            staggerChildren: 0.3,
+            delayChildren: CARD_DELAY_CHILDREN,
+            staggerChildren: CARD_STAGGER,
           },
         },
         hidden: {

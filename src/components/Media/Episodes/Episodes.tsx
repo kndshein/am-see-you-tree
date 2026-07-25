@@ -2,7 +2,6 @@ import styles from './Episodes.module.scss';
 import { TmdbType, Episode } from '../../../types/Tmdb';
 import { ShowType } from '../../../types/Media';
 import { motion } from 'motion/react';
-import { calculateDelay } from '../../../utils/utils';
 import { entry_soft } from '../../../utils/motion';
 import scoreColor from '../../../utils/score-color';
 
@@ -13,7 +12,6 @@ type PropTypes = {
 
 export default function Episodes({ tmdb_data, media_data }: PropTypes) {
   const seasonData = tmdb_data[`season/${media_data.season}`];
-  const overview_text = seasonData?.overview || tmdb_data.overview || '';
   const episodesList = (seasonData?.episodes ?? []).slice(
     media_data.epiStart - 1,
     media_data.epiEnd
@@ -26,7 +24,10 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
         visible: {
           opacity: 1,
           transition: {
-            delayChildren: calculateDelay(overview_text),
+            // No delayChildren: this block is already the last of
+            // RightContainer's staggered children, so the extra delay it used
+            // to derive from the season-overview's *length* (a leftover from
+            // when it sat directly under the synopsis) only double-delayed it.
             // A season can run to 19 rows here, so the step stays modest or the
             // last one arrives long after the card has settled.
             staggerChildren: 0.1,
@@ -34,6 +35,10 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
         },
         hidden: {
           opacity: 0,
+          // Instant, matching the entry variants (utils/motion.ts): a season
+          // can run to 19 rows, so a real collapse tween here would still be
+          // playing well after the card has closed.
+          transition: { duration: 0 },
         },
       }}
     >

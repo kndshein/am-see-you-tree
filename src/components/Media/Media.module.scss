@@ -30,6 +30,10 @@
   .container {
     display: flex;
     flex-flow: column;
-    color: red;
+    // Once the grid collapses, the container owns the space between every
+    // section — the same token RightContainer uses between its own blocks, so
+    // the whole card reads on one rhythm instead of each section bringing its
+    // own margin. Record is absolutely positioned, so it sits out of this.
+    gap: $section-gap;
   }
 }

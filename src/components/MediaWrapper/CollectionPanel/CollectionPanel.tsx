@@ -120,8 +120,11 @@ function CollectionItem({
   const title_transition = is_content_expanded
     ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: stagger_delay }
     : { duration: 0 };
+  // Same duration as the title, not a matching literal — this one's completion
+  // is what unlocks the button below, so the two drifting apart would gate
+  // interactivity on the wrong moment.
   const bracket_transition = is_content_expanded
-    ? { duration: 0.8, ease: POP_EASE, delay: stagger_delay }
+    ? { duration: REVEAL_DURATION, ease: POP_EASE, delay: stagger_delay }
     : { duration: 0 };
 
   return (

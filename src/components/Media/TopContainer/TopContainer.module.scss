@@ -10,6 +10,16 @@
   margin-bottom: $grid-gutter * 1.5;
 }
 
+// Below this the grid collapses to a flex column and Media's own gap owns the
+// spacing between sections, so this row's grid-only bottom margin would stack
+// on top of it and make the title sit further from its neighbour than any
+// other section does.
+@media only screen and (max-width: 500px) {
+  .container {
+    margin-bottom: 0;
+  }
+}
+
 .title {
   position: relative;
   display: inline;

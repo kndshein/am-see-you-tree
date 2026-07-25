@@ -62,6 +62,10 @@ export default function Overview({ tmdb_data, media_data }: PropTypes) {
             hidden: {
               opacity: 0,
               y: 4,
+              // Instant, like every other hidden variant (utils/motion.ts) —
+              // the card is closing, so there's nothing to watch it play out
+              // against, and a per-word tween here outlives the close.
+              transition: { duration: 0 },
             },
           }}
         >

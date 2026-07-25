@@ -7,7 +7,7 @@ import scoreColor from '../../../utils/score-color';
 import { compactCount } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
-import { entry } from '../../../utils/motion';
+import { entry, CARD_DELAY_CHILDREN, CARD_STAGGER } from '../../../utils/motion';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
@@ -19,6 +19,13 @@ type PropTypes = {
   is_active: boolean;
   is_content_expanded: boolean;
 };
+
+// When the vitals row actually starts entering: this container is Media's 3rd
+// child (delayChildren + 2 stagger steps), and the row is this container's 2nd
+// (+1 more step). The count-up and glitch readouts inside it start on that
+// beat — their old flat 1s default had them running for ~0.2s while the row
+// they live in was still invisible.
+const VITALS_DELAY = CARD_DELAY_CHILDREN + 2 * CARD_STAGGER + CARD_STAGGER;
 
 export default function RightContainer({
   tmdb_data,
@@ -108,6 +115,7 @@ export default function RightContainer({
                   <VoteCounter
                     value={vote_percent}
                     play={is_content_expanded}
+                    delay={VITALS_DELAY}
                     motion_value={vote_value}
                   />
                 </motion.span>
@@ -125,6 +133,7 @@ export default function RightContainer({
                   final_text={dateCalc(season_data?.air_date)}
                   seed_text={dateEpochSeed(season_data?.air_date)}
                   play={is_content_expanded}
+                  delay={VITALS_DELAY}
                 />
               </motion.span>
             ) : (
@@ -135,6 +144,7 @@ export default function RightContainer({
                     final_text={dateCalc(tmdb_data.release_date)}
                     seed_text={dateEpochSeed(tmdb_data.release_date)}
                     play={is_content_expanded}
+                    delay={VITALS_DELAY}
                   />
                 </motion.span>
                 <motion.span variants={element}>
@@ -143,6 +153,7 @@ export default function RightContainer({
                     final_text={runtimeCalc(tmdb_data.runtime)}
                     seed_text={runtimeMsSeed(tmdb_data.runtime)}
                     play={is_content_expanded}
+                    delay={VITALS_DELAY}
                   />
                 </motion.span>
               </>

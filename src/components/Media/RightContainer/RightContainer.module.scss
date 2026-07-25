@@ -6,7 +6,7 @@
   // The container owns the space between top-level blocks (tagline,
   // info_group, cast, synopsis, episodes) so no block has to push its
   // neighbor via its own margin.
-  gap: 26px;
+  gap: $section-gap;
   padding-right: 20px;
   margin-left: $grid-gutter;
   overflow-y: auto;
@@ -92,10 +92,13 @@
 }
 
 // Dimmed so the values stay dominant; the label is there to be scanned past.
+// Sized in rem, not em: as a fraction of the field's own clamped font-size it
+// drifted with the viewport instead of matching the card's other labels
+// (.tagline_label / .section_label / Genres' .list_label), which are all 0.7rem.
 .label {
   @include field-label;
   margin-bottom: 4px;
-  font-size: 0.62em;
+  font-size: 0.7rem;
 }
 
 // Lets a field carry a secondary figure on the same line as its main value.
@@ -133,7 +136,7 @@
 // ...except the labels, which set their own and would otherwise be overwritten
 // by the rule above.
 .info_group span span.label {
-  font-size: 0.62em;
+  font-size: 0.7rem;
   letter-spacing: 2px;
 }
 

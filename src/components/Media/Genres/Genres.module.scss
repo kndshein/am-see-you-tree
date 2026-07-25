@@ -6,6 +6,16 @@
   width: 100%;
 }
 
+// Same reasoning as .finances: once the card collapses to one column this
+// stops being a sidebar item and reads as another top-level section, so it
+// takes the shared $section-gap instead of the column's internal $block-gap.
+// No optical nudge here — this gap already ends at the label's own leading.
+@media only screen and (max-width: 500px) {
+  .genres {
+    margin-top: $section-gap;
+  }
+}
+
 .list_label {
   @include field-label;
   display: block;
@@ -13,11 +23,19 @@
   font-size: 0.7rem;
 }
 
+// The name and the code are flex siblings rather than a padding gutter with an
+// absolutely positioned code in it. A reserved gutter only works while the name
+// fits the space left over: at narrow column widths a long unbreakable genre
+// ("DOCUMENTARY", "ADVENTURE") overflowed its content box and ran underneath
+// the code — and widening the gutter to fit the code made that *more* likely,
+// not less, by leaving the name even less room. As siblings they simply can't
+// overlap at any width.
 .genre_row {
   position: relative;
-  // Right padding reserves the gutter .code sits in, so a long genre name
-  // can't run underneath it.
-  padding: 10px 46px 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 20px;
   margin: 10px 0 10px 0;
   background-color: $tab-background;
   box-shadow: 0 0 5px $shadow-faint;
@@ -27,16 +45,14 @@
   }
 }
 
-// TMDB's numeric id for the genre, parked in the right gutter.
+// TMDB's numeric id for the genre, parked at the end of the row.
 .code {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   font-family: $accent-text;
   font-size: 0.7rem;
   font-weight: 400;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
   color: rgba(110, 110, 110, 0.8);
 }
 
@@ -56,10 +72,38 @@
 
 .label {
   position: relative;
+  // min-width: 0 is what actually lets this shrink — a flex item's default
+  // min-width is its content size, so without it a long name would push the
+  // code out of the row instead of wrapping. break-word is the last resort for
+  // a single word still too long for the column at its narrowest.
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
   margin: 0;
   font-size: clamp(0.75rem, 1vw, 1rem);
   text-transform: uppercase;
   letter-spacing: 1.5px;
+}
+
+// Below this the column leaves the name only ~45-75px next to the code, which
+// is narrow enough that break-word starts splitting names mid-syllable rather
+// than just wrapping them. Stacking hands the name the row's full width and
+// drops the code onto its own line. Floored at 501px because the grid collapses
+// under that and the column gets the full card width back.
+@media only screen and (min-width: 501px) and (max-width: 600px) {
+  .genre_row {
+    flex-flow: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  // flex: 1 resolves against the *column* axis once stacked, so it has to be
+  // reset — otherwise the name is sized as a growing row rather than a
+  // full-width line.
+  .label {
+    flex: none;
+    width: 100%;
+  }
 }
 
 // Grey text sits in normal flow (and sizes the row); the colored text is an

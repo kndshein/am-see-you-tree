@@ -16,6 +16,7 @@ import CollectionPanel from './CollectionPanel/CollectionPanel';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
 import { useTmdbData } from '../../utils/tmdb-data';
+import { GLOW_DELAY, GLOW_DURATION } from '../../utils/motion';
 
 type PropTypes = {
   media_data: MediaType;
@@ -156,8 +157,10 @@ export default function MediaWrapper({
                   '0 0 1px white, 0 0 5px 1px rgb(102, 192, 204), 0 0 20px 7px rgb(45, 100, 114)',
                 transition: {
                   boxShadow: {
-                    delay: 2.5,
-                    duration: 0.8,
+                    // The genre/poster/collection colour reveals are timed off
+                    // these same two constants (utils/motion.ts).
+                    delay: GLOW_DELAY,
+                    duration: GLOW_DURATION,
                   },
                 },
               },

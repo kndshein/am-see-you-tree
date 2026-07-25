@@ -57,7 +57,13 @@ export default function Genres({ genres = [], start_idx = 0, is_content_expanded
 
   return (
     <section className={styles.genres}>
-      <span className={styles.list_label}>Genres</span>
+      {/* motion, not a plain span: RightContainer's section labels animate in
+          with the block they name (they sit inside its motion.div), and this
+          one has no animating ancestor of its own — as a plain span it popped
+          in instantly while its own rows were still staggering in. */}
+      <motion.span className={styles.list_label} variants={entry}>
+        Genres
+      </motion.span>
       {sorted_genres.map((ele, idx) => (
         <GenreRow
           key={ele.id}

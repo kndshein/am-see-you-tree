@@ -47,12 +47,24 @@ export const entry_vertical = {
   },
 } as const;
 
-// Shared by every "grey/muted until the card's glow lands" reveal — the
-// genre rows, the poster's grayscale-to-color, and the collection panel's
-// grey-to-white titles. Delay and duration mirror the glow itself exactly
-// (MediaWrapper.tsx's boxShadow transition, delay: 2.5, duration: 0.8), so
-// they all shift color in lockstep with it; STAGGER stacks on top of the
-// shared delay so a list of them still cascades top-to-bottom.
-export const COLOR_REVEAL_DELAY = 2.5;
+// The expanded card's own orchestration (Media.tsx): each column enters a beat
+// after the last. Shared so anything that has to start on the same beat as the
+// block it lives in can derive its delay instead of guessing a literal.
+export const CARD_DELAY_CHILDREN = 0.3;
+export const CARD_STAGGER = 0.3;
+
+// The expanded card's boxShadow "glow" (MediaWrapper.tsx). Defined here rather
+// than inline at that one call site because several reveals below are timed to
+// land in lockstep with it — as separate literals they would silently drift
+// apart the first time the glow itself was retuned.
+export const GLOW_DELAY = 2.5;
+export const GLOW_DURATION = 0.8;
+
+// Shared by every "grey/muted until the card's glow lands" reveal — the genre
+// rows, the poster's grayscale-to-color, and the collection panel's
+// grey-to-white titles and bracket pop. Derived from the glow rather than
+// re-stated, so they stay in lockstep by construction; COLOR_STAGGER stacks on
+// top of the shared delay so a list of them still cascades top-to-bottom.
+export const COLOR_REVEAL_DELAY = GLOW_DELAY;
+export const REVEAL_DURATION = GLOW_DURATION;
 export const COLOR_STAGGER = 0.1;
-export const REVEAL_DURATION = 0.8;
