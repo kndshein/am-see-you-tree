@@ -2,30 +2,22 @@
   {
     "version": "1.0.0",
     "date": "2021-01",
-    "notes": [
-      "<i>AmSeeYou</i> was born."
-    ]
+    "notes": ["<i>AmSeeYou</i> was born."]
   },
   {
     "version": "1.0.1",
     "date": "2021-02",
-    "notes": [
-      "Fixed visual and technical bugs."
-    ]
+    "notes": ["Fixed visual and technical bugs."]
   },
   {
     "version": "1.0.2",
     "date": "2021-03",
-    "notes": [
-      "Minor UX improvements."
-    ]
+    "notes": ["Minor UX improvements."]
   },
   {
     "version": "1.0.3",
     "date": "2021-05",
-    "notes": [
-      "Minor deployment fixes."
-    ]
+    "notes": ["Minor deployment fixes."]
   },
   {
     "version": "1.1.0",
@@ -40,16 +32,12 @@
   {
     "version": "2.0.0",
     "date": "2021-07",
-    "notes": [
-      "Added TV shows and accompanying episodes."
-    ]
+    "notes": ["Added TV shows and accompanying episodes."]
   },
   {
     "version": "2.1.0",
     "date": "2021-07",
-    "notes": [
-      "Refactored API calls."
-    ]
+    "notes": ["Refactored API calls."]
   },
   {
     "version": "2.2.0",
@@ -62,9 +50,7 @@
   {
     "version": "2.3.0",
     "date": "2021-07",
-    "notes": [
-      "Added 'Movies Only' filter and About Card."
-    ]
+    "notes": ["Added 'Movies Only' filter and About Card."]
   },
   {
     "version": "2.3.1",
@@ -77,10 +63,7 @@
   {
     "version": "2.3.2",
     "date": "2021-10",
-    "notes": [
-      "Added <i>What If...?</i>",
-      "Refactored genres' CSS styling."
-    ]
+    "notes": ["Added <i>What If...?</i>", "Refactored genres' CSS styling."]
   },
   {
     "version": "2.4.0",
@@ -92,16 +75,12 @@
   {
     "version": "2.4.1",
     "date": "2021-11",
-    "notes": [
-      "Added <i>Eternals</i>."
-    ]
+    "notes": ["Added <i>Eternals</i>."]
   },
   {
     "version": "2.4.2",
     "date": "2022-01",
-    "notes": [
-      "Added <i>Spider-Man: No Way Home</i> and <i>Hawkeye</i>."
-    ]
+    "notes": ["Added <i>Spider-Man: No Way Home</i> and <i>Hawkeye</i>."]
   },
   {
     "version": "2.4.3",
@@ -135,9 +114,7 @@
   {
     "version": "3.0.0",
     "date": "2023-02",
-    "notes": [
-      "Rebuilt site using Vite."
-    ]
+    "notes": ["Rebuilt site using Vite."]
   },
   {
     "version": "3.1.0",
@@ -167,17 +144,12 @@
   {
     "version": "3.3.0",
     "date": "2023-04",
-    "notes": [
-      "Added numbering design on media interface."
-    ]
+    "notes": ["Added numbering design on media interface."]
   },
   {
     "version": "3.3.1",
     "date": "2023-09",
-    "notes": [
-      "Fixed typo in patch notes.",
-      "Added <i>Secret Invasion</i>."
-    ],
+    "notes": ["Fixed typo in patch notes.", "Added <i>Secret Invasion</i>."],
     "url": "/v3"
   },
   {
@@ -201,23 +173,17 @@
   {
     "version": "4.0.2",
     "date": "2024-06",
-    "notes": [
-      "Set logic to query for data only once."
-    ]
+    "notes": ["Set logic to query for data only once."]
   },
   {
     "version": "4.0.3",
     "date": "2024-06",
-    "notes": [
-      "Re-configured patch notes."
-    ]
+    "notes": ["Re-configured patch notes."]
   },
   {
     "version": "4.0.4",
     "date": "2024-06",
-    "notes": [
-      "Tweaked misc. styling."
-    ]
+    "notes": ["Tweaked misc. styling."]
   },
   {
     "version": "4.1.0",
@@ -248,9 +214,7 @@
   {
     "version": "4.4.0",
     "date": "2024-06",
-    "notes": [
-      "Added collections display to media view."
-    ]
+    "notes": ["Added collections display to media view."]
   },
   {
     "version": "4.5.0",
@@ -263,9 +227,7 @@
   {
     "version": "4.5.1",
     "date": "2024-06",
-    "notes": [
-      "Fixed overlapping visual bug from media navigation."
-    ]
+    "notes": ["Fixed overlapping visual bug from media navigation."]
   },
   {
     "version": "4.5.2",
@@ -287,9 +249,7 @@
   {
     "version": "4.5.4",
     "date": "2024-06",
-    "notes": [
-      "Updated packages and fixed one breaking change."
-    ]
+    "notes": ["Updated packages and fixed one breaking change."]
   },
   {
     "version": "4.5.5",
@@ -302,16 +262,12 @@
   {
     "version": "4.5.6",
     "date": "2024-06",
-    "notes": [
-      "Re-synced data to the content list on DigitalSpy."
-    ]
+    "notes": ["Re-synced data to the content list on DigitalSpy."]
   },
   {
     "version": "4.5.7",
     "date": "2024-06",
-    "notes": [
-      "Fixed missed TV show poster logic from v2 to v3 migration."
-    ]
+    "notes": ["Fixed missed TV show poster logic from v2 to v3 migration."]
   },
   {
     "version": "4.5.8",
@@ -348,16 +304,12 @@
   {
     "version": "4.6.3",
     "date": "2024-06",
-    "notes": [
-      "Added <i>Ant-Man</i> title theme."
-    ]
+    "notes": ["Added <i>Ant-Man</i> title theme."]
   },
   {
     "version": "4.7.0",
     "date": "2024-06",
-    "notes": [
-      "Face-lifted nav bar style."
-    ]
+    "notes": ["Face-lifted nav bar style."]
   },
   {
     "version": "4.7.1",
@@ -391,9 +343,7 @@
   {
     "version": "4.9.0",
     "date": "2025-05",
-    "notes": [
-      "Added feature to view the list in reverse chronological order."
-    ]
+    "notes": ["Added feature to view the list in reverse chronological order."]
   },
   {
     "version": "4.9.1",
@@ -412,8 +362,16 @@
   {
     "version": "4.9.3",
     "date": "2026-07",
+    "notes": ["Added <i>The Punisher: One Last Kill</i>."]
+  },
+  {
+    "version": "5.0.0",
+    "date": "2026-07",
     "notes": [
-      "Added <i>The Punisher: One Last Kill</i>."
+      "Overhauled site-wide UI.",
+      "Re-worked, added, and tweaked animations.",
+      "Pre-fetched data instead of pinging TMDB for every media.",
+      "Improved visual UX."
     ]
   }
 ]
