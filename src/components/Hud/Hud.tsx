@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMotionValueEvent } from 'motion/react';
 import styles from './Hud.module.scss';
 import { MediaSummary } from '../../utils/media-lists';
@@ -10,6 +10,7 @@ import {
 } from '../../utils/hud-telemetry';
 import tmdb_meta from '../../assets/tmdb-data.meta.json';
 import type { OrderType } from '../../App';
+import About from '../About/About';
 
 type PropTypes = {
   summary: MediaSummary;
@@ -76,6 +77,10 @@ export default function Hud({
   order_type,
   is_movies_only,
 }: PropTypes) {
+  // The only interactive element the HUD carries — everything else in it is
+  // purely decorative (aria-hidden, pointer-events: none, see below).
+  const [is_about_open, setIsAboutOpen] = useState(false);
+
   return (
     <div className={styles.hud} aria-hidden="true">
       <div className={styles.vignette} />
@@ -131,8 +136,22 @@ export default function Hud({
           SRC&nbsp;{SOURCE_SIGNATURE}&nbsp;.&nbsp;SYNC&nbsp;
           {SOURCE_SYNCED}
         </span>
-        <span className={styles.build_version}>v{APP_VERSION}</span>
+        <span className={styles.build_version}>
+          v{APP_VERSION}&nbsp;
+          {/* The HUD around this is aria-hidden/pointer-events: none (see
+              .hud above) — both are overridden back on here explicitly,
+              since this is the one real control living in an otherwise
+              decorative overlay. */}
+          <button
+            className={styles.about_link}
+            aria-hidden="false"
+            onClick={() => setIsAboutOpen(true)}
+          >
+            [About]
+          </button>
+        </span>
       </div>
+      <About isModalOpen={is_about_open} setIsModalOpen={setIsAboutOpen} />
     </div>
   );
 }

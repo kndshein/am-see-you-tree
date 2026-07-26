@@ -142,9 +142,8 @@ $corner-inset: 14px;
   border-top: 0;
 }
 
-// Pushed down from an original 20px: Nav (Nav.module.scss) is fixed to the
-// viewport bottom and takes no height out of the app's flex flow, so the
-// order-type button and the progress bar right after it (index.scss) are
+// Pushed down from an original 20px: .app's flex flow has nothing above
+// .top_controls, so it and the progress bar right after it (index.scss) are
 // really the first content in that flow and land at y=0 — inside this band.
 // This used to be tolerable (the button's old bottom border was a faint 1px
 // gradient), but the progress bar is a solid, animated line, and z-index: 40
@@ -249,4 +248,25 @@ $corner-inset: 14px;
 
 .build_version {
   color: rgba(255, 255, 255, 0.5);
+}
+
+// The rest of .hud is pointer-events: none (see top of file) — re-enabled
+// here specifically, since this is the one control living in an otherwise
+// click-through overlay. bloom-link overrides the HUD's own monospace/accent
+// font back to the site's regular body font — this is a real link, not a
+// telemetry readout, so it reads like the rest of the site's text rather than
+// like the HUD dressing around it.
+.about_link {
+  @include bloom-link;
+  pointer-events: auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-transform: uppercase;
+  transition: color 0.1s linear;
+
+  &:hover {
+    color: $accent-lite;
+  }
 }

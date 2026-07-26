@@ -145,7 +145,11 @@ code {
 
 // All three order names sit in the button at once (dim), with the active one
 // lit — so switching is a single click, but nothing about it is a surprise:
-// what it is, and what it'll become, are both on screen at rest.
+// what it is, and what it'll become, are both on screen at rest. Bracketed
+// like the site's other links (bloom-link, variables.scss) to read as
+// clickable the same way — but hand-written rather than that mixin, since
+// this keeps its own monospace font and dim/lit palette instead of switching
+// to the mixin's body font and flat white.
 .order_type_btn {
   position: relative;
   display: flex;
@@ -162,20 +166,128 @@ code {
   text-transform: uppercase;
   font-size: clamp(0.65rem, 2vw, 0.8rem);
   transition: 0.1s linear;
+
+  &::before,
+  &::after {
+    color: $accent-lite;
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba($accent-lite, 0.3);
+  }
+
+  &::before {
+    content: '[';
+    margin-right: 6px;
+  }
+
+  &::after {
+    content: ']';
+    margin-left: 6px;
+  }
 }
 
-// Sits directly under the button, standing in for its old static bottom
-// border, carrying live scroll position instead. Inset 60px to match the
-// HUD's own gutter (Hud.module.scss's .top_bar/.readout/.build) — that's the
-// reserved centre gap the button already sits in, flanked by the fixed
+// Bottom-centre, in the HUD's own reserved gap between .readout and .build
+// (see App.tsx's comment) — a status dot instead of the order button's
+// dim/lit text, since this is a single on/off filter rather than a choice
+// between named states; showing it as a fact (lit dot) plus a label reads
+// differently from a button offering several options to pick between.
+.movies_only_toggle {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+  font-family: $body-text;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: clamp(0.65rem, 2vw, 0.8rem);
+  color: rgba($main-lite, 0.6);
+  transition: color 0.1s linear;
+
+  &:hover {
+    color: white;
+  }
+
+  &.active {
+    color: white;
+  }
+
+  // An expanded card's own overlay (MediaWrapper.module.scss's .overlay) sits
+  // inside that card's .media, which has isolation: isolate — so its z-index
+  // can never actually out-rank a sibling of .media regardless of how high
+  // it's set, only the .media element carrying it can. That card gets
+  // z-index: 2 while expanded (index.scss's .media rule); dropping below that
+  // here is what actually tucks this behind the overlay, not any z-index on
+  // the overlay itself.
+  &:disabled {
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  // Same bracket-and-bloom treatment as .order_type_btn — wraps the whole
+  // control (dot included), not just the label, matching that button's
+  // brackets framing all of its options rather than just the active one.
+  &::before,
+  &::after {
+    color: $accent-lite;
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba($accent-lite, 0.3);
+  }
+
+  &::before {
+    content: '[';
+  }
+
+  &::after {
+    content: ']';
+  }
+}
+
+.status_dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(200, 70, 70, 0.6);
+  box-shadow: 0 0 4px rgba(200, 70, 70, 0.5);
+  transition: $transition-fast;
+}
+
+.movies_only_toggle.active .status_dot {
+  background-color: rgb(80, 220, 120);
+  animation: status_dot_glow 1s ease-in-out infinite alternate;
+}
+
+// A breathe, not a pulse: both ends stay close together (5px/0.6 to 6px/0.8)
+// rather than swinging from barely-there to full-bright.
+@keyframes status_dot_glow {
+  from {
+    box-shadow: 0 0 5px rgba(80, 220, 120, 0.6);
+  }
+  to {
+    box-shadow: 0 0 6px rgba(80, 220, 120, 0.8);
+  }
+}
+
+// Sits directly under the order-type button, standing in for its old static
+// bottom border, carrying live scroll position instead. Inset 60px to match
+// the HUD's own gutter (Hud.module.scss's .top_bar/.readout/.build) — that's
+// the reserved centre gap the button already sits in, flanked by the fixed
 // "MCU // DATABASE" / "STARK INDUSTRIES" readouts; full-bleed ran underneath
 // that flanking text instead of staying in the gap meant for it.
 //
-// Nav is `position: fixed; bottom: 0`, so it takes no height out of the flex
-// flow — this button (and this bar right after it) are really the first thing
-// in it, landing at y=0. The HUD's top_bar is pushed down to clear that block
-// instead of this bar being pushed down to clear the HUD — see top_bar's own
-// comment in Hud.module.scss.
+// .app's flex flow has nothing above the button to push it down — it's
+// really the first thing in it, landing at y=0. The HUD's top_bar is pushed
+// down to clear that block instead of this bar being pushed down to clear the
+// HUD — see top_bar's own comment in Hud.module.scss.
 .progress {
   flex-shrink: 0;
   height: 2px;
@@ -227,7 +339,6 @@ code {
 
 .order_type_option.active {
   color: $accent-lite;
-  font-weight: 700;
 }
 
 .order_type_btn:hover .order_type_option {

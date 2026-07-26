@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
-import Nav from './components/Nav/Nav';
 import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
-import { motion, MotionConfig } from 'motion/react';
+import { motion, MotionConfig, useMotionValueEvent } from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
 import { buildMediaList, summarizeMedia } from './utils/media-lists';
-import { scroll_progress } from './utils/hud-telemetry';
+import { scroll_progress, is_locked } from './utils/hud-telemetry';
 
 Modal.setAppElement('#root');
 
@@ -44,6 +43,11 @@ function App() {
   const [order_index, setOrderIndex] = useState(getInitialOrderIndex);
   const [tmdb_data, setTmdbData] = useState<TmdbMap | null>(null);
   const [has_load_error, setHasLoadError] = useState(false);
+  // Rarely changes (only on card open/close), so a plain re-render here is
+  // fine — unlike is_locked's other reader (Hud's readouts), which is on a
+  // MotionValue specifically to dodge 60fps re-renders during scroll.
+  const [is_card_expanded, setIsCardExpanded] = useState(is_locked.get());
+  useMotionValueEvent(is_locked, 'change', setIsCardExpanded);
 
   function handleDOMLoad() {
     setIsDOMLoaded(true);
@@ -102,10 +106,6 @@ function App() {
       {is_DOM_loaded && tmdb_data && (
         <TmdbContext.Provider value={tmdb_data}>
           <main className="app">
-            <Nav
-              is_movies_only={is_movies_only}
-              setIsMoviesOnly={setIsMoviesOnly}
-            />
             <button
               className="order_type_btn"
               onClick={() =>
@@ -144,6 +144,24 @@ function App() {
               order_type={order_type}
               is_movies_only={is_movies_only}
             />
+            {/* Bottom-centre, in the HUD's own reserved gap between .readout
+                and .build (see .build's comment in Hud.module.scss) — where
+                the old nav bar's centrepiece used to sit. */}
+            <button
+              className={`movies_only_toggle ${
+                is_movies_only ? 'active' : ''
+              }`}
+              aria-pressed={is_movies_only}
+              // The expanded card's own darkened overlay sits above this in
+              // z-index (see index.scss's :disabled rule) — disabling the
+              // click keeps the two in sync instead of leaving a control
+              // that's invisible but still technically toggleable.
+              disabled={is_card_expanded}
+              onClick={() => setIsMoviesOnly((prev) => !prev)}
+            >
+              <span className="status_dot" aria-hidden="true" />
+              Movies Only
+            </button>
           </main>
         </TmdbContext.Provider>
       )}

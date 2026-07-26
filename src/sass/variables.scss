@@ -56,6 +56,20 @@ $font-size-lg: 2rem;
   line-height: 1.2;
 }
 
+// The site's standard "this text is a link" look: readable body font (as
+// opposed to the HUD's monospace accent font) plus the same soft white glow
+// CollectionPanel's titles reveal in with (its .title_white) — pulled out
+// here so every link on the site reads the same way instead of each one
+// reinventing it. Callers set their own hover state, since what "active"
+// means (color shift, brightness) varies by context.
+@mixin bloom-link {
+  font-family: $body-text;
+  color: $white;
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($accent-lite, 0.2);
+}
+
 $body-text: 'Space Grotesk', sans-serif;
 $accent-text:
   Monaspace Krypton,
