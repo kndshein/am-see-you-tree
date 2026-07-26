@@ -1,27 +1,35 @@
 [
   {
     "version": "1.0.0",
-    "date": "Jan 2021",
-    "notes": ["<i>AmSeeYou</i> was born."]
+    "date": "2021-01",
+    "notes": [
+      "<i>AmSeeYou</i> was born."
+    ]
   },
   {
     "version": "1.0.1",
-    "date": "Feb 2021",
-    "notes": ["Fixed visual and technical bugs."]
+    "date": "2021-02",
+    "notes": [
+      "Fixed visual and technical bugs."
+    ]
   },
   {
     "version": "1.0.2",
-    "date": "Mar 2021",
-    "notes": ["Minor UX improvements."]
+    "date": "2021-03",
+    "notes": [
+      "Minor UX improvements."
+    ]
   },
   {
     "version": "1.0.3",
-    "date": "May 2021",
-    "notes": ["Minor deployment fixes."]
+    "date": "2021-05",
+    "notes": [
+      "Minor deployment fixes."
+    ]
   },
   {
     "version": "1.1.0",
-    "date": "Jul 2021",
+    "date": "2021-07",
     "notes": [
       "Added <i>Black Widow</i>.",
       "Added casts.",
@@ -31,17 +39,21 @@
   },
   {
     "version": "2.0.0",
-    "date": "Jul 2021",
-    "notes": ["Added TV shows and accompanying episodes."]
+    "date": "2021-07",
+    "notes": [
+      "Added TV shows and accompanying episodes."
+    ]
   },
   {
     "version": "2.1.0",
-    "date": "Jul 2021",
-    "notes": ["Refactored API calls."]
+    "date": "2021-07",
+    "notes": [
+      "Refactored API calls."
+    ]
   },
   {
     "version": "2.2.0",
-    "date": "Jul 2021",
+    "date": "2021-07",
     "notes": [
       "Added loading spinners.",
       "Replaced horizontal scroll with scrollbar."
@@ -49,12 +61,14 @@
   },
   {
     "version": "2.3.0",
-    "date": "Jul 2021",
-    "notes": ["Added 'Movies Only' filter and About Card."]
+    "date": "2021-07",
+    "notes": [
+      "Added 'Movies Only' filter and About Card."
+    ]
   },
   {
     "version": "2.3.1",
-    "date": "Sep 2021",
+    "date": "2021-09",
     "notes": [
       "Added <i>Shang-Chi and the Legend of Ten Rings</i>.",
       "Refactored media list."
@@ -62,29 +76,36 @@
   },
   {
     "version": "2.3.2",
-    "date": "Oct 2021",
-    "notes": ["Added <i>What If...?</i>", "Refactored genres' CSS styling."]
+    "date": "2021-10",
+    "notes": [
+      "Added <i>What If...?</i>",
+      "Refactored genres' CSS styling."
+    ]
   },
   {
     "version": "2.4.0",
-    "date": "Oct 2021",
+    "date": "2021-10",
     "notes": [
       "Added labels for better differentiation between movies and shows."
     ]
   },
   {
     "version": "2.4.1",
-    "date": "Nov 2021",
-    "notes": ["Added <i>Eternals</i>."]
+    "date": "2021-11",
+    "notes": [
+      "Added <i>Eternals</i>."
+    ]
   },
   {
     "version": "2.4.2",
-    "date": "Jan 2022",
-    "notes": ["Added <i>Spider-Man: No Way Home</i> and <i>Hawkeye</i>."]
+    "date": "2022-01",
+    "notes": [
+      "Added <i>Spider-Man: No Way Home</i> and <i>Hawkeye</i>."
+    ]
   },
   {
     "version": "2.4.3",
-    "date": "Jan 2022",
+    "date": "2022-01",
     "notes": [
       "Added <i>Doctor Strange in the Multiverse of Madness</i>, <i>Moon Knight</i>, and <i>Thor: Love and Thunder</i>.",
       "Responsiveness on ultra-wide screens.",
@@ -93,7 +114,7 @@
   },
   {
     "version": "2.5.0",
-    "date": "Nov 2022",
+    "date": "2022-11",
     "notes": [
       "Updated patch notes system.",
       "Reordered various media to reflect original source.",
@@ -103,7 +124,7 @@
   },
   {
     "version": "2.6.0",
-    "date": "Nov 2022",
+    "date": "2022-11",
     "notes": [
       "Created 'misc' category.",
       "Added additional genre colors.",
@@ -113,12 +134,14 @@
   },
   {
     "version": "3.0.0",
-    "date": "Feb 2023",
-    "notes": ["Rebuilt site using Vite."]
+    "date": "2023-02",
+    "notes": [
+      "Rebuilt site using Vite."
+    ]
   },
   {
     "version": "3.1.0",
-    "date": "Apr 2023",
+    "date": "2023-04",
     "notes": [
       "Added movie static effects to cards.",
       "Added animated card effect on hover",
@@ -128,14 +151,14 @@
   },
   {
     "version": "3.1.1",
-    "date": "Apr 2023",
+    "date": "2023-04",
     "notes": [
       "Added <i>Black Panther: Wakanda Forever</i>, <i>The Guardians of the Galaxy Holiday Special</i>, <i>Ant-Man and the Wasp: Quantumania</i>, and <i>Guardians of the Galaxy Volume 3</i>."
     ]
   },
   {
     "version": "3.2.0",
-    "date": "Apr 2023",
+    "date": "2023-04",
     "notes": [
       "Added a new hover effect.",
       "Added underline styling element on collapsed media view."
@@ -143,18 +166,23 @@
   },
   {
     "version": "3.3.0",
-    "date": "Apr 2023",
-    "notes": ["Added numbering design on media interface."]
+    "date": "2023-04",
+    "notes": [
+      "Added numbering design on media interface."
+    ]
   },
   {
     "version": "3.3.1",
-    "date": "Sep 2023",
-    "notes": ["Fixed typo in patch notes.", "Added <i>Secret Invasion</i>."],
+    "date": "2023-09",
+    "notes": [
+      "Fixed typo in patch notes.",
+      "Added <i>Secret Invasion</i>."
+    ],
     "url": "/v3"
   },
   {
     "version": "4.0.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Overhauled expanded media view UI.",
       "Added animations to media view.",
@@ -165,29 +193,35 @@
   },
   {
     "version": "4.0.1",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Added <i>I am Groot (Season 2)</i>, <i>Loki (Season 2)</i>, <i>The Marvels</i>, <i>What If...? (Season 2)</i>, and <i>Echo</i>."
     ]
   },
   {
     "version": "4.0.2",
-    "date": "June 2024",
-    "notes": ["Set logic to query for data only once."]
+    "date": "2024-06",
+    "notes": [
+      "Set logic to query for data only once."
+    ]
   },
   {
     "version": "4.0.3",
-    "date": "June 2024",
-    "notes": ["Re-configured patch notes."]
+    "date": "2024-06",
+    "notes": [
+      "Re-configured patch notes."
+    ]
   },
   {
     "version": "4.0.4",
-    "date": "June 2024",
-    "notes": ["Tweaked misc. styling."]
+    "date": "2024-06",
+    "notes": [
+      "Tweaked misc. styling."
+    ]
   },
   {
     "version": "4.1.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Archived previous versions of the site.",
       "Redirected subdirectories to archived versions."
@@ -195,7 +229,7 @@
   },
   {
     "version": "4.2.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Implemented alternate backdrops for TV shows based on season numbers.",
       "Configured to use higher quality backdrops.",
@@ -205,7 +239,7 @@
   },
   {
     "version": "4.3.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Added season marker for TV shows.",
       "Adjusted poster scrollbar padding on small view-heights."
@@ -213,12 +247,14 @@
   },
   {
     "version": "4.4.0",
-    "date": "June 2024",
-    "notes": ["Added collections display to media view."]
+    "date": "2024-06",
+    "notes": [
+      "Added collections display to media view."
+    ]
   },
   {
     "version": "4.5.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Implemented media navigation via the collections list.",
       "Implemented pre-fetching resources shown in the collections list."
@@ -226,12 +262,14 @@
   },
   {
     "version": "4.5.1",
-    "date": "June 2024",
-    "notes": ["Fixed overlapping visual bug from media navigation."]
+    "date": "2024-06",
+    "notes": [
+      "Fixed overlapping visual bug from media navigation."
+    ]
   },
   {
     "version": "4.5.2",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Fixed bug where TV shows were overlapping in media view.",
       "Fixed bug where intervals were not cleared up when no longer in use.",
@@ -240,7 +278,7 @@
   },
   {
     "version": "4.5.3",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Added logic to scroll into view when media is selected.",
       "Fixed overlapping nav bar."
@@ -248,12 +286,14 @@
   },
   {
     "version": "4.5.4",
-    "date": "June 2024",
-    "notes": ["Updated packages and fixed one breaking change."]
+    "date": "2024-06",
+    "notes": [
+      "Updated packages and fixed one breaking change."
+    ]
   },
   {
     "version": "4.5.5",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Added guard to freeze fetching while scrolling to another media.",
       "Implemented logic to only scroll if media is out of viewport."
@@ -261,24 +301,28 @@
   },
   {
     "version": "4.5.6",
-    "date": "June 2024",
-    "notes": ["Re-synced data to the content list on DigitalSpy."]
+    "date": "2024-06",
+    "notes": [
+      "Re-synced data to the content list on DigitalSpy."
+    ]
   },
   {
     "version": "4.5.7",
-    "date": "June 2024",
-    "notes": ["Fixed missed TV show poster logic from v2 to v3 migration."]
+    "date": "2024-06",
+    "notes": [
+      "Fixed missed TV show poster logic from v2 to v3 migration."
+    ]
   },
   {
     "version": "4.5.8",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Fixed bug where content isn't dynamically loaded based on viewport if first time opening the site or forced refreshed."
     ]
   },
   {
     "version": "4.6.0",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Set up scaffold for themed titles.",
       "Added themed titles for <i>Iron Man</i>, <i>Captain America</i>, <i>Thor</i>, <i>Black Panther</i>, <i>Spider-man</i>, and <i>Black Widow</i>."
@@ -286,7 +330,7 @@
   },
   {
     "version": "4.6.1",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Configured scrolling to be instant on Chrome due to lag-y scrolling on Chromiums.",
       "Reduced computation for non-themed titles."
@@ -294,7 +338,7 @@
   },
   {
     "version": "4.6.2",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Slightly improved media expanded/collapsed logic.",
       "Tweaked various themed titles.",
@@ -303,24 +347,28 @@
   },
   {
     "version": "4.6.3",
-    "date": "June 2024",
-    "notes": ["Added <i>Ant-Man</i> title theme."]
+    "date": "2024-06",
+    "notes": [
+      "Added <i>Ant-Man</i> title theme."
+    ]
   },
   {
     "version": "4.7.0",
-    "date": "June 2024",
-    "notes": ["Face-lifted nav bar style."]
+    "date": "2024-06",
+    "notes": [
+      "Face-lifted nav bar style."
+    ]
   },
   {
     "version": "4.7.1",
-    "date": "June 2024",
+    "date": "2024-06",
     "notes": [
       "Added <i>Short</i> and <i>Special</i> tags to replace the previously all-encompassing <i>Misc</i> tag."
     ]
   },
   {
     "version": "4.8.0",
-    "date": "November 2024",
+    "date": "2024-11",
     "notes": [
       "Removed navigation-via-collections feature introduced in 4.5.0.",
       "Added <i>Agatha All Along</i> and <i>Deadpool & Wolverine</i>."
@@ -328,40 +376,44 @@
   },
   {
     "version": "4.8.1",
-    "date": "February 2025",
+    "date": "2025-02",
     "notes": [
       "Added <i>What If...? (Season 3)</i> and <i>Captain America: Brave New World</i>."
     ]
   },
   {
     "version": "4.8.2",
-    "date": "May 2025",
+    "date": "2025-05",
     "notes": [
       "Added <i>Daredevil: Born Again (Season 1)</i> and <i>Thunderbolts*</i>."
     ]
   },
   {
     "version": "4.9.0",
-    "date": "May 2025",
-    "notes": ["Added feature to view the list in reverse chronological order."]
+    "date": "2025-05",
+    "notes": [
+      "Added feature to view the list in reverse chronological order."
+    ]
   },
   {
     "version": "4.9.1",
-    "date": "November 2025",
+    "date": "2025-11",
     "notes": [
       "Added <i>Ironheart</i>, <i>The Fantastic Four: First Steps</i>, <i>Eyes of Wakanda</i>, and <i>Marvel Zombies</i>."
     ]
   },
   {
     "version": "4.9.2",
-    "date": "April 2026",
+    "date": "2026-04",
     "notes": [
       "Added <i>Wonder Man</i>, and <i>Daredevil: Born Again (Season 2)</i>."
     ]
   },
   {
     "version": "4.9.3",
-    "date": "July 2026",
-    "notes": ["Added <i>The Punisher: One Last Kill</i>."]
+    "date": "2026-07",
+    "notes": [
+      "Added <i>The Punisher: One Last Kill</i>."
+    ]
   }
 ]

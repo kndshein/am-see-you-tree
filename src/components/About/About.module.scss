@@ -1,16 +1,62 @@
 @use '../../sass/variables.scss' as *;
 
+// react-modal's own CSS-transition support (base/afterOpen/beforeClose
+// classes + closeTimeoutMS in About.tsx) rather than fighting its
+// mount/unmount lifecycle with Framer AnimatePresence — react-modal already
+// handles adding afterOpen a tick after mount (so this has a real "before"
+// state to transition from) and keeping beforeClose mounted long enough for
+// the close transition to actually play.
 .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 3;
+  position: fixed;
+  inset: 0;
+  // Hud.module.scss's .hud sits at z-index: 40 and covers the full
+  // viewport — without clearing that, it painted on top of this modal.
+  z-index: 50;
+  // Same darkness as the expanded card's own overlay
+  // (MediaWrapper.module.scss).
+  background-color: rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
+.overlay_after_open {
+  opacity: 1;
+}
+
+.overlay_before_close {
+  opacity: 0;
+}
+
+// react-modal's own content node — needs a definite width/height (100% of
+// .overlay, itself a definite-sized fixed/inset:0 box), not the shrink-to-fit
+// "auto" a plain flex item would get. .container's max-width: 70% has no
+// definite ancestor width to resolve against otherwise, which is what
+// actually broke centering (not just the click-through below) the first
+// time this was reworked — it silently fell back to sizing off .container's
+// own unconstrained content instead.
 .modal {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.modal_after_open {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal_before_close {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+// Centers .container within .modal's full-size box, and — since it's the
+// one thing filling all the space around .container — doubles as "click
+// outside to close" (About.tsx's onClick checks event.target === itself, so
+// a click that bubbles up from .container doesn't count).
+.modal_inner {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,15 +68,22 @@
   position: absolute;
   right: 2%;
   top: 3%;
+  z-index: 1;
   width: 50px;
   height: 50px;
   cursor: pointer;
   border: none;
   background: none;
+  color: $white;
+  transition: color 0.15s ease-out;
+}
+
+.close_btn:hover {
+  color: $accent-lite;
 }
 
 .close_btn svg {
-  fill: white;
+  fill: currentColor;
   width: 100%;
   height: 100%;
 }
@@ -38,11 +91,20 @@
 .container {
   position: relative;
   padding: 30px;
-  max-width: 70%;
+  max-width: 55%;
   height: 80vh;
   color: $muted-text;
-  background-color: $main;
+  // Translucent + blurred rather than a flat fill — the rail (already
+  // blurred once by .overlay) shows through faintly behind it, reading as a
+  // glass HUD panel rather than a plain box.
+  background-color: rgba($background, 0.85);
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+  // Same border the expanded card's own panel uses
+  // (MediaWrapper.module.scss's .content).
+  border: 1px solid $accent-lite;
   border-radius: $radius-md;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
   font-size: clamp(1rem, 3vw, 1.2rem);
   letter-spacing: 0.9px;
 }
@@ -53,84 +115,151 @@
   padding: 0 30px;
 }
 
+.wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+  background: rgba($accent-lite, 0.05);
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+  background: rgba($accent-lite, 0.3);
+  border-radius: 4px;
+}
+
+.wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba($accent-lite, 0.5);
+}
+
 .title {
-  position: relative;
+  @include title-accent-bar($top: 15%, $height: 75%);
   margin: 0;
   padding-left: 20px;
   color: white;
   font-size: 2.5rem;
 }
 
-.title::before {
-  content: '';
-  position: absolute;
-  top: 15%;
-  left: 0;
-  width: 5px;
-  height: 75%;
-  background-color: $accent-lite;
-}
-
-.container a {
-  text-decoration: none;
-  font-style: italic;
-  color: $accent-lite;
-}
-
-.container a:hover {
-  color: white;
-}
-
+// Same color the card's own Synopsis text uses (Overview.module.scss).
 .body {
+  color: rgba($white, 0.75);
   line-height: 1.4rem;
 }
 
-.table_container {
-  font-size: clamp(0.9rem, 2vw, 1rem);
+// Same bracket-and-bloom treatment as every other link on the site
+// (variables.scss's bloom-link, plus the [ ] framing About.tsx's own
+// [About] trigger and the Collection/Cast pills use) — this used to be a
+// plain italic teal link with no relation to that language.
+.link {
+  @include bloom-link;
+  text-decoration: none;
+  transition: color 0.15s ease-out 0.1s;
+}
+
+// No color of its own: inherits .link's white at rest, and moves with it on
+// hover below — one unit, same as [About] itself (Hud.module.scss).
+.link_bracket {
+  transition: color 0.15s ease-out 0.1s;
+}
+
+.link:hover,
+.link:hover .link_bracket {
+  color: $accent-lite;
+}
+
+.patch_list {
+  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
   margin-top: 50px;
-}
-
-.row {
   display: flex;
-  margin-bottom: 10px;
+  flex-flow: column;
+  gap: 8px;
 }
 
-.row > * {
-  margin-bottom: 5px;
+// Same visual language as Genres.module.scss's own .genre_row — a tinted
+// tab background with a solid colour bar down the left edge — rather than a
+// bare table row, so each entry reads as its own tag instead of a line of
+// text.
+.patch_row {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 10px 14px 10px 20px;
+  background-color: $tab-background;
+  box-shadow: 0 0 5px $shadow-faint;
 }
 
-.row.current {
+.patch_row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background-color: $accent-lite;
+}
+
+.patch_row.current {
   color: white;
 }
 
-.version {
-  width: 65px;
-  flex-shrink: 0;
+.patch_row.current::before {
+  background-color: $white;
 }
 
-.date {
-  width: 90px;
+.patch_version {
   flex-shrink: 0;
+  width: 60px;
+  font-family: $accent-text;
+  letter-spacing: 1px;
+  color: $accent-lite;
 }
 
-.notes_container {
+.patch_row.current .patch_version {
+  color: white;
+}
+
+.patch_date {
+  flex-shrink: 0;
+  width: 100px;
+  font-family: $accent-text;
+  font-size: 0.85em;
+  letter-spacing: 0.5px;
+  color: $muted-text;
+}
+
+.patch_notes {
   display: flex;
   flex-flow: column;
+  gap: 2px;
 }
 
-/* table */
-table {
-  font-size: $font-size-base;
-  border-collapse: collapse;
+// Marks the newest entry the same way Hud's own StatusReadout marks a
+// locked card — a small filled label rather than relying on the row's tint
+// alone to say "this one's current."
+.latest_tag {
+  @include field-label;
+  font-family: $body-text;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 1px 4px;
+  font-size: 0.55rem;
+  border: 1px solid rgba($accent-lite, 0.4);
+  border-radius: $radius-sm;
+  color: $accent-lite;
 }
 
 @media only screen and (max-width: 900px) {
-  tr {
-    display: flex;
+  .patch_row {
     flex-flow: column;
+    gap: 2px;
   }
 
-  .notes_container span {
+  .patch_notes span {
     margin-bottom: 5px;
+  }
+
+  .latest_tag {
+    margin-left: 0;
   }
 }

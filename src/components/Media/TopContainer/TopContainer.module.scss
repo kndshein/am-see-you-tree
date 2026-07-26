@@ -21,7 +21,7 @@
 }
 
 .title {
-  position: relative;
+  @include title-accent-bar;
   display: inline;
   width: 100%;
   margin: 0;
@@ -34,16 +34,6 @@
     font-family: $title-text;
     letter-spacing: 2px;
   }
-}
-
-.title::before {
-  content: '';
-  position: absolute;
-  top: 5%;
-  left: 0;
-  width: 5px;
-  height: 95%;
-  background-color: $accent-lite;
 }
 
 .title {

@@ -16,9 +16,11 @@ const MONTHS = [
 export default function dateCalc(date_str?: string): string {
   if (!date_str || typeof date_str !== 'string') return '';
 
-  // Format expected: YYYY-MM-DD
+  // Format expected: YYYY-MM-DD, or YYYY-MM for things only known to the
+  // month (About.tsx's patch notes) — same MON YYYY styling, just without a
+  // day that was never real.
   const parts = date_str.split('-');
-  if (parts.length < 3) return date_str;
+  if (parts.length < 2) return date_str;
 
   const [year, month_str, day] = parts;
   const month_idx = parseInt(month_str, 10) - 1;
@@ -28,7 +30,7 @@ export default function dateCalc(date_str?: string): string {
 
   // Space-separated rather than dot-separated: a labelled field sits next to
   // other labelled fields, and dots inside the value blur where one ends.
-  return `${day} ${month} ${year}`;
+  return day ? `${day} ${month} ${year}` : `${month} ${year}`;
 }
 
 // Seconds-since-epoch representation of the same date, used as the
