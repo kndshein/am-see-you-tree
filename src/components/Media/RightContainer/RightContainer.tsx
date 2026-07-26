@@ -250,9 +250,7 @@ export default function RightContainer({
                         </span>
                       )}
                       <span className={styles.actor_name}>
-                        <span className={styles.actor_bracket}>[</span>
                         {actor.name}
-                        <span className={styles.actor_bracket}>]</span>
                       </span>
                     </motion.button>
                   );

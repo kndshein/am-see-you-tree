@@ -151,13 +151,36 @@
 }
 
 .actor {
+  position: relative;
   display: flex;
   flex-flow: column;
   align-items: flex-start;
   line-height: 1;
   padding: 7px 8px 5px;
-  border: 1px solid $accent;
-  border-radius: $radius-sm;
+  border: 2px solid transparent; // Reserve space for the brackets, 2px thick
+}
+
+.actor::before,
+.actor::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 6px;
+  border: 2px solid $accent; // Thicker lines
+  border-radius: 0; // Square brackets
+  transition: border-color 0.2s ease, filter 0.2s ease;
+  pointer-events: none;
+}
+
+.actor::before {
+  left: -2px;
+  border-right: none;
+}
+
+.actor::after {
+  right: -2px;
+  border-left: none;
 }
 
 .actor_button {
@@ -166,18 +189,26 @@
   text-align: left;
   color: inherit;
   text-transform: uppercase;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 
   &:hover {
-    border-color: $accent-lite;
-    box-shadow: 0 0 8px rgba(102, 192, 204, 0.4);
     background-color: rgba(102, 192, 204, 0.08);
+
+    &::before,
+    &::after {
+      border-color: $accent-lite;
+      filter: drop-shadow(0 0 3px rgba(102, 192, 204, 0.4));
+    }
   }
 
   &.selected {
-    border-color: $white;
     background-color: rgba(102, 192, 204, 0.2);
-    box-shadow: 0 0 10px rgba(102, 192, 204, 0.6);
+
+    &::before,
+    &::after {
+      border-color: $white;
+      filter: drop-shadow(0 0 5px rgba(102, 192, 204, 0.6));
+    }
 
     .actor_name {
       color: $white;
@@ -192,6 +223,13 @@
   opacity: 0.4;
   cursor: default;
   user-select: none;
+  border-color: $accent; // Override transparent with visible border
+  border-radius: $radius-sm;
+
+  &::before,
+  &::after {
+    display: none;
+  }
 }
 
 .actor_name {
@@ -199,17 +237,6 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-}
-
-.actor_bracket {
-  opacity: 0.45;
-  transition: opacity 0.2s ease;
-  transform: translateY(-1px); // Optical adjustment since brackets naturally sit a bit low in many fonts
-}
-
-.actor_button:hover .actor_bracket,
-.actor_button.selected .actor_bracket {
-  opacity: 1;
 }
 
 // Character (or Director/Creator, for the pills below them), in the same mono
@@ -227,7 +254,13 @@
 // from the people in it without needing a separate heading.
 .actor.director {
   color: $hud-green;
-  border-color: rgba($hud-green, 0.55);
+  border-color: rgba($hud-green, 0.55); // Full border for non-interactive
+  border-radius: $radius-sm;
+
+  &::before,
+  &::after {
+    display: none;
+  }
 }
 
 .actor.director .actor_role {

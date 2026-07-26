@@ -31,7 +31,7 @@
   top: var(--panel-top, 38px);
   left: 100%;
   margin-left: 24px;
-  width: 280px;
+  width: 380px;
   display: flex;
   flex-flow: column;
   gap: 8px;
@@ -72,12 +72,11 @@
 }
 
 .name {
-  display: inline-flex;
-  align-items: baseline;
+  display: inline;
 }
 
 .bracket {
-  display: inline-block;
+  display: inline;
   color: $white;
 }
 
@@ -87,26 +86,43 @@
 
 .title_wrap {
   position: relative;
-  display: inline-block;
+  display: inline;
 }
 
-.title_grey {
+.type_icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 0.7em;
+  opacity: 0.9;
+  color: $accent-lite; // Default for movies
+}
+
+.is_tv .type_icon { color: $show; }
+.is_short .type_icon { color: $short; }
+.is_special .type_icon { color: $special; }
+
+.title {
   color: $muted-text;
+  transition: color 0.15s ease-out, text-shadow 0.15s ease-out;
+
+  &.revealed {
+    color: $white;
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba(102, 192, 204, 0.2); // Default movie glow
+  }
 }
 
-.title_white {
-  position: absolute;
-  top: 0;
-  left: 0;
+.bracket {
+  display: inline;
   color: $white;
-  text-shadow:
-    0 0 3px rgba(255, 255, 255, 0.35),
-    0 0 7px rgba(102, 192, 204, 0.2);
+  transition: color 0.15s ease-out;
 }
 
-.item:hover .title_grey,
-.item:hover .title_white {
+.item:hover .title {
   color: $accent-lite;
+  transition-delay: 0s !important;
 }
 
 .year {
@@ -116,8 +132,35 @@
   color: rgba($white, 0.5);
 }
 
+.is_tv .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($show, 0.2);
+}
+
+.is_short .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($short, 0.2);
+}
+
+.is_special .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($special, 0.2);
+}
+
 .is_tv:hover .bracket,
-.is_tv:hover .title_grey,
-.is_tv:hover .title_white {
+.is_tv:hover .title {
   color: $show;
+}
+
+.is_short:hover .bracket,
+.is_short:hover .title {
+  color: $short;
+}
+
+.is_special:hover .bracket,
+.is_special:hover .title {
+  color: $special;
 }

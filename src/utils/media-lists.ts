@@ -74,7 +74,10 @@ export function castMatchesInMediaList(
       return data.credits.cast.some(
         (c) => c.name.toLowerCase() === cast_name.toLowerCase(),
       );
-    });
+    })
+    .sort((a, b) =>
+      releaseDateOf(a, tmdb_data).localeCompare(releaseDateOf(b, tmdb_data)),
+    );
 }
 
 // A season can appear as several entries in media-list.json when a movie was

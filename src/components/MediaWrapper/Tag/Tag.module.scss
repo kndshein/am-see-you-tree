@@ -18,6 +18,14 @@
   background-color: $main;
 }
 
+.icon {
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  font-size: 0.7em;
+  opacity: 0.8;
+}
+
 .type_tag.movie {
   color: $accent-lite;
 }

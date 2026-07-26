@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { FaSquare, FaBars, FaPlay, FaCircle } from 'react-icons/fa';
 import { MediaType } from '../../../types/Media';
 import { HandleToggleType } from '../../../types/Toggles';
 import {
@@ -186,10 +187,23 @@ function CastItem({
     ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: bracket_delay }
     : { duration: 0 };
 
+  const TYPE_ICONS: Record<MediaType['type'], React.ReactNode> = {
+    movie: <FaSquare />,
+    tv: <FaBars />,
+    short: <FaPlay />,
+    special: <FaCircle />,
+  };
+
   return (
     <motion.button
       className={`${styles.item} ${!is_clickable ? styles.not_in_rail : ''} ${
-        type === 'tv' ? styles.is_tv : ''
+        type === 'tv'
+          ? styles.is_tv
+          : type === 'short'
+          ? styles.is_short
+          : type === 'special'
+          ? styles.is_special
+          : ''
       }`}
       variants={entry}
       // Not interactive until its bracket reveal finishes AND it's in the rail.
@@ -207,15 +221,12 @@ function CastItem({
           [
         </motion.span>
         <span className={styles.title_wrap}>
-          <span className={styles.title_grey}>{title}</span>
-          <motion.span
-            className={styles.title_white}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: is_content_expanded ? 1 : 0 }}
-            transition={reveal_transition}
+          <span
+            className={`${styles.title} ${is_content_expanded ? styles.revealed : ''}`}
+            style={{ transitionDelay: (is_content_expanded && !is_revealed) ? `${bracket_delay}s` : '0s' }}
           >
             {title}
-          </motion.span>
+          </span>
         </span>
         <motion.span
           className={styles.bracket}
@@ -226,6 +237,7 @@ function CastItem({
           ]
         </motion.span>
       </span>
+      <span className={styles.type_icon}>{TYPE_ICONS[type]}</span>
       {year && <span className={styles.year}>{year}</span>}
     </motion.button>
   );
