@@ -365,6 +365,11 @@
     "notes": ["Added <i>The Punisher: One Last Kill</i>."]
   },
   {
+    "version": "4.9.4",
+    "date": "July 2026",
+    "notes": ["Modified assets to serve from /static-v4 for archival purposes."]
+  },
+  {
     "version": "5.0.0",
     "date": "2026-07",
     "notes": [
@@ -378,5 +383,10 @@
     "version": "5.0.1",
     "date": "2026-07",
     "notes": ["Add v4 redirect rule.", "Fixed flashing image on card hover."]
+  },
+  {
+    "version": "5.0.2",
+    "date": "2026-07",
+    "notes": ["Misc. typos.", "Archive v4."]
   }
 ]
