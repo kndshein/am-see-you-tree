@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $background: rgb(18, 18, 18);
 $main: rgb(37, 37, 37);
 $main-lite: rgb(110, 110, 110);
@@ -8,7 +10,114 @@ $tab-background: rgba(170, 170, 170, 0.1);
 $show: #ffa17c;
 $short: #75ffbc;
 $special: #ffe875;
+$white: rgb(255, 255, 255);
+$muted-text: grey;
+// The HUD's green, shared so the director pill matches the frame readouts.
+$hud-green: rgb(102, 204, 170);
+$shadow-faint: rgba(0, 0, 0, 0.1);
 
-$body-text: mr-eaves-xl-modern, sans-serif;
-$accent-text: Monaspace Krypton, sans-serif;
+// The scroll arrows' hold-to-jump charge tint (MediaListWrapper.module.scss)
+// — dark red, distinct from the other two alert colors below so it doesn't
+// get confused with either.
+$charge-red: rgb(130, 28, 22);
+
+// The HUD's own alert orange, once a held arrow is actually armed
+// (Hud.module.scss's rails/corner reticles, is_armed) — also used directly
+// by the progress bar/teardrop (index.scss) so all three visibly share the
+// exact same color rather than three separately-tuned oranges drifting
+// apart. Distinct from .locked's own red-orange (Hud.module.scss) and from
+// $charge-red above.
+$corner-charging: rgb(255, 145, 60);
+
+// $accent is roughly $accent-lite mixed 50/50 with black — the collapsed
+// card's own reflection gradient (index.scss) uses that dim tier rather than
+// the bright one everything else ($show/$short/$special themselves) uses, so
+// these give the type colors the same second, dimmer tier to draw from there.
+$show-dim: color.mix($show, black, 50%);
+$short-dim: color.mix($short, black, 50%);
+$special-dim: color.mix($special, black, 50%);
+
+// Gap between stacked blocks in the expanded card's left column. Sits just
+// above the 10px used between rows inside a block.
+$block-gap: 18px;
+
+// Gap between the expanded card's top-level sections — RightContainer's own
+// blocks on desktop, and every section once the grid collapses to a single
+// column on mobile. Shared so the two read as one rhythm.
+$section-gap: 26px;
+
+// Half the gutter between the expanded card's two main columns (each column
+// contributes one side via padding/margin, not `grid-gap`, so the layout still
+// degrades cleanly to a single flex column on mobile). The title row uses the
+// full gutter as its own bottom margin, so the row gap reads the same as the
+// column gap.
+$grid-gutter: 15px;
+
+$radius-sm: 5px;
+$radius-md: 10px;
+
+$transition-fast: 0.2s ease-in-out;
+$transition-quick: 0.2s ease-out;
+$transition-base: 0.3s ease-in-out;
+
+$font-size-base: 1rem;
+$font-size-lg: 2rem;
+
+// Small dim caps naming a value or a list.
+@mixin field-label {
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba($accent-lite, 0.45);
+  // Explicit rather than the font's own `normal` metrics: Chrome and Firefox
+  // compute `normal` line-height differently for this custom font, and
+  // LeftContainer's column (grid row sized to a fixed pixel budget, not to
+  // content) has no slack to absorb that — a few px per label, compounded
+  // over a title/finance rows/genre rows, was enough to overflow only in
+  // Chrome even though the exact same content fit in Firefox.
+  line-height: 1.2;
+  // The one thing every field-label caller used to set individually
+  // (always to the same 0.7rem, until LeftContainer's .finance_label quietly
+  // drifted to 1em/0.8rem) — living here instead means every label the site
+  // has can only ever change size together. Callers that genuinely want to
+  // be smaller (About's .latest_tag) still override it after the include.
+  font-size: 0.75rem;
+}
+
+// The site's standard "this text is a link" look: readable body font (as
+// opposed to the HUD's monospace accent font) plus the same soft white glow
+// CollectionPanel's titles reveal in with (its .title_white) — pulled out
+// here so every link on the site reads the same way instead of each one
+// reinventing it. Callers set their own hover state, since what "active"
+// means (color shift, brightness) varies by context.
+@mixin bloom-link {
+  font-family: $body-text;
+  color: $white;
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($accent-lite, 0.2);
+}
+
+// A vertical accent bar hugging a title's left edge — TopContainer's card
+// title and About's own heading both used to hand-roll this same ::before
+// separately. Callers still own their own position/padding-left/font-size;
+// this only owns the bar itself.
+@mixin title-accent-bar($top: 5%, $height: 95%, $width: 5px) {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: $top;
+    left: 0;
+    width: $width;
+    height: $height;
+    background-color: $accent-lite;
+  }
+}
+
+$body-text: 'Space Grotesk', sans-serif;
+$accent-text:
+  Monaspace Krypton,
+  sans-serif;
 $title-text: rift, sans-serif;

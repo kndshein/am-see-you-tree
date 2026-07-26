@@ -1,5 +1,28 @@
 @use '../../sass/variables.scss' as *;
 
+.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  gap: 8px;
+}
+
+.error_message {
+  color: $main-lite;
+  font-family: $body-text;
+}
+
+.error_retry {
+  color: $accent-lite;
+  font-family: $accent-text;
+  font-size: 0.8em;
+}
+
 .content_container {
   height: 100%;
   width: 100%;
@@ -14,6 +37,7 @@
     height: 100%;
     width: 100%;
     padding: 50px 50px 100px;
+    z-index: 100;
 
     .content {
       position: relative;
@@ -44,6 +68,23 @@
   overflow: hidden;
   height: 100%;
   border: 1px solid $accent-lite;
+}
+
+// Same type colors the card's own border/reflection use elsewhere
+// (index.scss's .media, Reticle.module.scss's .corner) — stays visible in
+// the fully active/expanded state too, unlike .media's own dashed border
+// (which does go transparent there, index.scss's .active:not(.collapsed-layout)
+// — a different element, deliberately not this one).
+:global(.media.is_tv) .content {
+  border-color: $show;
+}
+
+:global(.media.is_short) .content {
+  border-color: $short;
+}
+
+:global(.media.is_special) .content {
+  border-color: $special;
 }
 
 :global(.media):global(.expanded-layout) .content {

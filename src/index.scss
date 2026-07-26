@@ -1,18 +1,20 @@
 @use './sass/variables.scss' as *;
-@import url('https://use.typekit.net/ncb2bkr.css');
+// The rift web font is linked from index.html, not imported here.
 
 * {
   box-sizing: border-box;
   font-family: $body-text;
-  font-weight: 400;
-  font-weight: normal;
   letter-spacing: 0.5px;
 }
 
+html,
 body {
   position: relative;
   height: 100vh;
+  width: 100vw;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -ms-overflow-style: none;
@@ -33,8 +35,8 @@ h2 {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   color: $code;
 }
 
@@ -43,7 +45,7 @@ code {
   align-self: center;
   min-width: 250px;
   height: 100%;
-  border-radius: 10px;
+  border-radius: $radius-md;
   padding: 2px;
   margin-left: 30px;
   border: 0;
@@ -51,16 +53,52 @@ code {
   background: transparent;
   scroll-margin: 50px;
 
+  content-visibility: auto;
+  contain-intrinsic-size: auto 250px auto 600px;
+
+  // See index.html's inline script: content-visibility + this card's own
+  // per-frame transform (MediaList.tsx) only conflicts in Chromium.
+  .is-chromium & {
+    content-visibility: visible;
+  }
+
   &:not(.collapsed-layout) {
     z-index: 2;
     border: 2px dashed $accent-lite;
+    content-visibility: visible;
 
     &::after {
       opacity: 0;
     }
   }
 
-  // Adjust z-index during media stacking when switched out rapidly (such as via collection navigation)
+  // Same type colors RightContainer's cast pills and CastPanel's filmography
+  // already use ($show/$short/$special) — the card's own border/reflection
+  // reads as "this is a TV season" etc. the same way those do, instead of
+  // every card defaulting to the movie-only $accent-lite/$accent regardless
+  // of type.
+  &.is_tv:not(.collapsed-layout) {
+    border-color: $show;
+  }
+
+  &.is_short:not(.collapsed-layout) {
+    border-color: $short;
+  }
+
+  &.is_special:not(.collapsed-layout) {
+    border-color: $special;
+  }
+
+  // :not(.collapsed-layout) added here too (always true when .active anyway,
+  // active cards are never collapsed) purely to match the type rules above's
+  // own specificity — .active alone was lower specificity than
+  // .is_tv:not(.collapsed-layout) etc., so on a card that was both, the type
+  // color won regardless of source order and the dashed border never
+  // actually went transparent.
+  &.active:not(.collapsed-layout) {
+    border-color: transparent;
+  }
+
   &:not(.collapsed-layout):not(.active):not(.expanded-layout) {
     z-index: 1;
   }
@@ -71,13 +109,12 @@ code {
 
   &.ready.collapsed-layout {
     cursor: pointer;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: $shadow-faint;
 
     &::after {
       z-index: -2;
       content: '';
       position: absolute;
-      // Sheen effect
       top: 0px;
       left: 0px;
       bottom: 0px;
@@ -90,8 +127,38 @@ code {
       );
       background-size: 250% 250%;
       background-position: 0 30%;
-      border-radius: 10px;
-      transition: 0.3s ease-in-out;
+      border-radius: $radius-md;
+      transition: $transition-base;
+    }
+
+    // Dim tier (variables.scss's $show-dim etc.), not the type colors
+    // themselves — same relationship $accent (used here for movies, above)
+    // has to $accent-lite (used for the expanded border instead).
+    &.is_tv::after {
+      background-image: linear-gradient(
+        240deg,
+        $show-dim 70%,
+        white 75%,
+        $show-dim 80%
+      );
+    }
+
+    &.is_short::after {
+      background-image: linear-gradient(
+        240deg,
+        $short-dim 70%,
+        white 75%,
+        $short-dim 80%
+      );
+    }
+
+    &.is_special::after {
+      background-image: linear-gradient(
+        240deg,
+        $special-dim 70%,
+        white 75%,
+        $special-dim 80%
+      );
     }
 
     &:hover {
@@ -102,23 +169,348 @@ code {
   }
 }
 
+// The rail is a horizontal scroller, so this margin is the gap *between*
+// collapsed cards. At 30px on a phone-width viewport a 250px card plus its gap
+// takes essentially the whole screen and the next card barely peeks in, which
+// costs the main affordance that there is more to scroll to.
+@media only screen and (max-width: 500px) {
+  .media {
+    margin-left: 12px;
+  }
+}
+
 .app {
   display: flex;
   flex-flow: column;
   height: 100vh;
-  padding-bottom: 55px;
+  width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
+.load_error {
+  margin: auto;
+  color: $main-lite;
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+// All three order names sit in the button at once (dim), with the active one
+// lit — so switching is a single click, but nothing about it is a surprise:
+// what it is, and what it'll become, are both on screen at rest. Bracketed
+// like the site's other links (bloom-link, variables.scss) to read as
+// clickable the same way — but hand-written rather than that mixin, since
+// this keeps its own monospace font and dim/lit palette instead of switching
+// to the mixin's body font and flat white.
 .order_type_btn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  row-gap: 2px;
   cursor: pointer;
   background: none;
   border: none;
-  border-bottom: 1px solid $accent;
-  color: $accent-lite;
   padding: 5px;
+  font-family: $accent-text;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: clamp(0.65rem, 2vw, 0.8rem);
   transition: 0.1s linear;
+
+  // Delay lives on this base rule rather than scoped to :hover, so it applies
+  // symmetrically — reverting the instant the cursor left read as more of a
+  // glitch than a deliberate pause. Bright blue at rest, white on hover.
+  &::before,
+  &::after {
+    color: $accent-lite;
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba($accent-lite, 0.3);
+    transition: color 0.15s ease-out 0.1s;
+  }
+
+  &:hover::before,
+  &:hover::after {
+    color: white;
+  }
+
+  &::before {
+    content: '[';
+    margin-right: 6px;
+  }
+
+  &::after {
+    content: ']';
+    margin-left: 6px;
+  }
+}
+
+// Bottom-centre, in the HUD's own reserved gap between .readout and .build
+// (see App.tsx's comment) — a status dot instead of the order button's
+// dim/lit text, since this is a single on/off filter rather than a choice
+// between named states; showing it as a fact (lit dot) plus a label reads
+// differently from a button offering several options to pick between.
+//
+// Framed exactly like the cast pills (RightContainer.module.scss's
+// .actor/.actor_button) rather than the order-type button's literal [ ]
+// text-brackets: the corner-bracket border below IS the bracket here, so
+// there's no separate bracket glyph to also render.
+.movies_only_toggle {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  // Visible at rest, like the cast pills' own resting tint (RightContainer's
+  // .actor_button) — not just on hover, so this reads as a filled control
+  // rather than a bare label even while unchecked.
+  background-color: rgba($accent-lite, 0.08);
+  border: 2px solid transparent; // Reserve space for the corner brackets, 2px thick
+  padding: 3px 7px;
+  font-family: $body-text;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: clamp(0.65rem, 2vw, 0.8rem);
+  // Brighter blue at rest, not dimmed — the bracket is the dimmer tier
+  // ($accent, below) already; the text shouldn't double that dimming on
+  // top of it.
+  color: $accent-lite;
+  transition:
+    color 0.1s linear,
+    background-color 0.2s ease;
 
   &:hover {
     color: white;
+    background-color: rgba($accent-lite, 0.14);
+
+    &::before,
+    &::after {
+      border-color: $accent-lite;
+      filter: drop-shadow(0 0 3px rgba($accent-lite, 0.4));
+    }
   }
+
+  // Same tinted-background + white-border-with-bloom treatment as the cast
+  // pills' own .selected state — this toggle being "on" is the same kind of
+  // fact that being the selected cast member is there, so it reads the same
+  // way. text-shadow matches bloom-link's own recipe (variables.scss).
+  &.active {
+    color: white;
+    background-color: rgba($accent-lite, 0.2);
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba($accent-lite, 0.2);
+
+    &::before,
+    &::after {
+      border-color: $white;
+      filter: drop-shadow(0 0 5px rgba($accent-lite, 0.6));
+    }
+  }
+
+  // An expanded card's own overlay (MediaWrapper.module.scss's .overlay) sits
+  // inside that card's .media, which has isolation: isolate — so its z-index
+  // can never actually out-rank a sibling of .media regardless of how high
+  // it's set, only the .media element carrying it can. That card gets
+  // z-index: 2 while expanded (index.scss's .media rule); dropping below that
+  // here is what actually tucks this behind the overlay, not any z-index on
+  // the overlay itself.
+  &:disabled {
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  // The corner brackets themselves — same shape/positioning as .actor's own
+  // ::before/::after (RightContainer.module.scss), just fixed-position here
+  // instead of relative to a card. Delay on the base rule rather than scoped
+  // to :hover/.active, so it applies symmetrically in both directions.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 4px;
+    border: 2px solid $accent;
+    transition:
+      border-color 0.2s ease 0.1s,
+      filter 0.2s ease 0.1s;
+    pointer-events: none;
+  }
+
+  &::before {
+    left: -2px;
+    border-right: none;
+  }
+
+  &::after {
+    right: -2px;
+    border-left: none;
+  }
+}
+
+.status_dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(200, 70, 70, 0.6);
+  box-shadow: 0 0 4px rgba(200, 70, 70, 0.5);
+  transition: $transition-fast;
+}
+
+.movies_only_toggle.active .status_dot {
+  // $accent-lite's rgb — blue, matching the rest of the toggle's active
+  // state, not green.
+  background-color: rgb(102, 192, 204);
+  animation: status_dot_glow 1s ease-in-out infinite alternate;
+}
+
+// A breathe, not a pulse: both ends stay close together (5px/0.6 to 6px/0.8)
+// rather than swinging from barely-there to full-bright.
+@keyframes status_dot_glow {
+  from {
+    box-shadow: 0 0 5px rgba(102, 192, 204, 0.6);
+  }
+  to {
+    box-shadow: 0 0 6px rgba(102, 192, 204, 0.8);
+  }
+}
+
+// Sits directly under the order-type button, standing in for its old static
+// bottom border, carrying live scroll position instead. Inset 60px to match
+// the HUD's own gutter (Hud.module.scss's .top_bar/.readout/.build) — that's
+// the reserved centre gap the button already sits in, flanked by the fixed
+// "MCU // DATABASE" / "STARK INDUSTRIES" readouts; full-bleed ran underneath
+// that flanking text instead of staying in the gap meant for it.
+//
+// .app's flex flow has nothing above the button to push it down — it's
+// really the first thing in it, landing at y=0. The HUD's top_bar is pushed
+// down to clear that block instead of this bar being pushed down to clear the
+// HUD — see top_bar's own comment in Hud.module.scss.
+// Wraps .progress (the masked bar/fill) and .progress_dot as siblings rather
+// than nesting the dot inside .progress itself: .progress's mask-image fades
+// its entire rendered content — bar and anything inside it alike — to
+// nothing over its outer 25%, so a dot living inside it would disappear
+// whenever the scroll position sat in that same outer band (in practice,
+// most of the time — including at rest, position 0). Keeping the dot a
+// sibling, positioned over the same track, lets it stay fully visible at any
+// scroll position while the bar underneath still gets its edge fade.
+.progress_track {
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 60px;
+}
+
+.progress {
+  height: 2px;
+  background-color: rgba($accent, 0.3);
+  overflow: hidden;
+  // Same fade the button's old border used (transparent, solid by 25%, back to
+  // transparent by 75%). A mask on the track rather than a gradient baked into
+  // either background: .progress_fill scales via `transform`, which would
+  // visually stretch/compress a gradient baked into it as scroll changes — a
+  // mask lives in the track's own fixed coordinate space, so it fades the
+  // whole composited bar (track + fill) the same way at any scroll position.
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 25%,
+    black 75%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 25%,
+    black 75%,
+    transparent
+  );
+}
+
+.progress_fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  background-color: $accent-lite;
+  // Same delay + duration as the held arrow's own charge overlay
+  // (MediaListWrapper.module.scss's .charging::after) — driven by the same
+  // is_charging signal (hud-telemetry.ts), so the bar's color shift and the
+  // arrow's tint always move in the same rhythm.
+  transition: background-color 0.7s linear 0.3s;
+}
+
+// $corner-charging (variables.scss) — the same bright orange the HUD's own
+// rails/corner reticles use once armed, not the arrow's own dark red tint,
+// so the bar reads as agreeing with the HUD rather than the arrow.
+.progress_fill.charging {
+  background-color: $corner-charging;
+}
+
+// Marks the current position on the rail, not just how much of it is behind
+// you — left is driven by scroll_progress directly (App.tsx), the same
+// motion value .progress_fill's own scaleX reads, so the two always agree.
+// Teardrop rather than a plain circle: border-radius: 50% 50% 50% 0 rounds
+// every corner but the bottom-left, and rotate(45deg) spins that one sharp
+// corner around to point left, leaving the rounded bulk facing right. Kept
+// small and square (not elongated) — every attempt at stretching this into a
+// more dramatic point came out skewed instead, so this is back to the
+// simplest version that actually reads clean, just smaller.
+.progress_dot {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 50% 50% 0;
+  background-color: $accent-lite;
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: background-color 0.7s linear 0.3s;
+  pointer-events: none;
+}
+
+.progress_dot.charging {
+  background-color: $corner-charging;
+}
+
+// Gray at rest (not selected). Hovering an inactive option steps it toward a
+// dim blue rather than straight to white — white stays reserved for the
+// actually-active one, so hover reads as "you could pick this" rather than
+// "this is picked".
+.order_type_option {
+  color: rgba($main-lite, 0.6);
+  transition: color 0.1s linear;
+
+  // Standing in for a real separator element: explicit color/weight here so
+  // it stays dim regardless of whether the option on either side is active.
+  &:not(:last-child)::after {
+    content: '//';
+    margin: 0 10px;
+    // Was rgba($main-lite, 0.3) — nearly invisible against the dark
+    // background.
+    color: rgba($main-lite, 0.8);
+    font-weight: 400;
+  }
+}
+
+.order_type_btn:hover .order_type_option:not(.active) {
+  color: $accent;
+}
+
+// Bright blue at rest — a step up from the dim/hover-dim tiers the inactive
+// options use, so the selected one reads as lit even before the button is
+// touched. White only kicks in on hover, matching the bracket's own
+// rest/hover split just above.
+.order_type_option.active {
+  color: $accent-lite;
+}
+
+.order_type_btn:hover .order_type_option.active {
+  color: white;
 }

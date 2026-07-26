@@ -1,115 +1,179 @@
+@use 'sass:list';
 @use '../../../sass/variables.scss' as *;
 
 .genres {
-  margin-top: 20px;
+  margin-top: $block-gap;
   width: 100%;
 }
 
-.genres div {
+// Same reasoning as .finances: once the card collapses to one column this
+// stops being a sidebar item and reads as another top-level section, so it
+// takes the shared $section-gap instead of the column's internal $block-gap.
+// No optical nudge here — this gap already ends at the label's own leading.
+@media only screen and (max-width: 500px) {
+  .genres {
+    margin-top: $section-gap;
+  }
+}
+
+.list_label {
+  @include field-label;
+  display: block;
+  margin-bottom: 6px;
+}
+
+// The name and the code are flex siblings rather than a padding gutter with an
+// absolutely positioned code in it. A reserved gutter only works while the name
+// fits the space left over: at narrow column widths a long unbreakable genre
+// ("DOCUMENTARY", "ADVENTURE") overflowed its content box and ran underneath
+// the code — and widening the gutter to fit the code made that *more* likely,
+// not less, by leaving the name even less room. As siblings they simply can't
+// overlap at any width.
+.genre_row {
   position: relative;
-  padding: 10px 0 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 20px;
   margin: 10px 0 10px 0;
   background-color: $tab-background;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  p {
-    margin: 0;
-    font-size: clamp(0.75rem, 1vw, 1rem);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-  }
+  box-shadow: 0 0 5px $shadow-faint;
+
   &:last-child {
     margin-bottom: 0;
   }
 }
 
-.genres div::before {
-  content: '';
+// TMDB's numeric id for the genre, parked at the end of the row.
+.code {
+  flex-shrink: 0;
+  font-family: $accent-text;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: rgba(110, 110, 110, 0.8);
+}
+
+// Grey bar sits underneath at all times; the colored bar fades in on top of
+// it once the row has finished entering.
+.bar {
+  position: absolute;
   top: 0;
   left: 0;
-  position: absolute;
   width: 5px;
   height: 100%;
 }
 
-@mixin themifyGenre($color, $second_color: '') {
-  @if $second_color != '' {
-    p {
-      color: transparent;
-      background-image: linear-gradient(to right, $color, $second_color);
-      background-clip: text;
-    }
-    &::before {
-      background-image: linear-gradient($color, $second_color);
-    }
-  } @else {
-    color: $color;
-    &::before {
-      background-color: $color;
-    }
+.bar_grey {
+  background-color: $muted-text;
+}
+
+.label {
+  position: relative;
+  // min-width: 0 is what actually lets this shrink — a flex item's default
+  // min-width is its content size, so without it a long name would push the
+  // code out of the row instead of wrapping. break-word is the last resort for
+  // a single word still too long for the column at its narrowest.
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  margin: 0;
+  font-size: clamp(0.75rem, 1vw, 1rem);
+  // Explicit for the same reason as field-label's own line-height (see that
+  // mixin's comment) — this text isn't styled through it, but sits in the
+  // same fixed-height column.
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+// Below this the column leaves the name only ~45-75px next to the code, which
+// is narrow enough that break-word starts splitting names mid-syllable rather
+// than just wrapping them. Stacking hands the name the row's full width and
+// drops the code onto its own line. Floored at 501px because the grid collapses
+// under that and the column gets the full card width back.
+@media only screen and (min-width: 501px) and (max-width: 600px) {
+  .genre_row {
+    flex-flow: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  // flex: 1 resolves against the *column* axis once stacked, so it has to be
+  // reset — otherwise the name is sized as a growing row rather than a
+  // full-width line.
+  .label {
+    flex: none;
+    width: 100%;
   }
 }
 
-.aa {
-  @include themifyGenre(rgb(255, 85, 85), rgb(158, 84, 255));
+// Grey text sits in normal flow (and sizes the row); the colored text is an
+// absolutely-positioned twin that fades in on top of it.
+.grey_layer {
+  color: $muted-text;
 }
 
-.action {
-  @include themifyGenre(rgb(255, 85, 85));
+// Pinned to both edges so it occupies exactly the grey layer's width and wraps
+// at the same points. Left free to wrap: a nowrap here drifts out of register
+// with the grey twin underneath as soon as a name needs two lines.
+.color_layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
-.adventure {
-  @include themifyGenre(rgb(158, 84, 255));
-}
+$genres: (
+  action: rgb(255, 85, 85),
+  adventure: rgb(158, 84, 255),
+  animation: rgb(255, 209, 84),
+  comedy: rgb(255, 223, 82),
+  crime: rgb(255, 124, 179),
+  drama: rgb(255, 136, 57),
+  fantasy: rgb(96, 255, 81),
+  mystery: rgb(163, 0, 0),
+  science_fiction: rgb(69, 196, 255),
+  thriller: rgb(229, 124, 255),
+  wp: rgb(109, 109, 109),
+  horror: rgb(160, 32, 32),
+  family: rgb(177, 129, 255),
+  none: $white,
+  aa: (
+    rgb(255, 85, 85),
+    rgb(158, 84, 255),
+  ),
+  sf: (
+    rgb(69, 196, 255),
+    rgb(96, 255, 81),
+  ),
+);
 
-.animation {
-  @include themifyGenre(rgb(255, 209, 84));
-}
+@each $name, $value in $genres {
+  $color: list.nth($value, 1);
+  $second_color: null;
+  @if list.length($value) > 1 {
+    $second_color: list.nth($value, 2);
+  }
 
-.comedy {
-  @include themifyGenre(rgb(255, 223, 82));
-}
+  .color_layer.#{$name} {
+    @if $second_color {
+      color: transparent;
+      background-image: linear-gradient(to right, $color, $second_color);
+      background-clip: text;
+      -webkit-background-clip: text;
+    } @else {
+      color: $color;
+    }
+  }
 
-.crime {
-  @include themifyGenre(rgb(255, 124, 179));
-}
-
-.drama {
-  @include themifyGenre(rgb(255, 136, 57));
-}
-
-.fantasy {
-  @include themifyGenre(rgb(96, 255, 81));
-}
-
-.mystery {
-  @include themifyGenre(rgb(163, 0, 0));
-}
-
-.science_fiction {
-  @include themifyGenre(rgb(69, 196, 255));
-}
-
-.sf {
-  @include themifyGenre(rgb(69, 196, 255), rgb(96, 255, 81));
-}
-
-.thriller {
-  @include themifyGenre(rgb(229, 124, 255));
-}
-
-.wp {
-  @include themifyGenre(rgb(109, 109, 109));
-}
-
-.horror {
-  @include themifyGenre(rgb(160, 32, 32));
-}
-
-.family {
-  @include themifyGenre(rgb(177, 129, 255));
-}
-
-.none {
-  @include themifyGenre(rgb(255, 255, 255));
+  .bar.#{$name} {
+    @if $second_color {
+      background-image: linear-gradient($color, $second_color);
+    } @else {
+      background-color: $color;
+    }
+  }
 }

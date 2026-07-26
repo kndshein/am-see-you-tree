@@ -25,33 +25,211 @@
   background-image: linear-gradient(to right, transparent, $background);
 }
 
-.arrow_left svg,
-.arrow_right svg {
-  fill: white;
-  height: 50px;
-  width: 50px;
-  filter: drop-shadow(0 0 10px $accent-lite);
+// The hover/active tint used to be a straight swap of this element's own
+// background-image (transparent -> rgba($accent, ...)) — background-image
+// isn't on CSS's list of animatable properties though, so despite the
+// transition declared on it, browsers were just snapping between the two
+// gradients instead of fading. Moving the tint onto its own layer behind the
+// arrow lets it cross-fade in on opacity instead, which does animate.
+.arrow_left::before,
+.arrow_right::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
-.arrow_left:hover.arrow_left svg,
-.arrow_right:hover.arrow_right svg {
-  filter: drop-shadow(0 0 2px $accent-lite);
+.arrow_left::before {
+  background-image: linear-gradient(to left, transparent, rgba($accent, 0.7));
 }
 
-.arrow_left:hover {
+.arrow_right::before {
+  background-image: linear-gradient(to right, transparent, rgba($accent, 0.7));
+}
+
+.arrow_left:hover::before,
+.arrow_right:hover::before {
+  opacity: 1;
+}
+
+// Active steps past hover to the brighter accent-lite tint — a distinct
+// color, not just this same layer turned up, so it still reads as a further
+// step rather than more of the same fade. Kept dim (0.35, not the 0.6 this
+// started at) — opacity was already maxed out by hover, so the jump on press
+// was really just this color swap, and the brighter tint alone read as a
+// bigger jump than intended.
+.arrow_left:active::before {
+  opacity: 1;
   background-image: linear-gradient(
     to left,
     transparent,
-    rgba(45, 100, 114, 0.7)
+    rgba($accent-lite, 0.35)
   );
 }
 
-.arrow_right:hover {
+.arrow_right:active::before {
+  opacity: 1;
   background-image: linear-gradient(
     to right,
     transparent,
-    rgba(45, 100, 114, 0.7)
+    rgba($accent-lite, 0.35)
   );
+}
+
+// Holding an arrow past HOLD_TO_EDGE_MS (MediaListWrapper.tsx) arms it to
+// jump all the way to that side on release, instead of scrolling a page at a
+// time — this layer is the visible "charging up" cue for that: anchored to
+// the same edge as the arrow itself (not inset:0, unlike ::before above) so
+// growing its width spreads the tint further into the page rather than just
+// stretching in place, paired with width being a property that actually
+// animates (unlike background-image — see ::before's own comment). Dark red
+// ($charge-red, variables.scss) rather than another blue tier, so the
+// held/armed state reads as categorically different from the plain
+// hover/press blues instead of just another shade of them.
+.arrow_left::after,
+.arrow_right::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 100%;
+  opacity: 0;
+  // Delayed rather than starting at press: the plain blue :active tint
+  // (::before, immediate) gets a moment to read on its own first, so the
+  // shift toward red plays as a distinct second stage of the hold rather
+  // than bleeding in in over top of the press feedback from frame one. Delay
+  // + duration still add up to HOLD_TO_EDGE_MS (MediaListWrapper.tsx), so
+  // the color is fully landed exactly when the hold arms.
+  transition:
+    opacity 0.7s linear 0.3s,
+    width 0.7s linear 0.3s;
+  pointer-events: none;
+}
+
+.arrow_left::after {
+  left: 0;
+  background-image: linear-gradient(
+    to left,
+    transparent,
+    rgba($charge-red, 0.85)
+  );
+}
+
+.arrow_right::after {
+  right: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    rgba($charge-red, 0.85)
+  );
+}
+
+.arrow_left.charging::after,
+.arrow_right.charging::after {
+  opacity: 1;
+  width: 220px;
+}
+
+// The hold-to-jump hint: centered on the button via left:50% + the first
+// translate(-50%, -50%) (using the text's own un-rotated box size, so it's
+// exact regardless of how wide the text actually renders), then nudged
+// sideways by a fixed px offset in that same still-un-rotated frame, and only
+// then rotated. Anchoring with left/right directly (this used to) sizes the
+// box from that edge using its full un-rotated width — for text this wide,
+// most of the box then sat off in the direction away from the anchor, and for
+// .arrow_left specifically that direction was off the left edge of the
+// viewport entirely. Centering first and nudging afterward keeps the visible
+// (rotated, effectively thin) text pinned close to a fixed, known point no
+// matter its content width.
+//
+// The nudge itself (35px) lands the text between the HUD's rail ticks and
+// the viewport edge (Hud.module.scss's .rail_left/.rail_right sit at
+// left/right: 18px, with a 7px tick band past that) rather than nearer the
+// icon: button center (44px, half of the 88px svg) minus the sliver's own
+// midpoint (~9px) is 35px.
+.arrow_hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  white-space: nowrap;
+  font-family: $body-text;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba($main-lite, 0.5);
+  transition: color 0.2s ease;
+  pointer-events: none;
+}
+
+.arrow_left .arrow_hint {
+  transform: translate(-50%, -50%) translateX(-35px) rotate(-90deg);
+}
+
+.arrow_right .arrow_hint {
+  transform: translate(-50%, -50%) translateX(35px) rotate(90deg);
+}
+
+.arrow_left:hover .arrow_hint,
+.arrow_right:hover .arrow_hint {
+  color: rgba($accent-lite, 0.85);
+}
+
+// Same specificity as the :hover rule above (one class + descendant class vs.
+// :hover + descendant class), so this has to come after it in source order
+// to actually win once a hold is armed — which it always is alongside hover,
+// since the pointer is still down on the button.
+.arrow_left.charging .arrow_hint,
+.arrow_right.charging .arrow_hint {
+  color: rgba($white, 0.75);
+}
+
+.arrow_left svg,
+.arrow_right svg {
+  fill: white;
+  height: 60px;
+  width: 82px;
+  filter: drop-shadow(0 0 10px $accent-lite);
+  // Expo-out: snaps away from its starting value fast, then settles without
+  // any overshoot — reads as a sharp HUD response instead of the bounce a
+  // standard ease curve gives a transform.
+  transition:
+    filter 0.25s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// Hover: glow tightens in — a "you're over it" cue. The background tint
+// itself is handled by the ::before layer above.
+.arrow_left:hover svg,
+.arrow_right:hover svg {
+  filter: drop-shadow(0 0 2px $accent-lite);
+}
+
+// Active (actually being pressed): a distinct, stronger step past hover —
+// the arrow itself dashing a few px further in the direction it points, like
+// it's firing forward rather than being squashed underfoot.
+.arrow_left:active svg,
+.arrow_right:active svg {
+  filter: drop-shadow(0 0 14px $accent-lite) brightness(1.2);
+}
+
+.arrow_left:active svg {
+  transform: translateX(-10px);
+}
+
+.arrow_right:active svg {
+  transform: translateX(10px);
+}
+
+// Same specificity as the :active rule above (one class + svg vs. :active +
+// svg), so this has to come after it in source order to win — a held arrow
+// is always also :active, since the pointer never left it.
+.arrow_left.charging svg,
+.arrow_right.charging svg {
+  filter: drop-shadow(0 0 16px $charge-red);
 }
 
 @media only screen and (max-width: 500px) {

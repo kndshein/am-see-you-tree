@@ -1,0 +1,349 @@
+@use '../../sass/variables.scss' as *;
+
+$hud: rgba($hud-green, 0.55);
+$hud-dim: rgba($hud-green, 0.22);
+// $corner-charging (variables.scss) is the exact color the corner reticles'
+// border-color switches to below — the tick marks use it at close to full
+// opacity (rather than $hud's own 0.55) so they read as the same bright
+// orange, not a dimmer tint of it; the connecting line between ticks stays
+// softer, same relationship $hud-dim already has to $hud normally.
+$hud-charging: rgba($corner-charging, 0.9);
+$hud-charging-dim: rgba($corner-charging, 0.4);
+
+.hud {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+// The global `*` rule (index.scss) sets a font and tracking on every element
+// directly, and a direct match beats anything inherited from .hud — so the
+// readouts have to opt back in explicitly or they render as body text.
+.hud * {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+// Darkens the edges so the flat screen reads as a curved visor.
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 50% 50%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.5) 78%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+}
+
+// Faint diagonal "reflection" across the glass.
+.sheen {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(102, 192, 204, 0.05) 38%,
+    rgba(255, 255, 255, 0.04) 42%,
+    transparent 46%,
+    transparent 100%
+  );
+}
+
+.rail_left,
+.rail_right {
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    $hud-dim 15%,
+    $hud-dim 85%,
+    transparent
+  );
+
+  // Tick marks along the rail.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      $hud 0,
+      $hud 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+}
+
+.rail_left {
+  left: 18px;
+  &::after {
+    left: 0;
+  }
+}
+
+.rail_right {
+  right: 18px;
+  &::after {
+    right: 0;
+  }
+}
+
+.hud.charging .rail_left,
+.hud.charging .rail_right {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    $hud-charging-dim 15%,
+    $hud-charging-dim 85%,
+    transparent
+  );
+
+  &::after {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      $hud-charging 0,
+      $hud-charging 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+}
+
+$corner-size: 34px;
+$corner-thick: 2px;
+$corner-inset: 14px;
+
+%corner {
+  position: absolute;
+  width: $corner-size;
+  height: $corner-size;
+  border: $corner-thick solid rgba(255, 255, 255, 0.45);
+  // Two stacked shadows: a tight bright core plus a wide soft halo reads as
+  // bloom, where a single shadow just reads as a blur.
+  //
+  // drop-shadow rather than box-shadow because these are L-shapes — box-shadow
+  // would halo the full square instead of the visible strokes. Cheap despite
+  // being a filter: four static 34px elements, rasterized once, versus the
+  // full-surface chain this replaces on every backdrop.
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+}
+
+.corner_tl {
+  @extend %corner;
+  top: $corner-inset;
+  left: $corner-inset;
+  border-right: 0;
+  border-bottom: 0;
+}
+.corner_tr {
+  @extend %corner;
+  top: $corner-inset;
+  right: $corner-inset;
+  border-left: 0;
+  border-bottom: 0;
+}
+.corner_bl {
+  @extend %corner;
+  bottom: $corner-inset;
+  left: $corner-inset;
+  border-right: 0;
+  border-top: 0;
+}
+.corner_br {
+  @extend %corner;
+  bottom: $corner-inset;
+  right: $corner-inset;
+  border-left: 0;
+  border-top: 0;
+}
+
+.hud.charging .corner_tl,
+.hud.charging .corner_tr,
+.hud.charging .corner_bl,
+.hud.charging .corner_br {
+  border-color: $corner-charging;
+  filter: drop-shadow(0 0 2px rgba($corner-charging, 0.8))
+    drop-shadow(0 0 10px rgba($corner-charging, 0.5));
+}
+
+// Pushed down from an original 20px: .app's flex flow has nothing above
+// .top_controls, so it and the progress bar right after it (index.scss) are
+// really the first content in that flow and land at y=0 — inside this band.
+// This used to be tolerable (the button's old bottom border was a faint 1px
+// gradient), but the progress bar is a solid, animated line, and z-index: 40
+// always paints this text in front of it, so it read as a strike-through.
+// 40px clears the button + bar block with some margin, blind (no way to
+// measure the actual render here) — flag it if it still needs tuning.
+.top_bar {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  right: 60px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: $hud;
+}
+
+// Right cell of the top bar: the fixed label, then the live readouts beneath.
+.tracking {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.tracking_live {
+  display: flex;
+  gap: 14px;
+  opacity: 0.75;
+}
+
+// Applied by StatusReadout when a card is open, so the state change reads at a
+// glance rather than needing the word to be parsed.
+.locked {
+  color: rgb(255, 106, 61);
+}
+
+// Applied by PositionReadout to each ∞ glyph individually once armed (not to
+// the readout span as a whole) — that keeps the " / " between them at the
+// readout's normal size instead of scaling up along with the glyphs. The
+// glyphs themselves read small and lost at this readout's normal 11px, so
+// they get a size bump the plain digit readout never needed. line-height
+// pinned to the readout's own normal (unscaled) height rather than left to
+// scale with the bigger font-size — otherwise a glyph span alone grows
+// taller than the rest of .tracking_live and pushes the row's own height out.
+.infinity {
+  font-size: 1.6em;
+  line-height: 13px;
+}
+
+// Sits inboard of the left rail and clear of the bottom-left corner bracket.
+.readout {
+  position: absolute;
+  left: 60px;
+  bottom: 22px;
+  display: flex;
+  flex-flow: column;
+  gap: 3px;
+  font-size: 11px;
+  color: $hud;
+}
+
+.readout_total {
+  margin-bottom: 3px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid $hud-dim;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.readout_row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 108px;
+}
+
+.readout_label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.readout_icon {
+  display: flex;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.readout_value {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+// Everything below the divider describes the shown set as a whole, rather than
+// counting it: the years it covers and how it's currently ordered and filtered.
+.readout_span {
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px solid $hud-dim;
+}
+
+.readout_mode {
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+// Mirrors .readout across the viewport, inboard of the right rail. Groups the
+// two provenance lines — which data snapshot, which build — and leaves the
+// bottom centre free.
+.build {
+  position: absolute;
+  right: 60px;
+  bottom: 22px;
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 11px;
+  color: $hud;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.build_source {
+  opacity: 0.6;
+}
+
+.build_version {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+// The rest of .hud is pointer-events: none (see top of file) — re-enabled
+// here specifically, since this is the one control living in an otherwise
+// click-through overlay. bloom-link overrides the HUD's own monospace/accent
+// font back to the site's regular body font — this is a real link, not a
+// telemetry readout, so it reads like the rest of the site's text rather than
+// like the HUD dressing around it.
+.about_link {
+  @include bloom-link;
+  pointer-events: auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+// A separate span from .about_text below — matching how every other
+// bracket on the site is its own element (CastPanel.module.scss etc.)
+// rather than sharing a single color with the word it frames.
+.about_bracket {
+  color: $white;
+  // Delay on the base rule, not scoped to :hover — that only delayed turning
+  // the color on, not reverting it, and going straight back the instant the
+  // cursor left read as more of a glitch than a deliberate pause.
+  transition: color 0.15s ease-out 0.2s;
+}
+
+.about_text {
+  transition: color 0.15s ease-out 0.1s;
+}
+
+.about_link:hover .about_bracket,
+.about_link:hover .about_text {
+  color: $accent-lite;
+}

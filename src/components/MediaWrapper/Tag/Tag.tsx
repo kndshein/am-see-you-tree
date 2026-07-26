@@ -1,9 +1,17 @@
 import { MediaUiType } from '../../../types/Media';
 import styles from './Tag.module.scss';
+import { FaSquare, FaBars, FaPlay, FaCircle } from 'react-icons/fa';
 
 type PropTypes = {
   is_movies_only: boolean;
   media_ui_type: MediaUiType;
+};
+
+const TYPE_ICONS: Record<MediaUiType, React.ReactNode> = {
+  movie: <FaCircle />,
+  show: <FaBars />,
+  short: <FaPlay />,
+  special: <FaSquare />,
 };
 
 export default function Tag({ is_movies_only, media_ui_type }: PropTypes) {
@@ -13,7 +21,8 @@ export default function Tag({ is_movies_only, media_ui_type }: PropTypes) {
         !is_movies_only ? `${styles.show_type}` : ''
       }`}
     >
-      {media_ui_type}
+      <span className={styles.icon}>{TYPE_ICONS[media_ui_type]}</span>
+      <span className={styles.label}>{media_ui_type}</span>
     </div>
   );
 }

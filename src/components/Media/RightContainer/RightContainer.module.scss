@@ -3,8 +3,12 @@
 .container {
   display: flex;
   flex-flow: column;
+  // The container owns the space between top-level blocks (tagline,
+  // info_group, cast, synopsis, episodes) so no block has to push its
+  // neighbor via its own margin.
+  gap: $section-gap;
   padding-right: 20px;
-  margin-left: 15px;
+  margin-left: $grid-gutter;
   overflow-y: auto;
   scrollbar-color: $accent-lite $main;
   scrollbar-width: thin;
@@ -32,48 +36,241 @@
   background-color: white;
 }
 
+// Moved up from beside the title: a tagline is almost always short, which
+// otherwise left the corner next to it empty. Sits first in the column so it
+// still reads as introducing the vitals below it.
+.tagline {
+  margin: 0 5px 0 0;
+  color: rgba($white, 0.75);
+  font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+  font-style: italic;
+  font-weight: 300;
+}
+
+// Stacked above the tagline rather than inline, matching the info_group fields.
+// font-style is reset because .tagline is italic and the labels are not.
+.tagline_label {
+  @include field-label;
+  display: block;
+  margin-bottom: 4px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.season {
+  font-weight: 700;
+  color: $show;
+}
+
 .info_group {
   display: flex;
   flex-flow: row wrap;
-  align-items: center;
+  // Top-aligned rather than centred: each field is now a label stacked over a
+  // value, so the labels line up as one row and the values as another.
+  align-items: flex-start;
+  // Column gap is deliberately much larger than anything inside a field —
+  // that contrast is what separates the fields visually. Row gap only applies
+  // once they wrap.
+  gap: 12px 40px;
   width: 100%;
-  letter-spacing: 2px;
-  margin-bottom: -5px;
 }
 
-.info_group span {
-  font-size: clamp(1rem, 1.5vw, 1.5rem);
-  margin-right: 10px;
-  color: white;
-  margin-bottom: 5px;
+// Direct children only — each of these is one labelled field. VoteCounter and
+// GlitchText nest a span inside them, and a descendant selector would put the
+// field gap on those too, splitting a label from its own value.
+// Values sit near heading size no longer — a readout reads better small and
+// precise. 1px tracking rather than the 2px the labels use: at this size 2px
+// stretched an 11-character date to ~176px on its own.
+.info_group > span {
+  display: inline-flex;
+  flex-flow: column;
+  font-size: clamp(0.95rem, 1.15vw, 1.2rem);
+  letter-spacing: 1px;
+  color: $accent-lite;
   font-family: $accent-text;
 }
 
-.dot {
-  color: $accent;
-  font-size: 2rem;
+// Dimmed so the values stay dominant; the label is there to be scanned past.
+// field-label (variables.scss) owns the size, not a fraction of the field's
+// own clamped font-size — that would drift with the viewport instead of
+// matching the card's other labels.
+.label {
+  @include field-label;
+  margin-bottom: 4px;
 }
 
-.vote {
-  padding: 5px 10px 2px 10px;
-  background-color: $accent;
-  font-weight: 700;
-  border-radius: 5px;
+// Lets a field carry a secondary figure on the same line as its main value.
+.value_row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
 }
 
+.sub_value {
+  font-size: 0.62em;
+  letter-spacing: 1px;
+  color: rgba($accent-lite, 0.5);
+}
+
+// Names the block it's in — the space above (from the previous block) now
+// comes from .container's own gap, so this only carries its own small
+// separation from the content it labels.
+.section_label {
+  @include field-label;
+  display: block;
+  margin: 0 0 6px;
+}
+
+// VoteCounter and GlitchText write their text into a bare inner <span>. The
+// global `*` rule (index.scss) matches those spans directly, and a direct
+// match wins over anything inherited from the field, so the typography has to
+// be re-inherited explicitly.
+.info_group span span {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+// ...except the labels, which set their own and would otherwise be overwritten
+// by the rule above. Matches field-label's own size (variables.scss).
+.info_group span span.label {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+// Spacing lives on the container, not the pills. As per-pill margins they also
+// applied above the first row, stacking on the label's own gap.
 .cast {
   display: flex;
   flex-flow: row wrap;
+  gap: 10px;
   color: $accent-lite;
-  margin-top: 10px;
+  text-transform: uppercase;
 }
 
 .actor {
-  padding: 5px 7px 3px 7px;
-  margin: 10px 10px 0 0;
-  font-size: clamp(1rem, 1.5vw, 1.4rem);
-  border: 1px solid $accent;
-  border-radius: 5px;
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  line-height: 1;
+  padding: 7px 8px 5px;
+  border: 2px solid transparent; // Reserve space for the brackets, 2px thick
+}
+
+// Delay on the hover transition lives here rather than scoped to
+// .actor_button:hover, so it applies symmetrically — reverting the instant
+// the cursor left read as more of a glitch than a deliberate pause. Same
+// treatment as the site's other brackets (CastPanel.module.scss etc.), just
+// on border-color/filter instead of color/text-shadow, since these brackets
+// are drawn as border corners rather than literal [ ] characters.
+.actor::before,
+.actor::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 6px;
+  border: 2px solid $accent; // Thicker lines
+  border-radius: 0; // Square brackets
+  transition: border-color 0.2s ease 0.1s, filter 0.2s ease 0.1s;
+  pointer-events: none;
+}
+
+.actor::before {
+  left: -2px;
+  border-right: none;
+}
+
+.actor::after {
+  right: -2px;
+  border-left: none;
+}
+
+// A resting tint, not just background: none — .actor's own border is
+// transparent for clickable pills (the corner brackets above are the only
+// visible edge, and only on the left/right), so with no fill at all the
+// missing top/bottom border read as a gap next to .actor_no_matches' fully
+// bordered box beside it. The tint stands in for that missing edge.
+.actor_button {
+  background-color: rgba(102, 192, 204, 0.08);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(102, 192, 204, 0.14);
+
+    &::before,
+    &::after {
+      border-color: $accent-lite;
+      filter: drop-shadow(0 0 3px rgba(102, 192, 204, 0.4));
+    }
+  }
+
+  &.selected {
+    background-color: rgba(102, 192, 204, 0.2);
+
+    &::before,
+    &::after {
+      border-color: $white;
+      filter: drop-shadow(0 0 5px rgba(102, 192, 204, 0.6));
+    }
+
+    .actor_name {
+      color: $white;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// Actor appears in the data but has no other entries in this list to jump to.
+// Rendered as a span so it's not in the tab order and carries no click affordance.
+.actor_no_matches {
+  opacity: 0.4;
+  cursor: default;
+  user-select: none;
+  border-color: $accent; // Override transparent with visible border
+
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+.actor_name {
+  font-size: clamp(0.9rem, 1.2vw, 1.15rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+// Character (or Director/Creator, for the pills below them), in the same mono
+// readout font as the rest of the HUD's field values — visually distinct from
+// the actor's own name below it, and dim like a caption rather than competing.
+.actor_role {
+  font-family: $accent-text;
+  font-size: 0.6em;
+  letter-spacing: 1px;
+  color: rgba($accent-lite, 0.6);
+  margin-bottom: 1px;
+}
+
+// Same pill, HUD green — so the people who made it read as a distinct group
+// from the people in it without needing a separate heading.
+.actor.director {
+  color: $hud-green;
+  border-color: rgba($hud-green, 0.55); // Full border for non-interactive
+
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+.actor.director .actor_role {
+  color: rgba($hud-green, 0.6);
 }
 
 @media only screen and (max-width: 500px) {

@@ -1,0 +1,147 @@
+@use '../../../sass/variables.scss' as *;
+
+// Same box-matching trick as Reticle.module.scss: `.content_container.active`
+// centers `.content` (width: min(1000px, 100%), height: 70vh) inside a fixed,
+// full-viewport box with 50px/50px/100px padding. Reproducing that padding +
+// centering here means `.frame` lines up exactly with `.content`, so the list
+// can be anchored off its corner the same way the reticle's brackets are.
+.panel_wrap {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 50px;
+  bottom: 100px;
+  left: 50px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+// Below this there's no longer room beside the card without cramping it.
+// (Bumped alongside .list's width below — the panel's right edge has to stay
+// clear of the viewport edge at the breakpoint's own width.)
+@media (min-width: 1650px) {
+  .panel_wrap {
+    display: flex;
+  }
+}
+
+.frame {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 70vh;
+}
+
+// Sits below the reticle's top-right bracket (standoff 24px, 38px tall — so
+// the bracket's own bottom edge is 14px below the frame's top-right corner)
+// with that same 24px standoff again between the bracket and the list, so the
+// list-to-reticle gap reads the same as the reticle-to-card gap. Picks up the
+// bracket's horizontal offset too, so it reads as belonging to that corner
+// rather than floating independently.
+.list {
+  position: absolute;
+  top: 38px; // 14px (bracket's own bottom edge) + 24px standoff
+
+  left: 100%;
+  margin-left: 24px;
+  width: 280px;
+  display: flex;
+  flex-flow: column;
+  gap: 8px;
+  pointer-events: auto;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(102, 192, 204, 0.35);
+}
+
+.tech_line {
+  position: absolute;
+  left: -12px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.label {
+  @include field-label;
+  margin-bottom: 2px;
+  // Override the mixin's dimmed opacity so the collection name reads at full brightness.
+  color: $accent-lite;
+}
+
+.item {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: $accent-text;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+// Not interactive until its own reveal finishes (CollectionPanel.tsx) — blocks
+// click and hover alike, since pointer-events: none stops :hover from ever
+// matching in the first place.
+.item:disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.name {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+// Fades in once the title's color shift starts. The hover color transition's
+// delay lives on this base rule rather than scoped to :hover, so it applies
+// symmetrically — reverting the instant the cursor left read as more of a
+// glitch than a deliberate pause.
+.bracket {
+  display: inline-block;
+  color: $white;
+  transition: color 0.15s ease-out 0.1s;
+}
+
+.item:hover .bracket {
+  color: $accent-lite;
+}
+
+// Same grey/white twin trick as Genres.module.scss's .grey_layer/.color_layer:
+// grey sits in normal flow (and sizes the box), white is an absolutely
+// positioned twin that fades in on top of it — only opacity is animated, so
+// there's no color-interpolation edge case to fight.
+.title_wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.title_grey {
+  color: $muted-text;
+}
+
+// Bloom is baked into the white layer itself rather than gated separately —
+// it's invisible while opacity is still 0, and fades in with the same reveal.
+.title_white {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: $white;
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba(102, 192, 204, 0.2);
+}
+
+.item:hover .title_grey,
+.item:hover .title_white {
+  color: $accent-lite;
+}
+
+.year {
+  margin-left: 6px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  color: rgba($white, 0.5);
+}

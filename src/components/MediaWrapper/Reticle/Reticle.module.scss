@@ -1,0 +1,83 @@
+@use '../../../sass/variables.scss' as *;
+
+$bracket: 38px;
+$thick: 2px;
+$glow: rgba(102, 192, 204, 0.9);
+// How far the brackets stand off the card's edges.
+$standoff: 24px;
+
+.reticle {
+  position: absolute;
+  // Mirror `.content_container.active` padding (MediaWrapper.module.scss:
+  // 50px 50px 100px) so the frame centers exactly where `.content` does.
+  top: 50px;
+  right: 50px;
+  bottom: 100px;
+  left: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+// Same box as the expanded `.content`, so brackets sit on its corners.
+.frame {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 70vh;
+}
+
+.corner {
+  position: absolute;
+  width: $bracket;
+  height: $bracket;
+  border: $thick solid $accent-lite;
+  filter: drop-shadow(0 0 4px $glow);
+
+  // Same type colors the card's own border/reflection use (index.scss's
+  // .media, MediaWrapper.module.scss's .content) — the reticle locking onto
+  // a TV card should read as locking onto a TV card, not always the movie
+  // color. Nested inside .corner itself (not top-level with a bare &,
+  // which has no parent selector to attach to outside a rule and silently
+  // targeted .media directly instead of .corner).
+  :global(.media.is_tv) & {
+    border-color: $show;
+    filter: drop-shadow(0 0 4px rgba($show, 0.9));
+  }
+
+  :global(.media.is_short) & {
+    border-color: $short;
+    filter: drop-shadow(0 0 4px rgba($short, 0.9));
+  }
+
+  :global(.media.is_special) & {
+    border-color: $special;
+    filter: drop-shadow(0 0 4px rgba($special, 0.9));
+  }
+}
+
+.tl {
+  top: -$standoff;
+  left: -$standoff;
+  border-right: 0;
+  border-bottom: 0;
+}
+.tr {
+  top: -$standoff;
+  right: -$standoff;
+  border-left: 0;
+  border-bottom: 0;
+}
+.bl {
+  bottom: -$standoff;
+  left: -$standoff;
+  border-right: 0;
+  border-top: 0;
+}
+.br {
+  bottom: -$standoff;
+  right: -$standoff;
+  border-left: 0;
+  border-top: 0;
+}

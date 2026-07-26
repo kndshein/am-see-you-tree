@@ -1,0 +1,182 @@
+@use '../../../sass/variables.scss' as *;
+
+.panel_wrap {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 50px;
+  bottom: 100px;
+  left: 50px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (min-width: 1650px) {
+  .panel_wrap {
+    display: flex;
+  }
+}
+
+.frame {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 70vh;
+}
+
+
+.list {
+  position: absolute;
+  top: var(--panel-top, 38px);
+  left: 100%;
+  margin-left: 24px;
+  width: 380px;
+  display: flex;
+  flex-flow: column;
+  gap: 8px;
+  pointer-events: auto;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(102, 192, 204, 0.35);
+}
+
+.label {
+  @include field-label;
+  margin-bottom: 2px;
+  color: $accent-lite;
+}
+
+.item {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: $accent-text;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+// Title exists in the filmography but isn't in the current rail (e.g. filtered
+// out by Movies Only, or simply not yet watched). Dims it permanently so it
+// reads as informational rather than interactive.
+.not_in_rail {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.item:disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.name {
+  display: inline;
+}
+
+// Delay lives on this base rule rather than scoped to :hover, so it applies
+// symmetrically — reverting the instant the cursor left read as more of a
+// glitch than a deliberate pause.
+.bracket {
+  display: inline;
+  color: $white;
+  transition: color 0.15s ease-out 0.1s;
+}
+
+.item:hover .bracket {
+  color: $accent-lite;
+}
+
+// One real element, not CollectionPanel's own grey/white twin-layer trick (a
+// static base layer + an absolutely positioned overlay fading in on top) —
+// that trick anchors the overlay to its wrap's first line only, so a title
+// long enough to wrap onto a second line had its color reveal misalign
+// there. display: inline (a span's default) is what actually matters here,
+// separately: it's what lets this stay glued to its neighbouring brackets
+// like a normal parenthesized word, rather than being able to jump to a new
+// line as one atomic unit the way inline-block could.
+//
+// A CSS transition rather than Framer: Framer doesn't tween text-shadow as a
+// structured value the way it does box-shadow, so animating it directly (an
+// earlier attempt at this fix) just snapped straight to the end state.
+// CastPanel.tsx flips .revealed on a setTimeout rather than deriving it
+// straight from is_content_expanded, though — this panel mounts already
+// expanded, so a class present on the very first paint has no "before" style
+// to transition from and (a separate, earlier bug) also just snaps instantly.
+.title {
+  color: $muted-text;
+  transition: color 0.15s ease-out, text-shadow 0.15s ease-out;
+
+  &.revealed {
+    color: $white;
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba(102, 192, 204, 0.2); // Default movie glow
+  }
+}
+
+.is_tv .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($show, 0.2);
+}
+
+.is_short .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($short, 0.2);
+}
+
+.is_special .title.revealed {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba($special, 0.2);
+}
+
+.type_icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 0.7em;
+  opacity: 0.9;
+  color: $accent-lite; // Default for movies
+}
+
+// FaBars (the tv icon) reads visually smaller than the other three (a solid
+// square/circle/triangle) at the same font-size — a few % up brings it back
+// to the same apparent weight. Same nudge as Tag.module.scss's own icon.
+.is_tv .type_icon {
+  color: $show;
+  font-size: 0.78em;
+}
+.is_short .type_icon { color: $short; }
+.is_special .type_icon { color: $special; }
+
+.item:hover .title {
+  color: $accent-lite;
+}
+
+.year {
+  margin-left: 6px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  color: rgba($white, 0.5);
+}
+
+// transition-delay isn't repeated here: .item:hover .bracket above already
+// applies to every hovered bracket regardless of type (these rules only need
+// to win on color), so it's already in effect underneath these.
+.is_tv:hover .bracket,
+.is_tv:hover .title {
+  color: $show;
+}
+
+.is_short:hover .bracket,
+.is_short:hover .title {
+  color: $short;
+}
+
+.is_special:hover .bracket,
+.is_special:hover .title {
+  color: $special;
+}

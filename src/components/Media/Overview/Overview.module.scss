@@ -1,7 +1,15 @@
+@use '../../../sass/variables.scss' as *;
+
 .overview {
-  margin: 20px 0 0 0;
-  color: grey;
-  font-size: clamp(1.2rem, 2vw, 1.6rem);
-  line-height: clamp(1.5rem, 2.3vw, 2rem);
+  // No top margin: the Synopsis label above owns the spacing for this block.
+  margin: 0;
+  color: rgba($white, 0.75);
+  font-family: $accent-text;
+  font-weight: 200;
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  // Unitless so it scales with font-size for free. Also what About.module.scss's
+  // .body now matches, so the site's two blocks of real reading text (this
+  // and the about-modal body) read at the same rhythm.
+  line-height: 1.5;
   width: 100%;
 }

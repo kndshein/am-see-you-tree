@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Regenerated on every dev/build by scripts/prefetch-tmdb.mjs
+src/assets/tmdb-data.json
+src/assets/tmdb-data.meta.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

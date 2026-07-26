@@ -7,7 +7,7 @@
   color: $show;
   margin: 0 15px 15px 0;
   text-transform: uppercase;
-  transition: color 0.2s ease-in-out;
+  transition: color $transition-fast;
 
   p {
     margin: 0;
@@ -28,14 +28,14 @@
     width: 55px;
     padding: 0.2rem;
     margin-top: 0.2rem;
-    border-radius: 5px;
+    border-radius: $radius-sm;
     font-family: $title-text;
     font-weight: 800;
     font-size: 1.2rem;
     line-height: 1.3rem;
     color: black;
     mix-blend-mode: screen;
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color $transition-fast;
   }
 }
 

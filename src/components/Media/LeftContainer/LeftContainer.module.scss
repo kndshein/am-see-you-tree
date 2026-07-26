@@ -2,27 +2,143 @@
 
 .container {
   grid-area: 2 / 1 / 3 / 2;
-  padding-right: 15px;
+  padding-right: $grid-gutter;
   overflow-y: auto; // When the title is too long, it takes up quite a bit of height, not leaving enough room for genres
   scrollbar-width: thin;
 }
 
 .poster {
+  position: relative;
   width: 100%;
   overflow: hidden;
-  background-color: $accent-lite;
+  background-color: rgba($accent-lite, 0.3);
   box-shadow: 0 0 15px $background;
 }
 
 .poster img {
+  // Inline is the default for <img>, which reserves a few px of descender
+  // space below the baseline — that's the sliver of .poster's background
+  // color that shows beneath it. Block removes the gap outright.
+  display: block;
   object-fit: contain;
   width: 100%;
 }
 
+// $block-gap is shared with .genres so the poster / finances / genres stack
+// sits on one rhythm. Set just above the 10px that separates rows *inside* a
+// block, which is enough to read as a break between blocks without the column
+// feeling loose.
+//
+// The +4px is optical, not structural: this gap runs from the poster's hard
+// image edge to this block's border, whereas the identical one below it ends
+// at the genres label's line box, which carries its own leading above the cap
+// height. Measured equal, this one reads visibly tighter — so it gets nudged.
+.finances {
+  margin-top: $block-gap + 1px;
+  padding: 5px 10px;
+  border: 1px solid rgba($accent-lite, 0.3);
+  font-family: $accent-text;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: $accent-lite;
+}
+
+// A dotted leader (like a table of contents) ties the label to its figure
+// instead of relying on `justify-content: space-between` alone, which read as
+// two numbers loose in the column rather than one connected row.
+.finance_row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 0;
+  // Explicit rather than the font's own `normal` metrics — same reasoning as
+  // field-label's own line-height (variables.scss) — inherited by the label,
+  // leader, and the currency value, none of which carry their own class.
+  line-height: 1.2;
+}
+
+.finance_leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted rgba($accent-lite, 0.4);
+  // Lifts the dots to sit mid-line rather than jammed against the text baseline.
+  margin-bottom: 4px;
+}
+
+// Not 1em (which would match the figure it sits beside, at .finances' own
+// 0.8rem): field-label (variables.scss) now owns this size for every label
+// on the site, and this was the one place that used to quietly drift from
+// it.
+.finance_label {
+  @include field-label;
+  white-space: nowrap;
+}
+
+// No border: it sits over artwork, and the backing plate is enough to separate
+// it. Dimmed so it reads as a stamp on the poster rather than a value competing
+// with the vitals row. Top-left because poster art almost always carries title
+// and billing text along the bottom.
+.certification {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 1;
+  padding: 4px 8px 3px;
+  font-family: $body-text;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: $accent-lite;
+  background-color: rgba($background, 0.72);
+  border-radius: $radius-sm;
+}
+
+// The column is min(30%, 250px) of a shrinking viewport, so it eventually
+// falls under the ~175px this row needs to sit on one line and the figure gets
+// crushed against its label. The ceiling is higher than the column maths alone
+// suggests because Media's padding is discontinuous: above 800px it reserves
+// the 80px rotated-title gutter (110px horizontal in total), and at <=800px it
+// drops to 20px — so the column is actually *narrower* just above 800px than
+// just below it, and the squeeze persists well past that breakpoint.
+//
+// Stacking the figure under the label fixes it; the leader has nothing left to
+// span once stacked, so it goes. The band has a floor because below 500px the
+// grid collapses and the column gets the full width back — see the rule after.
+@media only screen and (min-width: 501px) and (max-width: 900px) {
+  .finance_row {
+    flex-flow: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .finance_leader {
+    display: none;
+  }
+
+  // nowrap only exists to hold the label on one line beside the leader, and
+  // once stacked there is nothing left to align to. At the bottom of this band
+  // "BOX OFFICE" at 2px tracking is wider than the panel's own content box, so
+  // nowrap made it spill out of the border — pull the tracking in so it
+  // usually fits on one line anyway, and let it wrap when it still doesn't.
+  .finance_label {
+    letter-spacing: 1px;
+    white-space: normal;
+  }
+}
+
 @media only screen and (max-width: 500px) {
   .container {
-    margin-bottom: 20px;
+    // The single-column gap is Media's own now, so no bottom margin here —
+    // otherwise this section sat a different distance from its neighbour than
+    // every other one.
     overflow: unset; // To unset the overflow scroll
     padding-right: 0;
+  }
+
+  // Once the card is one column, this block stops being a sidebar item and
+  // reads as another top-level section, so it steps up from the column's
+  // internal $block-gap to the same $section-gap everything else uses.
+  // Keeps the optical nudge for the same reason as above.
+  .finances {
+    margin-top: $section-gap + 4px;
   }
 }

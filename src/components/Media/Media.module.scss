@@ -6,7 +6,10 @@
   display: grid;
   grid-template-rows: fit-content(100px) auto;
   grid-template-columns: min(30%, 250px) auto;
-  padding: 30px 30px 40px 80px;
+  // Bottom padding is taller than the other sides: it's what keeps the
+  // columns' scrolled-to-the-end content clear of the record strip
+  // (Record.tsx), which floats over this corner of the card.
+  padding: 20px 30px 50px 80px;
   height: 100%;
   width: 100%;
 }
@@ -27,6 +30,10 @@
   .container {
     display: flex;
     flex-flow: column;
-    color: red;
+    // Once the grid collapses, the container owns the space between every
+    // section — the same token RightContainer uses between its own blocks, so
+    // the whole card reads on one rhythm instead of each section bringing its
+    // own margin. Record is absolutely positioned, so it sits out of this.
+    gap: $section-gap;
   }
 }

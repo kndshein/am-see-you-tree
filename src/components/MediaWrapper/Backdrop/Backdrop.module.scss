@@ -1,13 +1,30 @@
 @use '../../../sass/variables.scss' as *;
 
+// Height of one scanline tile; the pan animation translates by exactly this
+// so the loop is seamless.
+$scanline: 9px;
+
 :global(.media):hover,
 :global(.media):focus {
   &:not(:global(.expanded-layout)) {
     .backdrop_motion {
       opacity: 1;
     }
-    .backdrop_wrapper {
-      filter: none;
+    // Reveals the ungraded twin stacked on top. A baked grade can't be undone
+    // in CSS, so this cross-fades between two images rather than clearing a
+    // filter — an opacity change, which composites without repainting.
+    .backdrop_plain {
+      opacity: 1;
+    }
+
+    // Scanlines are hover-only. Animating them on every visible card meant ~10
+    // full-size layers repainting continuously; this way at most one runs.
+    .screen_overlay {
+      opacity: 0.1;
+
+      &::before {
+        animation: pan-overlay 0.2s infinite linear;
+      }
     }
   }
 }
@@ -24,11 +41,12 @@
   }
 }
 
+// scripts/process-backdrops.mjs bakes every treatment into the WebP variants,
+// so this surface carries no filter at all — not the grade, not the blur.
 .backdrop_wrapper {
   position: absolute;
   top: 0;
   left: -155%;
-  filter: brightness(0.69) sepia(100%) hue-rotate(165deg);
   width: 1000px;
   height: 100vh;
   z-index: -1;
@@ -37,23 +55,41 @@
   background-color: $background;
 }
 
+// Idle by default — no opacity and, more importantly, no animation. The rule is
+// added on hover only (see the block above), so a single card is ever panning
+// rather than every card on screen.
+//
+// The pan itself uses `transform` on an inner layer, which the compositor can
+// handle without repainting; `background-position` is not composited and would
+// repaint this whole 1000px x 100vh surface every frame.
 .screen_overlay {
-  opacity: 0;
-  background: linear-gradient(
-    $accent-lite,
-    $accent 3px,
-    transparent 3px,
-    transparent 9px
-  );
-  background-size: 100% 9px;
-  height: 100%;
-  width: 100%;
-  animation: pan-overlay 20s infinite linear;
   position: absolute;
-  opacity: 0.1;
   left: 0px;
   top: 0px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity $transition-base;
   z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    // One extra tile of height so translating by exactly one tile ($scanline)
+    // loops seamlessly, independent of the element's actual height.
+    height: calc(100% + #{$scanline});
+    background: linear-gradient(
+      $accent-lite,
+      $accent 3px,
+      transparent 3px,
+      transparent $scanline
+    );
+    background-size: 100% $scanline;
+  }
 }
 
 // Taken out, but kept for reference in case this feature could be reimplemented
@@ -68,30 +104,62 @@
 //   background-position: 0% 0%;
 //   opacity: 0;
 //   animation: pan-image 20s linear infinite;
-//   transition: ease-in-out 0.3s;
+//   transition: $transition-base;
 //   filter: saturate(125%);
 // }
 
+// Transition opacity only, never `all`. `$transition-base` names no property,
+// so bare use of it would animate the blur *radius* too — re-running the
+// convolution on a 1280px-wide image at a new radius every frame. Applying the
+// blur in one step lets it rasterize once while the fade carries the change.
 .backdrop {
   object-fit: cover;
   width: 100%;
   height: 100%;
-  transition: ease-in-out 0.3s;
+  transition: opacity $transition-base;
 }
 
+// The alternate twins, stacked directly over .backdrop: the ungraded one for
+// hover, the pre-blurred one for the expanded state. Same box and object-fit as
+// the original so all three register exactly.
+.backdrop_plain,
+.backdrop_blurred {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity $transition-base;
+  pointer-events: none;
+}
+
+// Cross-fades to the pre-blurred twin instead of running `filter: blur(20px)`
+// over this surface. A blur is a convolution the compositor has to redo; this
+// is two opacity changes.
 :global(.media):global(.expanded-layout) .backdrop {
-  filter: blur(20px);
+  opacity: 0;
+}
+
+:global(.media):global(.expanded-layout) .backdrop_blurred {
   opacity: 0.15;
-  transition: ease-in-out 0.3s;
 }
 
 @keyframes pan-overlay {
   from {
-    background-position: 0% 0%;
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    background-position: 0% -100%;
+    transform: translate3d(0, -$scanline, 0);
+  }
+}
+
+// MotionConfig's reducedMotion="user" (App.tsx) only governs motion
+// components, not CSS keyframes, so this one opts out on its own.
+@media (prefers-reduced-motion: reduce) {
+  .screen_overlay::before {
+    animation: none;
   }
 }
 

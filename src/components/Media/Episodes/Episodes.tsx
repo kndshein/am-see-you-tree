@@ -1,8 +1,9 @@
 import styles from './Episodes.module.scss';
-import { TmdbType } from '../../../types/Tmdb';
+import { TmdbType, Episode } from '../../../types/Tmdb';
 import { ShowType } from '../../../types/Media';
 import { motion } from 'motion/react';
-import { calculateDelay } from '../../../utils/utils';
+import { entry_soft } from '../../../utils/motion';
+import scoreColor from '../../../utils/score-color';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -10,10 +11,11 @@ type PropTypes = {
 };
 
 export default function Episodes({ tmdb_data, media_data }: PropTypes) {
-  const overview_text =
-    media_data.type == 'tv'
-      ? tmdb_data[`season/${media_data.season}`].overview || tmdb_data.overview
-      : tmdb_data.overview;
+  const seasonData = tmdb_data[`season/${media_data.season}`];
+  const episodesList = (seasonData?.episodes ?? []).slice(
+    media_data.epiStart - 1,
+    media_data.epiEnd
+  );
 
   return (
     <motion.section
@@ -22,61 +24,64 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
         visible: {
           opacity: 1,
           transition: {
-            delayChildren: calculateDelay(overview_text),
-            staggerChildren: 0.2,
+            // No delayChildren: RightContainer already withholds this whole
+            // block's own animate until Synopsis finishes (is_synopsis_revealed),
+            // so an extra delay here would double it up.
+            // A season can run to 19 rows here, so the step stays modest or the
+            // last one arrives long after the card has settled.
+            staggerChildren: 0.15,
           },
         },
         hidden: {
           opacity: 0,
+          // Instant, matching the entry variants (utils/motion.ts): a season
+          // can run to 19 rows, so a real collapse tween here would still be
+          // playing well after the card has closed.
+          transition: { duration: 0 },
         },
       }}
     >
-      {tmdb_data[`season/${media_data.season}`].episodes
-        .slice(media_data.epiStart - 1, media_data.epiEnd)
-        .map((ele: any, idx: number) => {
-          return (
-            <motion.section
-              className={styles.episode_container}
-              key={idx}
-              variants={{
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: {
-                    y: {
-                      duration: 0.15,
-                    },
-                  },
-                },
-                hidden: {
-                  opacity: 0,
-                  y: -100,
-                },
-              }}
-            >
-              <div className={styles.still_wrapper}>
+      {episodesList.map((ele: Episode, idx: number) => {
+        const stillPath = ele.still_path || seasonData?.poster_path;
+        const episode_percent = ele.vote_count
+          ? Math.round((ele.vote_average ?? 0) * 10)
+          : null;
+
+        return (
+          <motion.section
+            className={styles.episode_container}
+            key={ele.episode_number ?? idx}
+            variants={entry_soft}
+          >
+            <div className={styles.still_wrapper}>
+              {stillPath && (
                 <img
                   className={styles.still}
-                  src={`https://image.tmdb.org/t/p/w185${
-                    ele.still_path
-                      ? ele.still_path
-                      : tmdb_data[`season/${media_data.season}`].poster_path
-                  }`}
-                  alt={tmdb_data.original_name}
+                  src={`https://image.tmdb.org/t/p/w185${stillPath}`}
+                  alt={`${ele.name || tmdb_data.original_name || 'Episode'} still`}
                 />
-              </div>
-              <div className={styles.overview_container}>
-                <div className={styles.episode}>
+              )}
+            </div>
+            <div className={styles.overview_container}>
+              <div className={styles.episode}>
+                <span
+                  className={styles.number}
+                >{`Season ${ele.season_number}, Episode ${ele.episode_number} - `}</span>
+                <span className={styles.name}>{ele.name}</span>
+                {episode_percent !== null && (
                   <span
-                    className={styles.number}
-                  >{`Season ${ele.season_number}, Episode ${ele.episode_number} - `}</span>
-                  <span className={styles.name}>{ele.name}</span>
-                </div>
-                <p className={styles.overview}>{ele.overview}</p>
+                    className={styles.episode_rating}
+                    style={{ color: scoreColor(episode_percent) }}
+                  >
+                    {episode_percent}%
+                  </span>
+                )}
               </div>
-            </motion.section>
-          );
-        })}
+              <p className={styles.overview}>{ele.overview}</p>
+            </div>
+          </motion.section>
+        );
+      })}
     </motion.section>
   );
 }

@@ -10,8 +10,8 @@
   white-space: nowrap;
   transform: rotate(-90deg) !important;
   transform-origin: top left !important;
-  animation: 0.2s ease-in-out forwards fadeInOpacity;
-  transition: color ease-in-out 0.3s;
+  animation: $transition-fast forwards fadeInOpacity;
+  transition: color $transition-base;
 
   &::before {
     content: '';
@@ -21,7 +21,7 @@
     padding-right: 35px;
     width: 100%;
     height: 100%;
-    background-color: rgba(37, 37, 37, 0.69);
+    background-color: rgba($main, 0.69);
     -webkit-transform-origin: 100% 0;
     -ms-transform-origin: 100% 0;
     transform-origin: 100% 0;
@@ -29,7 +29,7 @@
     -ms-transform: skew(-30deg);
     transform: skew(-30deg);
     z-index: -1;
-    transition: color ease-in-out 0.3s;
+    transition: color $transition-base;
   }
 
   &::after {
@@ -40,16 +40,29 @@
     width: 0;
     height: 2px;
     opacity: 0.7;
-    transition: ease-in-out 0.3s;
+    transition: $transition-base;
     border-top: 3px $accent-lite solid;
     border-top-style: dotted;
   }
 }
 
+// Same type colors as .title::before above.
+:global(.media.is_tv) .title::after {
+  border-top-color: $show;
+}
+
+:global(.media.is_short) .title::after {
+  border-top-color: $short;
+}
+
+:global(.media.is_special) .title::after {
+  border-top-color: $special;
+}
+
 .title h2 {
   user-select: none;
   margin: 0;
-  font-size: 2rem;
+  font-size: $font-size-lg;
 }
 
 :global(.media):global(.collapsed-layout) .title h2 {
@@ -58,13 +71,13 @@
 
 :global(.media):hover .title,
 :global(.media):focus .title {
-  color: rgba(255, 255, 255, 1);
+  color: rgba($white, 1);
   text-shadow: 0 0 5px $background;
-  transition: color ease-in-out 0.3s, text-shadow ease-in-out 0.3s;
+  transition: color $transition-base, text-shadow $transition-base;
 
   &::before {
     box-shadow: 10px 0 0 $accent-lite;
-    transition: box-shadow ease-in-out 0.3s;
+    transition: box-shadow $transition-base;
   }
 
   &::after {
@@ -72,14 +85,34 @@
   }
 }
 
+// Same type colors the card's border/reflection/reticle use elsewhere
+// (index.scss's .media, Reticle.module.scss's .corner) — written as fully
+// separate selectors rather than nested with &, since the hover rule above
+// already combines :hover with .title::before and there's no way to also
+// require .is_tv on the same .media from inside that nesting.
+:global(.media.is_tv):hover .title::before,
+:global(.media.is_tv):focus .title::before {
+  box-shadow: 10px 0 0 $show;
+}
+
+:global(.media.is_short):hover .title::before,
+:global(.media.is_short):focus .title::before {
+  box-shadow: 10px 0 0 $short;
+}
+
+:global(.media.is_special):hover .title::before,
+:global(.media.is_special):focus .title::before {
+  box-shadow: 10px 0 0 $special;
+}
+
 :global(.media):global(.expanded-layout) .title {
   left: 0;
   transform: rotate(-90deg);
   transform-origin: top left;
-  color: rgba(110, 110, 110, 0.3);
+  color: rgba($main-lite, 0.3);
   text-shadow: none;
-  transition: color ease-in-out 0.3s;
-  animation: 0.3s ease-in-out both fadeInOpacity;
+  transition: color $transition-base;
+  animation: $transition-base both fadeInOpacity;
 
   &::before {
     box-shadow: 10px 0 0 $accent-lite, 0 0 20px $background;
@@ -89,6 +122,18 @@
   &::after {
     width: 0;
   }
+}
+
+:global(.media.is_tv):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $show, 0 0 20px $background;
+}
+
+:global(.media.is_short):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $short, 0 0 20px $background;
+}
+
+:global(.media.is_special):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $special, 0 0 20px $background;
 }
 
 :global(.media):global(.active):not(:global(.expanded-layout)) .title,
