@@ -47,9 +47,9 @@ export default function Backdrop({
           onLoad={() => setIsBackdropLoaded(true)}
           onError={() => setIsBackdropLoaded(true)}
         />
-        {/* The ungraded twin, cross-faded in on hover. Mounted only after the
-            first hover, so it costs nothing until someone points at the card. */}
-        {has_been_hovered && local?.plain && (
+        {/* The ungraded twin, cross-faded in on hover. We now mount this immediately
+            so both the color and blue versions are fetched, preventing a flash on hover. */}
+        {local?.plain && (
           <img
             className={styles.backdrop_plain}
             src={local.plain}
