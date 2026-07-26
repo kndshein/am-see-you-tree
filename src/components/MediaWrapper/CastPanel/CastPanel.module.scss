@@ -1,0 +1,117 @@
+@use '../../../sass/variables.scss' as *;
+
+.panel_wrap {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 50px;
+  bottom: 100px;
+  left: 50px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (min-width: 1650px) {
+  .panel_wrap {
+    display: flex;
+  }
+}
+
+.frame {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 70vh;
+}
+
+
+.list {
+  position: absolute;
+  top: var(--panel-top, 38px);
+  left: 100%;
+  margin-left: 24px;
+  width: 280px;
+  display: flex;
+  flex-flow: column;
+  gap: 8px;
+  pointer-events: auto;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(102, 192, 204, 0.35);
+}
+
+.label {
+  @include field-label;
+  font-size: 0.7rem;
+  margin-bottom: 2px;
+  color: $accent-lite;
+}
+
+.item {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: $accent-text;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+// Title exists in the filmography but isn't in the current rail (e.g. filtered
+// out by Movies Only, or simply not yet watched). Dims it permanently so it
+// reads as informational rather than interactive.
+.not_in_rail {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.item:disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.name {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.bracket {
+  display: inline-block;
+  color: $white;
+}
+
+.item:hover .bracket {
+  color: $accent-lite;
+}
+
+.title_wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.title_grey {
+  color: $muted-text;
+}
+
+.title_white {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: $white;
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 7px rgba(102, 192, 204, 0.2);
+}
+
+.item:hover .title_grey,
+.item:hover .title_white {
+  color: $accent-lite;
+}
+
+.year {
+  margin-left: 6px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  color: rgba($white, 0.5);
+}

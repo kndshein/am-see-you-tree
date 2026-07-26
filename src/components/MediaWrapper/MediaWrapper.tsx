@@ -5,7 +5,7 @@ import Tag from './Tag/Tag';
 import Title from './Title/Title';
 import Media from '../Media/Media';
 import Backdrop from './Backdrop/Backdrop';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Index from './Index/Index';
 import styles from './MediaWrapper.module.scss';
 import { motion, AnimatePresence } from 'motion/react';
@@ -13,6 +13,7 @@ import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
 import Reticle from './Reticle/Reticle';
 import CollectionPanel from './CollectionPanel/CollectionPanel';
+import CastPanel from './CastPanel/CastPanel';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
 import { useTmdbData } from '../../utils/tmdb-data';
@@ -30,6 +31,9 @@ type PropTypes = {
   display_idx: number;
   order_type: OrderType;
   media_length: number;
+  // Fires when a cast pill is selected/deselected so the parent can preload
+  // filmography backdrops. Only provided for the currently active card.
+  onCastSelect?: (name: string | null) => void;
 };
 
 export default function MediaWrapper({
@@ -44,10 +48,13 @@ export default function MediaWrapper({
   display_idx,
   order_type,
   media_length,
+  onCastSelect,
 }: PropTypes) {
   const { ref, inView } = useInView({
     triggerOnce: true,
   });
+  const container_ref = useRef<HTMLDivElement | null>(null);
+  const collection_list_ref = useRef<HTMLDivElement | null>(null);
   const [is_backdrop_loaded, setIsBackdropLoaded] = useState(false);
   // Latches on first hover so Backdrop can fetch its full-color twin. Kept
   // here rather than in Backdrop because this is the element hover applies to.
@@ -85,6 +92,26 @@ export default function MediaWrapper({
     }
   };
 
+  const [selected_cast, setSelectedCast] = useState<string | null>(null);
+
+  const handleSelectCast = (cast_name: string) => {
+    const next = selected_cast === cast_name ? null : cast_name;
+    setSelectedCast(next);
+    onCastSelect?.(next);
+  };
+
+  useEffect(() => {
+    if (!is_active && selected_cast) {
+      // Wait for the card's closing layout animation to finish before clearing
+      // the selection, avoiding an abrupt vanish mid-close.
+      const timer = setTimeout(() => {
+        setSelectedCast(null);
+        onCastSelect?.(null);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [is_active, selected_cast, onCastSelect]);
+
   return (
     <div
       id={idx.toString()}
@@ -110,6 +137,7 @@ export default function MediaWrapper({
         </div>
       ) : (
         <div
+          ref={container_ref}
           className={`${styles.content_container} ${
             is_active ? styles.active : ''
           } ${is_content_expanded ? styles.expanded_layout : ''}`}
@@ -204,6 +232,10 @@ export default function MediaWrapper({
               media_data={media_data}
               is_active={is_active}
               is_content_expanded={is_content_expanded}
+              selected_cast={selected_cast}
+              onSelectCast={handleSelectCast}
+              media_list={media_list}
+              is_movies_only={is_movies_only}
             />
           </motion.div>
           <AnimatePresence>
@@ -220,6 +252,22 @@ export default function MediaWrapper({
                 media_list={media_list}
                 handleJump={handleJump}
                 is_content_expanded={is_content_expanded}
+                listRef={collection_list_ref}
+              />
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {is_active && (
+              <CastPanel
+                key="cast-panel"
+                media_data={media_data}
+                selected_cast={selected_cast}
+                media_list={media_list}
+                handleJump={handleJump}
+                is_content_expanded={is_content_expanded}
+                is_movies_only={is_movies_only}
+                containerRef={container_ref}
+                collectionListRef={collection_list_ref}
               />
             )}
           </AnimatePresence>

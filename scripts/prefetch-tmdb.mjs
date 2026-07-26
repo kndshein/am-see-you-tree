@@ -116,7 +116,7 @@ function trim(item, full) {
     genres: (full.genres ?? []).map(({ id, name }) => ({ id, name })),
     credits: {
       cast: (full.credits?.cast ?? [])
-        .slice(0, 5)
+        .slice(0, 25)
         .map(({ name, character }) => ({ name, character: character || undefined })),
     },
   };

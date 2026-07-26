@@ -160,8 +160,52 @@
   border-radius: $radius-sm;
 }
 
+.actor_button {
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    border-color: $accent-lite;
+    box-shadow: 0 0 8px rgba(102, 192, 204, 0.4);
+    background-color: rgba(102, 192, 204, 0.08);
+  }
+
+  &.selected {
+    border-color: $white;
+    background-color: rgba(102, 192, 204, 0.2);
+    box-shadow: 0 0 10px rgba(102, 192, 204, 0.6);
+
+    .actor_name {
+      color: $white;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// Actor appears in the data but has no other entries in this list to jump to.
+// Rendered as a span so it's not in the tab order and carries no click affordance.
+.actor_no_matches {
+  opacity: 0.4;
+  cursor: default;
+  user-select: none;
+}
+
 .actor_name {
   font-size: clamp(0.9rem, 1.2vw, 1.15rem);
+}
+
+.actor_bracket {
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.actor_button:hover .actor_bracket,
+.actor_button.selected .actor_bracket {
+  opacity: 1;
 }
 
 // Character (or Director/Creator, for the pills below them), in the same mono

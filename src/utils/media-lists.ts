@@ -59,6 +59,24 @@ export function collectionSiblingsOf(
     );
 }
 
+// All media in the list (or current filtered list) featuring the given actor
+export function castMatchesInMediaList(
+  cast_name: string,
+  media_list: Array<MediaType>,
+  tmdb_data: TmdbMap,
+  is_movies_only: boolean,
+): Array<MediaType> {
+  return media_list
+    .filter((item) => isShown(item, is_movies_only))
+    .filter((item) => {
+      const data = tmdb_data[tmdbKeyOf(item)];
+      if (!data?.credits?.cast) return false;
+      return data.credits.cast.some(
+        (c) => c.name.toLowerCase() === cast_name.toLowerCase(),
+      );
+    });
+}
+
 // A season can appear as several entries in media-list.json when a movie was
 // watched partway through it (e.g. eps 1-7, then a movie, then eps 8-16).
 // That split only reflects viewing order, so for release-date order we merge

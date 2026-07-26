@@ -12,12 +12,18 @@ import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
 import GlitchText from './GlitchText';
+import { castMatchesInMediaList } from '../../../utils/media-lists';
+import { useTmdbData } from '../../../utils/tmdb-data';
 
 type PropTypes = {
   tmdb_data: TmdbType;
   media_data: MediaType;
   is_active: boolean;
   is_content_expanded: boolean;
+  selected_cast?: string | null;
+  onSelectCast?: (cast_name: string) => void;
+  media_list: Array<MediaType>;
+  is_movies_only: boolean;
 };
 
 // When the vitals row actually starts entering: this container is Media's 3rd
@@ -32,7 +38,13 @@ export default function RightContainer({
   media_data,
   is_active,
   is_content_expanded,
+  selected_cast,
+  onSelectCast,
+  media_list,
+  is_movies_only,
 }: PropTypes) {
+  const tmdb_data_map = useTmdbData();
+
   const element = {
     ...entry,
     // Same movement as everything else, plus a stagger for the fields it wraps.
@@ -182,19 +194,67 @@ export default function RightContainer({
               {(tmdb_data.credits?.cast ?? [])
                 .slice(0, 5)
                 .map((actor: CastMember, idx: number) => {
+                  const is_selected = selected_cast === actor.name;
+                  // Check if this actor appears in any other item in the rail.
+                  // castMatchesInMediaList already filters by isShown and
+                  // excludes the current item (done below), so a non-zero
+                  // result means there's something to navigate to.
+                  const other_matches = castMatchesInMediaList(
+                    actor.name,
+                    media_list,
+                    tmdb_data_map,
+                    is_movies_only,
+                  ).filter(
+                    (item) =>
+                      !(item.id === media_data.id &&
+                        (item.type !== 'tv' ||
+                          (item.type === 'tv' &&
+                            media_data.type === 'tv' &&
+                            item.season === (media_data as Extract<MediaType, { type: 'tv' }>).season))),
+                  );
+                  const has_other_movies = other_matches.length > 0;
+
+                  if (!has_other_movies) {
+                    // No filmography to show — render as a plain non-interactive pill.
+                    return (
+                      <motion.span
+                        className={`${styles.actor} ${styles.actor_no_matches}`}
+                        key={actor.name || idx}
+                        variants={element}
+                        aria-label={`${actor.name} (no other titles in this list)`}
+                      >
+                        {actor.character && (
+                          <span className={styles.actor_role}>
+                            {actor.character}
+                          </span>
+                        )}
+                        <span className={styles.actor_name}>{actor.name}</span>
+                      </motion.span>
+                    );
+                  }
+
                   return (
-                    <motion.span
-                      className={styles.actor}
+                    <motion.button
+                      type="button"
+                      data-cast-name={actor.name}
+                      className={`${styles.actor} ${styles.actor_button} ${
+                        is_selected ? styles.selected : ''
+                      }`}
                       key={actor.name || idx}
                       variants={element}
+                      onClick={() => onSelectCast?.(actor.name)}
                     >
                       {actor.character && (
                         <span className={styles.actor_role}>
                           {actor.character}
                         </span>
                       )}
-                      <span className={styles.actor_name}>{actor.name}</span>
-                    </motion.span>
+                      <span className={styles.actor_name}>
+                        <span className={styles.actor_bracket}>[</span>
+                        {actor.name}
+                        <span className={styles.actor_bracket}>]</span>
+                      </span>
+                    </motion.button>
                   );
                 })}
             </section>

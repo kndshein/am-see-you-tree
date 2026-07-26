@@ -1,9 +1,14 @@
-import { useState, MouseEvent } from 'react';
+import { useState, MouseEvent, RefObject } from 'react';
 import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 import { TmdbType } from '../../../types/Tmdb';
 import { HandleToggleType } from '../../../types/Toggles';
-import { collectionSiblingsOf } from '../../../utils/media-lists';
+import {
+  castMatchesInMediaList,
+  collectionSiblingsOf,
+  releaseDateOf,
+  tmdbKeyOf,
+} from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
 import {
   entry,
@@ -21,20 +26,23 @@ type PropTypes = {
   // Gates both the panel's own entrance (mounts alongside the rest of
   // RightContainer) and the title/bracket reveal below (matches the glow).
   is_content_expanded: boolean;
+  selected_cast?: string | null;
+  is_movies_only?: boolean;
+  // Forwarded to MediaWrapper so it can hand the list element's position
+  // directly to CastPanel — avoids fragile CSS-module class-name queries.
+  listRef?: RefObject<HTMLDivElement | null>;
 };
 
 const STAGGER = 0.08;
 
 // Sits outside the card itself, just below the reticle's top-right corner
-// (see CollectionPanel.module.scss) — only for movies that belong to a TMDB
-// collection with other members already in this app's curated list, so it
-// renders null rather than an empty/dead list otherwise.
 export default function CollectionPanel({
   media_data,
   tmdb_data,
   media_list,
   handleJump,
   is_content_expanded,
+  listRef,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
   const collection = tmdb_data.collection;
@@ -56,7 +64,7 @@ export default function CollectionPanel({
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >
       <div className={styles.frame}>
-        <div className={styles.list}>
+        <div className={styles.list} ref={listRef}>
           <motion.span className={styles.label} variants={entry}>
             {collection.name}
           </motion.span>
@@ -71,13 +79,8 @@ export default function CollectionPanel({
                 title={title}
                 year={year}
                 is_content_expanded={is_content_expanded}
-                // Matches the glow's own schedule, staggered the same way the
-                // genre rows are — so the titles/brackets light up alongside
-                // the card's color reveal rather than the panel's own mount.
                 stagger_delay={COLOR_REVEAL_DELAY + sibling_idx * COLOR_STAGGER}
                 onClick={(event) => {
-                  // Bubbling to the card's own onClick would immediately
-                  // re-toggle (close) this card right after the jump.
                   event.stopPropagation();
                   const target_idx = media_list.findIndex(
                     (item) => item.id === sibling.id,

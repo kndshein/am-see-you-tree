@@ -49,12 +49,27 @@
   flex-flow: column;
   gap: 8px;
   pointer-events: auto;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(102, 192, 204, 0.35);
+}
+
+.tech_line {
+  position: absolute;
+  left: -12px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .label {
   @include field-label;
   font-size: 0.7rem;
   margin-bottom: 2px;
+  // Override the mixin's dimmed opacity so the collection name reads at full brightness.
+  color: $accent-lite;
 }
 
 .item {

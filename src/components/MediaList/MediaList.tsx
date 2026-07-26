@@ -12,6 +12,7 @@ import styles from './MediaList.module.scss';
 import { useTmdbData } from '../../utils/tmdb-data';
 import {
   buildMediaList,
+  castMatchesInMediaList,
   collectionSiblingsOf,
   isShown,
 } from '../../utils/media-lists';
@@ -55,6 +56,8 @@ export default function MediaList({
   const cards_ref = useRef<HTMLElement[]>([]);
   const apply_ref = useRef<(full?: boolean) => void>(() => {});
 
+  const [active_cast_name, setActiveCastName] = useState<string | null>(null);
+
   // A slow connection can easily blow past the close-wait window, so the
   // collection panel's own backdrops start loading the moment the card that
   // shows it opens — not only once one is actually clicked. By the time a
@@ -67,12 +70,27 @@ export default function MediaList({
     return siblings.length ? new Set(siblings.map((s) => s.id)) : null;
   }, [active_toggle, media_list, tmdb_data]);
 
+  // Same idea for cast: the moment a cast pill is clicked, preload backdrops
+  // for every item in that actor's filmography so they're ready if jumped to.
+  const cast_preload_ids = useMemo(() => {
+    if (!active_cast_name) return null;
+    const matches = castMatchesInMediaList(
+      active_cast_name,
+      media_list,
+      tmdb_data,
+      is_movies_only,
+    );
+    return matches.length ? new Set(matches.map((m) => m.id)) : null;
+  }, [active_cast_name, media_list, tmdb_data, is_movies_only]);
+
   useEffect(() => {
     active_toggle_ref.current = active_toggle;
   }, [active_toggle]);
 
   const handleToggle: HandleToggleType = (id) => {
     setActiveToggle(id === active_toggle ? null : id);
+    // Card closing — clear cast preload so stale IDs don't linger.
+    if (id === active_toggle) setActiveCastName(null);
   };
 
   // Every other "open a card" path starts from nothing active — the fullscreen
@@ -392,9 +410,11 @@ export default function MediaList({
                 handleJump={handleJump}
                 force_ready={
                   pending_jump === idx ||
-                  (collection_preload_ids?.has(ele.id) ?? false)
+                  (collection_preload_ids?.has(ele.id) ?? false) ||
+                  (cast_preload_ids?.has(ele.id) ?? false)
                 }
                 is_active={active_toggle === idx}
+                onCastSelect={active_toggle === idx ? setActiveCastName : undefined}
                 idx={idx}
                 display_idx={display_idx}
                 order_type={order_type}
