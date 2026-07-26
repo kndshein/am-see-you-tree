@@ -200,6 +200,11 @@ code {
 // dim/lit text, since this is a single on/off filter rather than a choice
 // between named states; showing it as a fact (lit dot) plus a label reads
 // differently from a button offering several options to pick between.
+//
+// Framed exactly like the cast pills (RightContainer.module.scss's
+// .actor/.actor_button) rather than the order-type button's literal [ ]
+// text-brackets: the corner-bracket border below IS the bracket here, so
+// there's no separate bracket glyph to also render.
 .movies_only_toggle {
   position: fixed;
   left: 50%;
@@ -211,21 +216,41 @@ code {
   gap: 8px;
   cursor: pointer;
   background: none;
-  border: none;
-  padding: 5px;
+  border: 2px solid transparent; // Reserve space for the corner brackets, 2px thick
+  padding: 3px 7px;
   font-family: $body-text;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-size: clamp(0.65rem, 2vw, 0.8rem);
   color: rgba($main-lite, 0.6);
-  transition: color 0.1s linear;
+  transition:
+    color 0.1s linear,
+    background-color 0.2s ease;
 
   &:hover {
     color: white;
+    background-color: rgba($accent-lite, 0.08);
+
+    &::before,
+    &::after {
+      border-color: $accent-lite;
+      filter: drop-shadow(0 0 3px rgba($accent-lite, 0.4));
+    }
   }
 
+  // Same tinted-background + white-border-with-bloom treatment as the cast
+  // pills' own .selected state — this toggle being "on" is the same kind of
+  // fact that being the selected cast member is there, so it reads the same
+  // way.
   &.active {
     color: white;
+    background-color: rgba($accent-lite, 0.2);
+
+    &::before,
+    &::after {
+      border-color: $white;
+      filter: drop-shadow(0 0 5px rgba($accent-lite, 0.6));
+    }
   }
 
   // An expanded card's own overlay (MediaWrapper.module.scss's .overlay) sits
@@ -240,32 +265,32 @@ code {
     pointer-events: none;
   }
 
-  // Same bracket-and-bloom treatment as .order_type_btn — wraps the whole
-  // control (dot included), not just the label, matching that button's
-  // brackets framing all of its options rather than just the active one.
-  // Delay lives on this base rule rather than scoped to :hover, so it applies
-  // symmetrically — reverting the instant the cursor left read as more of a
-  // glitch than a deliberate pause.
+  // The corner brackets themselves — same shape/positioning as .actor's own
+  // ::before/::after (RightContainer.module.scss), just fixed-position here
+  // instead of relative to a card. Delay on the base rule rather than scoped
+  // to :hover/.active, so it applies symmetrically in both directions.
   &::before,
   &::after {
-    color: $accent-lite;
-    text-shadow:
-      0 0 3px rgba(255, 255, 255, 0.35),
-      0 0 7px rgba($accent-lite, 0.3);
-    transition: color 0.15s ease-out 0.1s;
-  }
-
-  &:hover::before,
-  &:hover::after {
-    color: white;
+    content: '';
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 4px;
+    border: 2px solid $accent;
+    transition:
+      border-color 0.2s ease 0.1s,
+      filter 0.2s ease 0.1s;
+    pointer-events: none;
   }
 
   &::before {
-    content: '[';
+    left: -2px;
+    border-right: none;
   }
 
   &::after {
-    content: ']';
+    right: -2px;
+    border-left: none;
   }
 }
 
