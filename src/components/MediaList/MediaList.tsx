@@ -10,7 +10,7 @@ import { OrderType } from '../../App';
 type PropTypes = {
   is_movies_only: boolean;
   order_type: OrderType;
-  media_list_ref: RefObject<HTMLDivElement>;
+  media_list_ref: RefObject<HTMLDivElement | null>;
 };
 
 const media_list_chrono = media_list_json as Array<MediaType>;
@@ -50,7 +50,7 @@ export default function MediaList({
   const WrapperComponent = (
     ele: MediaType,
     idx: number,
-    media_length: number
+    media_length: number,
   ) => {
     return (
       <MediaWrapper
