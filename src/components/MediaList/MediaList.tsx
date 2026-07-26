@@ -27,7 +27,7 @@ import { OrderType } from '../../App';
 type PropTypes = {
   is_movies_only: boolean;
   order_type: OrderType;
-  media_list_ref: RefObject<HTMLDivElement | null>;
+  media_list_ref: RefObject<HTMLDivElement | null | null>;
 };
 
 export default function MediaList({
@@ -248,7 +248,9 @@ export default function MediaList({
       // Telemetry for the HUD. `max_scroll` is cached by measure() so this
       // stays a pure write — no layout reads added to the per-frame path.
       scroll_progress.set(
-        max_scroll > 0 ? Math.min(1, Math.max(0, el.scrollLeft / max_scroll)) : 0,
+        max_scroll > 0
+          ? Math.min(1, Math.max(0, el.scrollLeft / max_scroll))
+          : 0,
       );
 
       // Whichever card sits nearest the centre. upperBound gives the first one
@@ -376,8 +378,8 @@ export default function MediaList({
     return () => el.removeEventListener('wheel', onWheel);
   }, [media_list_ref]);
 
-  const visible_media_length = media_list.filter(
-    (ele) => isShown(ele, is_movies_only),
+  const visible_media_length = media_list.filter((ele) =>
+    isShown(ele, is_movies_only),
   ).length;
 
   return (
@@ -414,7 +416,9 @@ export default function MediaList({
                   (cast_preload_ids?.has(ele.id) ?? false)
                 }
                 is_active={active_toggle === idx}
-                onCastSelect={active_toggle === idx ? setActiveCastName : undefined}
+                onCastSelect={
+                  active_toggle === idx ? setActiveCastName : undefined
+                }
                 idx={idx}
                 display_idx={display_idx}
                 order_type={order_type}
