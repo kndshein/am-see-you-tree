@@ -95,23 +95,31 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
                 .
               </p>
               <p>
-                The project was conceived in January of 2021 as a class
-                project after having learned what React was just a week
-                prior. During the project, I fell in love with the process of
-                bringing json objects to life -- it's satisfyingly beautiful.
-                Even though the project is long over, I have been adding new
-                features and building on existing code ever since.
+                The project was conceived in January of 2021 as a class project
+                after having learned what React was just a week prior. During
+                the project, I fell in love with the process of bringing json
+                objects to life -- it's satisfyingly beautiful. Even though the
+                project is long over, I have been adding new features and
+                building on existing code ever since.
               </p>
               <p>
-                I will continue to maintain the site as long as it still
-                brings me joy. Follow along the progression of this site by
-                viewing each major versions of the project:{' '}
+                I will continue to maintain the site as long as it still brings
+                me joy. Follow along the progression of this site by viewing
+                each major versions of the project:{' '}
                 <Link href="/v1" external={false}>
                   v1
                 </Link>
-                , <Link href="/v2" external={false}>v2</Link>, and{' '}
+                ,{' '}
+                <Link href="/v2" external={false}>
+                  v2
+                </Link>
+                ,{' '}
                 <Link href="/v3" external={false}>
                   v3
+                </Link>
+                , and{' '}
+                <Link href="/v3" external={false}>
+                  v4
                 </Link>
                 . Here's to small things in life!
               </p>
@@ -122,46 +130,47 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
               </p>
             </section>
             <div className={styles.patch_list}>
-              {[...patch_notes].reverse().map(({ version, date, notes, url }, idx) => (
-                <div
-                  key={version}
-                  className={`${styles.patch_row} ${
-                    idx === 0 ? styles.current : ''
-                  }`}
-                >
-                  <span className={styles.patch_version}>
-                    {url ? (
-                      <Link href={url} external={false}>
-                        {version}
-                      </Link>
-                    ) : (
-                      version
+              {[...patch_notes]
+                .reverse()
+                .map(({ version, date, notes, url }, idx) => (
+                  <div
+                    key={version}
+                    className={`${styles.patch_row} ${
+                      idx === 0 ? styles.current : ''
+                    }`}
+                  >
+                    <span className={styles.patch_version}>
+                      {url ? (
+                        <Link href={url} external={false}>
+                          {version}
+                        </Link>
+                      ) : (
+                        version
+                      )}
+                    </span>
+                    <span className={styles.patch_date}>{dateCalc(date)}</span>
+                    <div className={styles.patch_notes}>
+                      {notes.map((note, note_idx) => (
+                        <span key={note_idx}>{renderItalicMarkup(note)}</span>
+                      ))}
+                    </div>
+                    {idx === 0 && (
+                      <span className={styles.latest_tag}>Latest</span>
                     )}
-                  </span>
-                  <span className={styles.patch_date}>{dateCalc(date)}</span>
-                  <div className={styles.patch_notes}>
-                    {notes.map((note, note_idx) => (
-                      <span key={note_idx}>{renderItalicMarkup(note)}</span>
-                    ))}
                   </div>
-                  {idx === 0 && (
-                    <span className={styles.latest_tag}>Latest</span>
-                  )}
-                </div>
-              ))}
+                ))}
             </div>
             <p>
               Special shoutout to{' '}
-              <Link href="https://www.themoviedb.org/">TMDB</Link> for the
-              API,{' '}
+              <Link href="https://www.themoviedb.org/">TMDB</Link> for the API,{' '}
               <Link href="https://30000fps.com/#">30000fps</Link> for the{' '}
               <Link href="https://giphy.com/gifs/loop-sci-fi-XmppNRlrlu2SA">
                 Sci-fi GIF
               </Link>
               , and{' '}
               <Link href="https://twitter.com/Hyperplexed">Hyperplexed</Link>{' '}
-              for this{' '}
-              <Link href="https://youtu.be/jMVhxBB3l0w">tutorial</Link>.
+              for this <Link href="https://youtu.be/jMVhxBB3l0w">tutorial</Link>
+              .
             </p>
           </div>
         </section>
