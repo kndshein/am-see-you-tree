@@ -118,7 +118,7 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
                   v3
                 </Link>
                 , and{' '}
-                <Link href="/v3" external={false}>
+                <Link href="/v4" external={false}>
                   v4
                 </Link>
                 . Here's to small things in life!
