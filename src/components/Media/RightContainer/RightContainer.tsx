@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
@@ -7,7 +8,12 @@ import scoreColor from '../../../utils/score-color';
 import { compactCount } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
-import { entry, CARD_DELAY_CHILDREN, CARD_STAGGER } from '../../../utils/motion';
+import {
+  entry,
+  fade,
+  CARD_DELAY_CHILDREN,
+  CARD_STAGGER,
+} from '../../../utils/motion';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
@@ -44,6 +50,15 @@ export default function RightContainer({
   is_movies_only,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
+
+  // Episodes waits on this rather than the flat staggerChildren step below —
+  // a synopsis's word-by-word reveal (Overview.tsx) runs far longer than one
+  // stagger step for anything but the shortest text, so the fixed step alone
+  // let Episodes start sliding in while Synopsis was still typing.
+  const [is_synopsis_revealed, setIsSynopsisRevealed] = useState(false);
+  useEffect(() => {
+    if (!is_content_expanded) setIsSynopsisRevealed(false);
+  }, [is_content_expanded]);
 
   const element = {
     ...entry,
@@ -262,10 +277,26 @@ export default function RightContainer({
               names. Every entry has overview text, so this needs no guard. */}
           <motion.div variants={element}>
             <span className={styles.section_label}>Synopsis</span>
-            <Overview tmdb_data={tmdb_data} media_data={media_data} />
+            <Overview
+              tmdb_data={tmdb_data}
+              media_data={media_data}
+              is_content_expanded={is_content_expanded}
+              onRevealComplete={() => setIsSynopsisRevealed(true)}
+            />
           </motion.div>
           {media_data.type === 'tv' && (
-            <motion.div variants={element}>
+            // animate rather than variants: this block deliberately opts out
+            // of .container's propagated stagger sequence (element above) —
+            // it needs to wait on Synopsis actually finishing, not just its
+            // own turn in a fixed staggerChildren step. fade rather than
+            // entry's x-slide, too: Episodes' own rows (entry_soft) already
+            // supply the visible motion here, sliding down — a second, sideways
+            // slide on this wrapper at the same time was what read as diagonal.
+            <motion.div
+              variants={fade}
+              initial={false}
+              animate={is_synopsis_revealed ? 'visible' : 'hidden'}
+            >
               <span className={styles.section_label}>Episodes</span>
               <Episodes tmdb_data={tmdb_data} media_data={media_data} />
             </motion.div>

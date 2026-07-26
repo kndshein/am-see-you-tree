@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 import styles from './Overview.module.scss';
@@ -6,9 +7,19 @@ import { TmdbType } from '../../../types/Tmdb';
 type PropTypes = {
   tmdb_data: TmdbType;
   media_data: MediaType;
+  is_content_expanded: boolean;
+  // Fired once the word-by-word reveal actually finishes — Episodes.tsx
+  // (RightContainer) waits on this rather than a fixed delay, since a
+  // synopsis's length (and so its reveal duration) varies per title.
+  onRevealComplete?: () => void;
 };
 
-export default function Overview({ tmdb_data, media_data }: PropTypes) {
+export default function Overview({
+  tmdb_data,
+  media_data,
+  is_content_expanded,
+  onRevealComplete,
+}: PropTypes) {
   const should_reduce_motion = useReducedMotion();
 
   const seasonData =
@@ -18,6 +29,13 @@ export default function Overview({ tmdb_data, media_data }: PropTypes) {
     media_data.type === 'tv'
       ? seasonData?.overview || tmdb_data.overview || ''
       : tmdb_data.overview || '';
+
+  // No word-by-word animation to wait on in this branch — this component
+  // remounts every time the card opens (RightContainer's `is_active &&`
+  // guard), so firing once on mount is enough to unblock Episodes.
+  useEffect(() => {
+    if (should_reduce_motion) onRevealComplete?.();
+  }, [should_reduce_motion, onRevealComplete]);
 
   if (should_reduce_motion) {
     return <p className={styles.overview}>{overview_text}</p>;
@@ -68,6 +86,18 @@ export default function Overview({ tmdb_data, media_data }: PropTypes) {
               transition: { duration: 0 },
             },
           }}
+          // Firing this on the parent <p> instead would be ambiguous — with
+          // staggerChildren, it's the parent's own (near-instant) opacity
+          // tween that resolves the callback, not its staggered children.
+          // The last word is unambiguous: it's the last thing to animate, so
+          // its own completion IS the reveal actually finishing.
+          onAnimationComplete={
+            idx === words.length - 1
+              ? () => {
+                  if (is_content_expanded) onRevealComplete?.();
+                }
+              : undefined
+          }
         >
           {word}
         </motion.span>

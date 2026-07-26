@@ -24,13 +24,12 @@ export default function Episodes({ tmdb_data, media_data }: PropTypes) {
         visible: {
           opacity: 1,
           transition: {
-            // No delayChildren: this block is already the last of
-            // RightContainer's staggered children, so the extra delay it used
-            // to derive from the season-overview's *length* (a leftover from
-            // when it sat directly under the synopsis) only double-delayed it.
+            // No delayChildren: RightContainer already withholds this whole
+            // block's own animate until Synopsis finishes (is_synopsis_revealed),
+            // so an extra delay here would double it up.
             // A season can run to 19 rows here, so the step stays modest or the
             // last one arrives long after the card has settled.
-            staggerChildren: 0.1,
+            staggerChildren: 0.15,
           },
         },
         hidden: {

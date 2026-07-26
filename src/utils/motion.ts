@@ -24,11 +24,25 @@ export const entry_soft = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: 'easeOut' },
+    transition: { duration: 0.6, ease: 'easeOut' },
   },
   hidden: {
     opacity: 0,
     y: -14,
+    transition: { duration: 0 },
+  },
+} as const;
+
+// Opacity only — for wrappers whose own children already carry the visible
+// motion (e.g. Episodes' rows, each using entry_soft), so the direction isn't
+// fought by a second, differently-angled slide on the wrapper itself.
+export const fade = {
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: 'easeOut' },
+  },
+  hidden: {
+    opacity: 0,
     transition: { duration: 0 },
   },
 } as const;
