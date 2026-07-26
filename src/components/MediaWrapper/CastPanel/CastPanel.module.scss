@@ -115,3 +115,9 @@
   letter-spacing: 1px;
   color: rgba($white, 0.5);
 }
+
+.is_tv:hover .bracket,
+.is_tv:hover .title_grey,
+.is_tv:hover .title_white {
+  color: $show;
+}

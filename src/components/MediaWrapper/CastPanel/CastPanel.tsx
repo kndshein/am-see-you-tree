@@ -106,10 +106,12 @@ export default function CastPanel({
               item.type === 'tv' ? item.season : ''
             }`;
             const item_data = tmdb_data_map[tmdbKeyOf(item)];
-            const title =
+            const base_title =
               item.type === 'tv'
                 ? item_data?.original_name || item_data?.original_title || item.id
                 : item_data?.original_title || item.id;
+            const title =
+              item.type === 'tv' ? `${base_title} - S${item.season}` : base_title;
             const release_date = releaseDateOf(item, tmdb_data_map);
             const year = release_date ? release_date.slice(0, 4) : undefined;
             // Only items that exist in the current rail are navigable.
@@ -132,6 +134,7 @@ export default function CastPanel({
                 is_clickable={is_clickable}
                 item_idx={item_idx}
                 total_items={cast_matches.length}
+                type={item.type}
                 onClick={(event) => {
                   event.stopPropagation();
                   if (is_clickable) handleJump(target_idx);
@@ -155,6 +158,7 @@ type ItemPropTypes = {
   // Needed to compute when all items have finished entering, so brackets
   // can pop in sync right after the last one lands.
   total_items: number;
+  type: MediaType['type'];
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
@@ -168,6 +172,7 @@ function CastItem({
   is_clickable,
   item_idx,
   total_items,
+  type,
   onClick,
 }: ItemPropTypes) {
   const [is_revealed, setIsRevealed] = useState(false);
@@ -183,7 +188,9 @@ function CastItem({
 
   return (
     <motion.button
-      className={`${styles.item} ${!is_clickable ? styles.not_in_rail : ''}`}
+      className={`${styles.item} ${!is_clickable ? styles.not_in_rail : ''} ${
+        type === 'tv' ? styles.is_tv : ''
+      }`}
       variants={entry}
       // Not interactive until its bracket reveal finishes AND it's in the rail.
       disabled={!is_revealed || !is_clickable}

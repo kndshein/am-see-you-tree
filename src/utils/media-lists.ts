@@ -66,7 +66,7 @@ export function castMatchesInMediaList(
   tmdb_data: TmdbMap,
   is_movies_only: boolean,
 ): Array<MediaType> {
-  return media_list
+  return mergeTvFragments(media_list)
     .filter((item) => isShown(item, is_movies_only))
     .filter((item) => {
       const data = tmdb_data[tmdbKeyOf(item)];
