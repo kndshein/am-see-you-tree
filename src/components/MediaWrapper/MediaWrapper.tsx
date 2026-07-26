@@ -19,6 +19,17 @@ import { TmdbType } from '../../types/Tmdb';
 import { useTmdbData } from '../../utils/tmdb-data';
 import { GLOW_DELAY, GLOW_DURATION } from '../../utils/motion';
 
+// rgb components (not the SCSS variables themselves — variables.scss isn't
+// reachable from here) for the same type colors the card's border/reflection
+// use elsewhere (index.scss's .media, Title.module.scss). Same pattern as
+// CastPanel.tsx's own GLOW_RGB.
+const GLOW_RGB: Record<MediaType['type'], string> = {
+  movie: '102, 192, 204', // $accent-lite
+  tv: '255, 161, 124', // $show
+  short: '117, 255, 188', // $short
+  special: '255, 232, 117', // $special
+};
+
 type PropTypes = {
   media_data: MediaType;
   media_list: Array<MediaType>;
@@ -67,6 +78,7 @@ export default function MediaWrapper({
 
   const media_ui_type: MediaUiType =
     media_data.type === 'tv' ? 'show' : media_data.type;
+  const glow_rgb = GLOW_RGB[media_data.type];
 
   const tmdb_data_map = useTmdbData();
   const tmdb_key =
@@ -124,6 +136,17 @@ export default function MediaWrapper({
         isDisabled ? '' : 'ready'
       } ${is_content_expanded ? 'expanded-layout' : ''} ${
         is_content_collapsed ? 'collapsed-layout' : ''
+      } ${
+        // Same is_tv/is_short/is_special convention RightContainer's cast
+        // pills and CastPanel's filmography already use for the same type
+        // colors — index.scss's .media border rules key off these too.
+        media_data.type === 'tv'
+          ? 'is_tv'
+          : media_data.type === 'short'
+          ? 'is_short'
+          : media_data.type === 'special'
+          ? 'is_special'
+          : ''
       }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -181,8 +204,12 @@ export default function MediaWrapper({
             }}
             variants={{
               expanded: {
-                boxShadow:
-                  '0 0 1px white, 0 0 5px 1px rgb(102, 192, 204), 0 0 20px 7px rgb(45, 100, 114)',
+                // Soft bloom (white core, low-opacity outer layers — not the
+                // harder-edged double ring this used to have), tinted per
+                // type like the card's own border/reflection elsewhere
+                // (index.scss's .media, Title.module.scss) instead of
+                // staying a flat accent-lite/accent blue regardless of type.
+                boxShadow: `0 0 1px white, 0 0 4px 1px rgba(${glow_rgb}, 0.5), 0 0 12px 4px rgba(${glow_rgb}, 0.25)`,
                 transition: {
                   boxShadow: {
                     // The genre/poster/collection colour reveals are timed off

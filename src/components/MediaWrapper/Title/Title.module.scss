@@ -46,6 +46,19 @@
   }
 }
 
+// Same type colors as .title::before above.
+:global(.media.is_tv) .title::after {
+  border-top-color: $show;
+}
+
+:global(.media.is_short) .title::after {
+  border-top-color: $short;
+}
+
+:global(.media.is_special) .title::after {
+  border-top-color: $special;
+}
+
 .title h2 {
   user-select: none;
   margin: 0;
@@ -72,6 +85,26 @@
   }
 }
 
+// Same type colors the card's border/reflection/reticle use elsewhere
+// (index.scss's .media, Reticle.module.scss's .corner) — written as fully
+// separate selectors rather than nested with &, since the hover rule above
+// already combines :hover with .title::before and there's no way to also
+// require .is_tv on the same .media from inside that nesting.
+:global(.media.is_tv):hover .title::before,
+:global(.media.is_tv):focus .title::before {
+  box-shadow: 10px 0 0 $show;
+}
+
+:global(.media.is_short):hover .title::before,
+:global(.media.is_short):focus .title::before {
+  box-shadow: 10px 0 0 $short;
+}
+
+:global(.media.is_special):hover .title::before,
+:global(.media.is_special):focus .title::before {
+  box-shadow: 10px 0 0 $special;
+}
+
 :global(.media):global(.expanded-layout) .title {
   left: 0;
   transform: rotate(-90deg);
@@ -89,6 +122,18 @@
   &::after {
     width: 0;
   }
+}
+
+:global(.media.is_tv):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $show, 0 0 20px $background;
+}
+
+:global(.media.is_short):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $short, 0 0 20px $background;
+}
+
+:global(.media.is_special):global(.expanded-layout) .title::before {
+  box-shadow: 10px 0 0 $special, 0 0 20px $background;
 }
 
 :global(.media):global(.active):not(:global(.expanded-layout)) .title,

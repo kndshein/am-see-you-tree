@@ -37,7 +37,6 @@
   margin-top: $block-gap + 1px;
   padding: 5px 10px;
   border: 1px solid rgba($accent-lite, 0.3);
-  border-radius: $radius-sm;
   font-family: $accent-text;
   font-size: 0.8rem;
   letter-spacing: 1px;
@@ -66,11 +65,12 @@
   margin-bottom: 4px;
 }
 
-// Same size as the figure it sits beside — the two read as one line rather
-// than a caption and a value, which is what the row layout implies.
+// Not 1em (which would match the figure it sits beside, at .finances' own
+// 0.8rem): field-label (variables.scss) now owns this size for every label
+// on the site, and this was the one place that used to quietly drift from
+// it.
 .finance_label {
   @include field-label;
-  font-size: 1em;
   white-space: nowrap;
 }
 
@@ -84,10 +84,10 @@
   top: 8px;
   z-index: 1;
   padding: 4px 8px 3px;
-  font-family: $accent-text;
-  font-size: 0.7rem;
+  font-family: $body-text;
+  font-size: 0.75rem;
   letter-spacing: 1px;
-  color: rgba($accent-lite, 0.72);
+  color: $accent-lite;
   background-color: rgba($background, 0.72);
   border-radius: $radius-sm;
 }

@@ -8,7 +8,7 @@ import {
   COLOR_REVEAL_DELAY,
   REVEAL_DURATION,
 } from '../../../utils/motion';
-import { compactCurrency } from '../../../utils/format';
+import { compactCurrency, dashify } from '../../../utils/format';
 import { MediaType } from '../../../types/Media';
 
 type PropTypes = {
@@ -87,7 +87,9 @@ export default function LeftContainer({
           )}
           {tmdb_data.revenue && (
             <span className={styles.finance_row}>
-              <span className={styles.finance_label}>Box Office</span>
+              <span className={styles.finance_label}>
+                {dashify('Box Office')}
+              </span>
               <span className={styles.finance_leader} />
               <span>{compactCurrency(tmdb_data.revenue)}</span>
             </span>

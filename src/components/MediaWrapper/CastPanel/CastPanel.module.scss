@@ -42,7 +42,6 @@
 
 .label {
   @include field-label;
-  font-size: 0.7rem;
   margin-bottom: 2px;
   color: $accent-lite;
 }
@@ -143,7 +142,13 @@
   color: $accent-lite; // Default for movies
 }
 
-.is_tv .type_icon { color: $show; }
+// FaBars (the tv icon) reads visually smaller than the other three (a solid
+// square/circle/triangle) at the same font-size — a few % up brings it back
+// to the same apparent weight. Same nudge as Tag.module.scss's own icon.
+.is_tv .type_icon {
+  color: $show;
+  font-size: 0.78em;
+}
 .is_short .type_icon { color: $short; }
 .is_special .type_icon { color: $special; }
 

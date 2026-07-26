@@ -6,6 +6,7 @@ import { motion, MotionConfig, useMotionValueEvent } from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
 import { buildMediaList, summarizeMedia } from './utils/media-lists';
 import { scroll_progress, is_locked } from './utils/hud-telemetry';
+import { dashify } from './utils/format';
 
 Modal.setAppElement('#root');
 
@@ -123,7 +124,7 @@ function App() {
                     idx === order_index ? 'active' : ''
                   }`}
                 >
-                  {type}
+                  {dashify(type)}
                 </span>
               ))}
             </button>
@@ -160,7 +161,7 @@ function App() {
               onClick={() => setIsMoviesOnly((prev) => !prev)}
             >
               <span className="status_dot" aria-hidden="true" />
-              Movies Only
+              {dashify('Movies Only')}
             </button>
           </main>
         </TmdbContext.Provider>

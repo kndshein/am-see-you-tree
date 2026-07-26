@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $background: rgb(18, 18, 18);
 $main: rgb(37, 37, 37);
 $main-lite: rgb(110, 110, 110);
@@ -13,6 +15,14 @@ $muted-text: grey;
 // The HUD's green, shared so the director pill matches the frame readouts.
 $hud-green: rgb(102, 204, 170);
 $shadow-faint: rgba(0, 0, 0, 0.1);
+
+// $accent is roughly $accent-lite mixed 50/50 with black — the collapsed
+// card's own reflection gradient (index.scss) uses that dim tier rather than
+// the bright one everything else ($show/$short/$special themselves) uses, so
+// these give the type colors the same second, dimmer tier to draw from there.
+$show-dim: color.mix($show, black, 50%);
+$short-dim: color.mix($short, black, 50%);
+$special-dim: color.mix($special, black, 50%);
 
 // Gap between stacked blocks in the expanded card's left column. Sits just
 // above the 10px used between rows inside a block.
@@ -40,8 +50,7 @@ $transition-base: 0.3s ease-in-out;
 $font-size-base: 1rem;
 $font-size-lg: 2rem;
 
-// Small dim caps naming a value or a list. Callers set their own font-size,
-// since these sit inside blocks of very different scales.
+// Small dim caps naming a value or a list.
 @mixin field-label {
   font-family: $accent-text;
   letter-spacing: 2px;
@@ -54,6 +63,12 @@ $font-size-lg: 2rem;
   // over a title/finance rows/genre rows, was enough to overflow only in
   // Chrome even though the exact same content fit in Firefox.
   line-height: 1.2;
+  // The one thing every field-label caller used to set individually
+  // (always to the same 0.7rem, until LeftContainer's .finance_label quietly
+  // drifted to 1em/0.8rem) — living here instead means every label the site
+  // has can only ever change size together. Callers that genuinely want to
+  // be smaller (About's .latest_tag) still override it after the include.
+  font-size: 0.75rem;
 }
 
 // The site's standard "this text is a link" look: readable body font (as

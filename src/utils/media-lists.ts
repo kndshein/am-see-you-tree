@@ -145,7 +145,7 @@ const TYPE_LABELS: Array<[MediaType['type'], string]> = [
 
 export type MediaSummary = {
   total: number;
-  by_type: Array<{ label: string; count: number }>;
+  by_type: Array<{ type: MediaType['type']; label: string; count: number }>;
   // Release years of the shown set, or null when no entry has a usable date.
   span: { from: string; to: string } | null;
   runtime_minutes: number;
@@ -162,7 +162,12 @@ export function summarizeMedia(
   let latest = '';
   let runtime_minutes = 0;
 
-  for (const ele of list) {
+  // Chronological order (buildMediaList's default) leaves a season's
+  // fragments as separate entries when a movie was watched partway through
+  // it — correct for the rail, which is meant to show that split, but
+  // counted as multiple shows here otherwise. Merged for tallying only; the
+  // rail itself still renders the unmerged `list` passed in.
+  for (const ele of mergeTvFragments(list)) {
     if (!isShown(ele, is_movies_only)) continue;
     total++;
     tally.set(ele.type, (tally.get(ele.type) ?? 0) + 1);
@@ -180,6 +185,7 @@ export function summarizeMedia(
     // Fixed order, and types with nothing on screen are dropped rather than
     // listed as zero.
     by_type: TYPE_LABELS.map(([type, label]) => ({
+      type,
       label,
       count: tally.get(type) ?? 0,
     })).filter((row) => row.count > 0),

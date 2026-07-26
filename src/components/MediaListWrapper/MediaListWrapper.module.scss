@@ -25,33 +25,94 @@
   background-image: linear-gradient(to right, transparent, $background);
 }
 
-.arrow_left svg,
-.arrow_right svg {
-  fill: white;
-  height: 50px;
-  width: 75px;
-  filter: drop-shadow(0 0 10px $accent-lite);
+// The hover/active tint used to be a straight swap of this element's own
+// background-image (transparent -> rgba($accent, ...)) — background-image
+// isn't on CSS's list of animatable properties though, so despite the
+// transition declared on it, browsers were just snapping between the two
+// gradients instead of fading. Moving the tint onto its own layer behind the
+// arrow lets it cross-fade in on opacity instead, which does animate.
+.arrow_left::before,
+.arrow_right::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
-.arrow_left:hover.arrow_left svg,
-.arrow_right:hover.arrow_right svg {
-  filter: drop-shadow(0 0 2px $accent-lite);
+.arrow_left::before {
+  background-image: linear-gradient(to left, transparent, rgba($accent, 0.7));
 }
 
-.arrow_left:hover {
-  background-image: linear-gradient(
-    to left,
-    transparent,
-    rgba($accent, 0.7)
-  );
-}
-
-.arrow_right:hover {
+.arrow_right::before {
   background-image: linear-gradient(
     to right,
     transparent,
     rgba($accent, 0.7)
   );
+}
+
+.arrow_left:hover::before,
+.arrow_right:hover::before {
+  opacity: 1;
+}
+
+// Active steps past hover to the brighter accent-lite tint — a distinct
+// color, not just this same layer turned up, so it still reads as a further
+// step rather than more of the same fade.
+.arrow_left:active::before {
+  opacity: 1;
+  background-image: linear-gradient(
+    to left,
+    transparent,
+    rgba($accent-lite, 0.6)
+  );
+}
+
+.arrow_right:active::before {
+  opacity: 1;
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    rgba($accent-lite, 0.6)
+  );
+}
+
+.arrow_left svg,
+.arrow_right svg {
+  fill: white;
+  height: 68px;
+  width: 100px;
+  filter: drop-shadow(0 0 10px $accent-lite);
+  // Expo-out: snaps away from its starting value fast, then settles without
+  // any overshoot — reads as a sharp HUD response instead of the bounce a
+  // standard ease curve gives a transform.
+  transition: filter 0.25s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// Hover: glow tightens in — a "you're over it" cue. The background tint
+// itself is handled by the ::before layer above.
+.arrow_left:hover svg,
+.arrow_right:hover svg {
+  filter: drop-shadow(0 0 2px $accent-lite);
+}
+
+// Active (actually being pressed): a distinct, stronger step past hover —
+// the arrow itself dashing a few px further in the direction it points, like
+// it's firing forward rather than being squashed underfoot.
+.arrow_left:active svg,
+.arrow_right:active svg {
+  filter: drop-shadow(0 0 14px $accent-lite) brightness(1.6);
+}
+
+.arrow_left:active svg {
+  transform: translateX(-10px);
+}
+
+.arrow_right:active svg {
+  transform: translateX(10px);
 }
 
 @media only screen and (max-width: 500px) {

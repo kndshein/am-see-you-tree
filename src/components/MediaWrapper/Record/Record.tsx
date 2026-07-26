@@ -1,7 +1,6 @@
 import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 import { TmdbType } from '../../../types/Tmdb';
-import { backdropVariantsOf } from '../../../utils/backdrop';
 import { entry } from '../../../utils/motion';
 import styles from './Record.module.scss';
 
@@ -30,10 +29,6 @@ export default function Record({ media_data, tmdb_data }: PropTypes) {
         )}`
       : media_data.type;
 
-  // Dimensions come off the generated file (see the manifest), so this reports
-  // what was actually shipped rather than what the pipeline aimed for.
-  const backdrop = backdropVariantsOf(media_data, tmdb_data);
-
   return (
     <motion.div
       className={styles.record}
@@ -44,9 +39,9 @@ export default function Record({ media_data, tmdb_data }: PropTypes) {
       }}
     >
       {/* Two groups pushed to opposite ends: what the entry *is* on the left,
-          how it was *rendered* on the right. The wrappers are plain spans, so
-          variant propagation still reaches each field directly and the stagger
-          runs across all five in order. */}
+          which system it's cross-referenced in on the right. The wrappers
+          are plain spans, so variant propagation still reaches each field
+          directly and the stagger runs across both in order. */}
       <span className={styles.group}>
         <motion.span variants={entry}>
           <span className={styles.key}>ID</span>TMDB.{tmdb_id}
@@ -55,24 +50,12 @@ export default function Record({ media_data, tmdb_data }: PropTypes) {
           <span className={styles.key}>CLS</span>
           {classification}
         </motion.span>
+      </span>
+      <span className={`${styles.group} ${styles.group_end}`}>
         {tmdb_data.imdb_id && (
           <motion.span variants={entry}>
             <span className={styles.key}>IMDB</span>
             {tmdb_data.imdb_id}
-          </motion.span>
-        )}
-      </span>
-      <span className={`${styles.group} ${styles.group_end}`}>
-        {tmdb_data.original_language && (
-          <motion.span variants={entry}>
-            <span className={styles.key}>LANG</span>
-            {tmdb_data.original_language}
-          </motion.span>
-        )}
-        {backdrop && (
-          <motion.span variants={entry}>
-            <span className={styles.key}>IMG</span>
-            {backdrop.width}&times;{backdrop.height} WEBP
           </motion.span>
         )}
       </span>

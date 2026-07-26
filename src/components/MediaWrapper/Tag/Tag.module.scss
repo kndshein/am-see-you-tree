@@ -34,6 +34,13 @@
   color: $show;
 }
 
+// FaBars (this type's icon) reads visually smaller than the other three
+// (a solid square/circle/triangle) at the same font-size — a few % up
+// brings it back to the same apparent weight.
+.type_tag.show .icon {
+  font-size: 0.78em;
+}
+
 .type_tag.short {
   color: $short;
 }

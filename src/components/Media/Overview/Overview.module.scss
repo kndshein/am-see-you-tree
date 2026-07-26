@@ -7,8 +7,9 @@
   font-family: $accent-text;
   font-weight: 200;
   font-size: clamp(1rem, 1.6vw, 1.3rem);
-  // Was a second clamp mirroring font-size at a constant 1.25 ratio — a plain
-  // unitless value does the same thing and scales with font-size for free.
-  line-height: 1.25;
+  // Unitless so it scales with font-size for free. Also what About.module.scss's
+  // .body now matches, so the site's two blocks of real reading text (this
+  // and the about-modal body) read at the same rhythm.
+  line-height: 1.5;
   width: 100%;
 }

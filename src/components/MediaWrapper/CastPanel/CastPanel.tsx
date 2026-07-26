@@ -209,10 +209,10 @@ function CastItem({
   }, [is_content_expanded, bracket_delay]);
 
   const TYPE_ICONS: Record<MediaType['type'], React.ReactNode> = {
-    movie: <FaSquare />,
+    movie: <FaCircle />,
     tv: <FaBars />,
     short: <FaPlay />,
-    special: <FaCircle />,
+    special: <FaSquare />,
   };
 
   return (

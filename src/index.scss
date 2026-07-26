@@ -72,7 +72,30 @@ code {
     }
   }
 
-  &.active {
+  // Same type colors RightContainer's cast pills and CastPanel's filmography
+  // already use ($show/$short/$special) — the card's own border/reflection
+  // reads as "this is a TV season" etc. the same way those do, instead of
+  // every card defaulting to the movie-only $accent-lite/$accent regardless
+  // of type.
+  &.is_tv:not(.collapsed-layout) {
+    border-color: $show;
+  }
+
+  &.is_short:not(.collapsed-layout) {
+    border-color: $short;
+  }
+
+  &.is_special:not(.collapsed-layout) {
+    border-color: $special;
+  }
+
+  // :not(.collapsed-layout) added here too (always true when .active anyway,
+  // active cards are never collapsed) purely to match the type rules above's
+  // own specificity — .active alone was lower specificity than
+  // .is_tv:not(.collapsed-layout) etc., so on a card that was both, the type
+  // color won regardless of source order and the dashed border never
+  // actually went transparent.
+  &.active:not(.collapsed-layout) {
     border-color: transparent;
   }
 
@@ -106,6 +129,36 @@ code {
       background-position: 0 30%;
       border-radius: $radius-md;
       transition: $transition-base;
+    }
+
+    // Dim tier (variables.scss's $show-dim etc.), not the type colors
+    // themselves — same relationship $accent (used here for movies, above)
+    // has to $accent-lite (used for the expanded border instead).
+    &.is_tv::after {
+      background-image: linear-gradient(
+        240deg,
+        $show-dim 70%,
+        white 75%,
+        $show-dim 80%
+      );
+    }
+
+    &.is_short::after {
+      background-image: linear-gradient(
+        240deg,
+        $short-dim 70%,
+        white 75%,
+        $short-dim 80%
+      );
+    }
+
+    &.is_special::after {
+      background-image: linear-gradient(
+        240deg,
+        $special-dim 70%,
+        white 75%,
+        $special-dim 80%
+      );
     }
 
     &:hover {
@@ -169,7 +222,7 @@ code {
 
   // Delay lives on this base rule rather than scoped to :hover, so it applies
   // symmetrically — reverting the instant the cursor left read as more of a
-  // glitch than a deliberate pause.
+  // glitch than a deliberate pause. Bright blue at rest, white on hover.
   &::before,
   &::after {
     color: $accent-lite;
@@ -215,21 +268,27 @@ code {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  background: none;
+  // Visible at rest, like the cast pills' own resting tint (RightContainer's
+  // .actor_button) — not just on hover, so this reads as a filled control
+  // rather than a bare label even while unchecked.
+  background-color: rgba($accent-lite, 0.08);
   border: 2px solid transparent; // Reserve space for the corner brackets, 2px thick
   padding: 3px 7px;
   font-family: $body-text;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-size: clamp(0.65rem, 2vw, 0.8rem);
-  color: rgba($main-lite, 0.6);
+  // Brighter blue at rest, not dimmed — the bracket is the dimmer tier
+  // ($accent, below) already; the text shouldn't double that dimming on
+  // top of it.
+  color: $accent-lite;
   transition:
     color 0.1s linear,
     background-color 0.2s ease;
 
   &:hover {
     color: white;
-    background-color: rgba($accent-lite, 0.08);
+    background-color: rgba($accent-lite, 0.14);
 
     &::before,
     &::after {
@@ -241,10 +300,13 @@ code {
   // Same tinted-background + white-border-with-bloom treatment as the cast
   // pills' own .selected state — this toggle being "on" is the same kind of
   // fact that being the selected cast member is there, so it reads the same
-  // way.
+  // way. text-shadow matches bloom-link's own recipe (variables.scss).
   &.active {
     color: white;
     background-color: rgba($accent-lite, 0.2);
+    text-shadow:
+      0 0 3px rgba(255, 255, 255, 0.35),
+      0 0 7px rgba($accent-lite, 0.2);
 
     &::before,
     &::after {
@@ -305,7 +367,9 @@ code {
 }
 
 .movies_only_toggle.active .status_dot {
-  background-color: rgb(80, 220, 120);
+  // $accent-lite's rgb — blue, matching the rest of the toggle's active
+  // state, not green.
+  background-color: rgb(102, 192, 204);
   animation: status_dot_glow 1s ease-in-out infinite alternate;
 }
 
@@ -313,10 +377,10 @@ code {
 // rather than swinging from barely-there to full-bright.
 @keyframes status_dot_glow {
   from {
-    box-shadow: 0 0 5px rgba(80, 220, 120, 0.6);
+    box-shadow: 0 0 5px rgba(102, 192, 204, 0.6);
   }
   to {
-    box-shadow: 0 0 6px rgba(80, 220, 120, 0.8);
+    box-shadow: 0 0 6px rgba(102, 192, 204, 0.8);
   }
 }
 
@@ -366,6 +430,10 @@ code {
   background-color: $accent-lite;
 }
 
+// Gray at rest (not selected). Hovering an inactive option steps it toward a
+// dim blue rather than straight to white — white stays reserved for the
+// actually-active one, so hover reads as "you could pick this" rather than
+// "this is picked".
 .order_type_option {
   color: rgba($main-lite, 0.6);
   transition: color 0.1s linear;
@@ -375,17 +443,23 @@ code {
   &:not(:last-child)::after {
     content: '//';
     margin: 0 10px;
-    color: rgba($main-lite, 0.3);
+    // Was rgba($main-lite, 0.3) — nearly invisible against the dark
+    // background.
+    color: rgba($main-lite, 0.8);
     font-weight: 400;
   }
 }
 
-.order_type_option.active {
-  color: $accent-lite;
+.order_type_btn:hover .order_type_option:not(.active) {
+  color: $accent;
 }
 
-.order_type_btn:hover .order_type_option {
-  color: $main-lite;
+// Bright blue at rest — a step up from the dim/hover-dim tiers the inactive
+// options use, so the selected one reads as lit even before the button is
+// touched. White only kicks in on hover, matching the bracket's own
+// rest/hover split just above.
+.order_type_option.active {
+  color: $accent-lite;
 }
 
 .order_type_btn:hover .order_type_option.active {

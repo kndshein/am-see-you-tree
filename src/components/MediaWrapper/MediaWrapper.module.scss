@@ -70,6 +70,23 @@
   border: 1px solid $accent-lite;
 }
 
+// Same type colors the card's own border/reflection use elsewhere
+// (index.scss's .media, Reticle.module.scss's .corner) — stays visible in
+// the fully active/expanded state too, unlike .media's own dashed border
+// (which does go transparent there, index.scss's .active:not(.collapsed-layout)
+// — a different element, deliberately not this one).
+:global(.media.is_tv) .content {
+  border-color: $show;
+}
+
+:global(.media.is_short) .content {
+  border-color: $short;
+}
+
+:global(.media.is_special) .content {
+  border-color: $special;
+}
+
 :global(.media):global(.expanded-layout) .content {
   cursor: auto;
   pointer-events: all;

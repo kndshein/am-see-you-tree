@@ -140,10 +140,12 @@
   font-size: 2.5rem;
 }
 
-// Same color the card's own Synopsis text uses (Overview.module.scss).
+// Same color and line-height the card's own Synopsis text uses
+// (Overview.module.scss) — line-height unitless for the same reason: scales
+// with font-size for free, and reads at the same rhythm as that text.
 .body {
   color: rgba($white, 0.75);
-  line-height: 1.4rem;
+  line-height: 1.5;
 }
 
 // Same bracket-and-bloom treatment as every other link on the site

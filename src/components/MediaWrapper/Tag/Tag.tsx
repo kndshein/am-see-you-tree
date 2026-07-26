@@ -8,10 +8,10 @@ type PropTypes = {
 };
 
 const TYPE_ICONS: Record<MediaUiType, React.ReactNode> = {
-  movie: <FaSquare />,
+  movie: <FaCircle />,
   show: <FaBars />,
   short: <FaPlay />,
-  special: <FaCircle />,
+  special: <FaSquare />,
 };
 
 export default function Tag({ is_movies_only, media_ui_type }: PropTypes) {

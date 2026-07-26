@@ -36,6 +36,24 @@
   }
 }
 
+// This is the card's prominent expanded-view title — not
+// Title.module.scss's own .title, the small rotated label on the collapsed
+// rail card. Same type colors as everywhere else (index.scss's .media,
+// Reticle.module.scss's .corner, Title.module.scss's own bar) — title-
+// accent-bar's own background-color (variables.scss) is a flat $accent-lite,
+// with no notion of type to vary by.
+:global(.media.is_tv) .title::before {
+  background-color: $show;
+}
+
+:global(.media.is_short) .title::before {
+  background-color: $short;
+}
+
+:global(.media.is_special) .title::before {
+  background-color: $special;
+}
+
 .title {
   &:global(.iron_man) {
     background: linear-gradient(

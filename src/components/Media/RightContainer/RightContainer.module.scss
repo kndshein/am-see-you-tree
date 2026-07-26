@@ -53,7 +53,6 @@
   @include field-label;
   display: block;
   margin-bottom: 4px;
-  font-size: 0.7rem;
   font-style: normal;
   font-weight: 400;
 }
@@ -92,13 +91,12 @@
 }
 
 // Dimmed so the values stay dominant; the label is there to be scanned past.
-// Sized in rem, not em: as a fraction of the field's own clamped font-size it
-// drifted with the viewport instead of matching the card's other labels
-// (.tagline_label / .section_label / Genres' .list_label), which are all 0.7rem.
+// field-label (variables.scss) owns the size, not a fraction of the field's
+// own clamped font-size — that would drift with the viewport instead of
+// matching the card's other labels.
 .label {
   @include field-label;
   margin-bottom: 4px;
-  font-size: 0.7rem;
 }
 
 // Lets a field carry a secondary figure on the same line as its main value.
@@ -121,7 +119,6 @@
   @include field-label;
   display: block;
   margin: 0 0 6px;
-  font-size: 0.7rem;
 }
 
 // VoteCounter and GlitchText write their text into a bare inner <span>. The
@@ -134,9 +131,9 @@
 }
 
 // ...except the labels, which set their own and would otherwise be overwritten
-// by the rule above.
+// by the rule above. Matches field-label's own size (variables.scss).
 .info_group span span.label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 2px;
 }
 
@@ -189,8 +186,13 @@
   border-left: none;
 }
 
+// A resting tint, not just background: none — .actor's own border is
+// transparent for clickable pills (the corner brackets above are the only
+// visible edge, and only on the left/right), so with no fill at all the
+// missing top/bottom border read as a gap next to .actor_no_matches' fully
+// bordered box beside it. The tint stands in for that missing edge.
 .actor_button {
-  background: none;
+  background-color: rgba(102, 192, 204, 0.08);
   cursor: pointer;
   text-align: left;
   color: inherit;
@@ -198,7 +200,7 @@
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: rgba(102, 192, 204, 0.08);
+    background-color: rgba(102, 192, 204, 0.14);
 
     &::before,
     &::after {
@@ -230,7 +232,6 @@
   cursor: default;
   user-select: none;
   border-color: $accent; // Override transparent with visible border
-  border-radius: $radius-sm;
 
   &::before,
   &::after {
@@ -261,7 +262,6 @@
 .actor.director {
   color: $hud-green;
   border-color: rgba($hud-green, 0.55); // Full border for non-interactive
-  border-radius: $radius-sm;
 
   &::before,
   &::after {

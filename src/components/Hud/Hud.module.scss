@@ -27,9 +27,9 @@ $hud-dim: rgba($hud-green, 0.22);
   inset: 0;
   background: radial-gradient(
     120% 90% at 50% 50%,
-    transparent 55%,
-    rgba(0, 0, 0, 0.35) 82%,
-    rgba(0, 0, 0, 0.75) 100%
+    transparent 45%,
+    rgba(0, 0, 0, 0.5) 78%,
+    rgba(0, 0, 0, 0.9) 100%
   );
 }
 
@@ -206,6 +206,18 @@ $corner-inset: 14px;
   justify-content: space-between;
   gap: 16px;
   min-width: 108px;
+}
+
+.readout_label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.readout_icon {
+  display: flex;
+  font-size: 0.8em;
+  opacity: 0.8;
 }
 
 .readout_value {

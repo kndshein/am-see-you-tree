@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMotionValueEvent } from 'motion/react';
+import { FaSquare, FaBars, FaPlay, FaCircle } from 'react-icons/fa';
 import styles from './Hud.module.scss';
 import { MediaSummary } from '../../utils/media-lists';
+import { MediaType } from '../../types/Media';
 import { APP_VERSION } from '../../utils/version';
 import {
   focused_position,
@@ -11,6 +13,17 @@ import {
 import tmdb_meta from '../../assets/tmdb-data.meta.json';
 import type { OrderType } from '../../App';
 import About from '../About/About';
+import { dashify } from '../../utils/format';
+
+// Circle=movie, bars=show, play=short, square=special — same mapping as
+// Tag.tsx/CastPanel.tsx's own TYPE_ICONS, so an icon means the same thing
+// everywhere it shows up.
+const TYPE_ICONS: Record<MediaType['type'], React.ReactNode> = {
+  movie: <FaCircle />,
+  tv: <FaBars />,
+  short: <FaPlay />,
+  special: <FaSquare />,
+};
 
 type PropTypes = {
   summary: MediaSummary;
@@ -27,7 +40,7 @@ const SOURCE_SYNCED = tmdb_meta.generated.slice(0, 10).replace(/-/g, '.');
 const pad3 = (value: number) => String(value).padStart(3, '0');
 
 const formatRuntime = (minutes: number) =>
-  `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  `${Math.floor(minutes / 60)}h-${minutes % 60}m`;
 
 // Both readouts below write straight to their own text node. The values behind
 // them change every animation frame while scrolling, so going through React
@@ -99,7 +112,7 @@ export default function Hud({
       <div className={styles.top_bar}>
         <span>MCU&nbsp;//&nbsp;DATABASE</span>
         <span className={styles.tracking}>
-          <span>STARK&nbsp;INDUSTRIES</span>
+          <span>{dashify('Stark Industries')}</span>
           <span className={styles.tracking_live}>
             <StatusReadout />
             <PositionReadout />
@@ -113,7 +126,17 @@ export default function Hud({
         </span>
         {summary.by_type.map((row) => (
           <span key={row.label} className={styles.readout_row}>
-            <span>{row.label}</span>
+            <span className={styles.readout_label}>
+              {/* Only worth the extra glyph once there's more than one type
+                  on screen to tell apart — Movies Only always has exactly
+                  one row, so the label alone already says everything. */}
+              {!is_movies_only && (
+                <span className={styles.readout_icon}>
+                  {TYPE_ICONS[row.type]}
+                </span>
+              )}
+              {row.label}
+            </span>
             <span className={styles.readout_value}>{row.count}</span>
           </span>
         ))}
@@ -126,8 +149,8 @@ export default function Hud({
           </span>
         )}
         <span className={styles.readout_mode}>
-          {order_type}&nbsp;.&nbsp;
-          {is_movies_only ? 'Movies Only' : 'All Media'}
+          {dashify(order_type)}&nbsp;.&nbsp;
+          {dashify(is_movies_only ? 'Movies Only' : 'All Media')}
         </span>
       </div>
 

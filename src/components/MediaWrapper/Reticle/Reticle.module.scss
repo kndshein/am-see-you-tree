@@ -34,6 +34,27 @@ $standoff: 24px;
   height: $bracket;
   border: $thick solid $accent-lite;
   filter: drop-shadow(0 0 4px $glow);
+
+  // Same type colors the card's own border/reflection use (index.scss's
+  // .media, MediaWrapper.module.scss's .content) — the reticle locking onto
+  // a TV card should read as locking onto a TV card, not always the movie
+  // color. Nested inside .corner itself (not top-level with a bare &,
+  // which has no parent selector to attach to outside a rule and silently
+  // targeted .media directly instead of .corner).
+  :global(.media.is_tv) & {
+    border-color: $show;
+    filter: drop-shadow(0 0 4px rgba($show, 0.9));
+  }
+
+  :global(.media.is_short) & {
+    border-color: $short;
+    filter: drop-shadow(0 0 4px rgba($short, 0.9));
+  }
+
+  :global(.media.is_special) & {
+    border-color: $special;
+    filter: drop-shadow(0 0 4px rgba($special, 0.9));
+  }
 }
 
 .tl {
