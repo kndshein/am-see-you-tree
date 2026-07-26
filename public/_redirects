@@ -3,4 +3,4 @@
 /v2/* https://amseeyou-v2.netlify.app 200!
 /static-v2/* https://amseeyou-v2.netlify.app/static-v2/:splat 200!
 /v3/* https://amseeyou-v3.netlify.app 200!
-/v3/* https://amseeyou-v4.netlify.app 200!
+/v4/* https://amseeyou-v4.netlify.app 200!
