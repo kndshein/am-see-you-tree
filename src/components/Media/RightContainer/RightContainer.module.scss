@@ -160,6 +160,12 @@
   border: 2px solid transparent; // Reserve space for the brackets, 2px thick
 }
 
+// Delay on the hover transition lives here rather than scoped to
+// .actor_button:hover, so it applies symmetrically — reverting the instant
+// the cursor left read as more of a glitch than a deliberate pause. Same
+// treatment as the site's other brackets (CastPanel.module.scss etc.), just
+// on border-color/filter instead of color/text-shadow, since these brackets
+// are drawn as border corners rather than literal [ ] characters.
 .actor::before,
 .actor::after {
   content: '';
@@ -169,7 +175,7 @@
   width: 6px;
   border: 2px solid $accent; // Thicker lines
   border-radius: 0; // Square brackets
-  transition: border-color 0.2s ease, filter 0.2s ease;
+  transition: border-color 0.2s ease 0.1s, filter 0.2s ease 0.1s;
   pointer-events: none;
 }
 

@@ -147,7 +147,9 @@ export default function Hud({
             aria-hidden="false"
             onClick={() => setIsAboutOpen(true)}
           >
-            [About]
+            <span className={styles.about_bracket}>[</span>
+            <span className={styles.about_text}>About</span>
+            <span className={styles.about_bracket}>]</span>
           </button>
         </span>
       </div>

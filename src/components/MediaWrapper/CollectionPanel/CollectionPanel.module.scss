@@ -96,10 +96,14 @@
   align-items: baseline;
 }
 
-// Fades in once the title's color shift starts.
+// Fades in once the title's color shift starts. The hover color transition's
+// delay lives on this base rule rather than scoped to :hover, so it applies
+// symmetrically — reverting the instant the cursor left read as more of a
+// glitch than a deliberate pause.
 .bracket {
   display: inline-block;
   color: $white;
+  transition: color 0.15s ease-out 0.1s;
 }
 
 .item:hover .bracket {

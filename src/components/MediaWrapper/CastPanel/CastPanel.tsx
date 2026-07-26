@@ -187,6 +187,27 @@ function CastItem({
     ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: bracket_delay }
     : { duration: 0 };
 
+  // A plain CSS transition (.title/.revealed, CastPanel.module.scss), not
+  // Framer: Framer doesn't tween text-shadow as a structured value the way it
+  // does box-shadow, so animating it directly (an earlier attempt at this)
+  // just snapped straight to the end state instead of fading.
+  //
+  // Driven by state + setTimeout rather than deriving the class straight from
+  // is_content_expanded, though — this panel mounts already expanded, so a
+  // class present on the very first paint has no "before" style to transition
+  // from and (that bug, one fix before this one) also just snaps instantly.
+  // Flipping it a tick later on a genuinely separate paint is what gives the
+  // transition an actual starting point to animate from.
+  const [is_title_lit, setIsTitleLit] = useState(false);
+  useEffect(() => {
+    if (!is_content_expanded) {
+      setIsTitleLit(false);
+      return;
+    }
+    const timer = setTimeout(() => setIsTitleLit(true), bracket_delay * 1000);
+    return () => clearTimeout(timer);
+  }, [is_content_expanded, bracket_delay]);
+
   const TYPE_ICONS: Record<MediaType['type'], React.ReactNode> = {
     movie: <FaSquare />,
     tv: <FaBars />,
@@ -220,13 +241,17 @@ function CastItem({
         >
           [
         </motion.span>
-        <span className={styles.title_wrap}>
-          <span
-            className={`${styles.title} ${is_content_expanded ? styles.revealed : ''}`}
-            style={{ transitionDelay: (is_content_expanded && !is_revealed) ? `${bracket_delay}s` : '0s' }}
-          >
-            {title}
-          </span>
+        {/* A single element, not the grey/white twin-layer trick
+            CollectionPanel uses (a static base layer + an absolutely
+            positioned overlay that fades in on top): that trick anchors the
+            overlay to the wrap's first line only, so a title long enough to
+            wrap onto a second line had its color reveal misalign there. One
+            real element transitioning its own color/text-shadow has no
+            overlay to misalign — correct at any number of lines. */}
+        <span
+          className={`${styles.title} ${is_title_lit ? styles.revealed : ''}`}
+        >
+          {title}
         </span>
         <motion.span
           className={styles.bracket}

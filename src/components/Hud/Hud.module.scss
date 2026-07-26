@@ -264,9 +264,24 @@ $corner-inset: 14px;
   border: none;
   padding: 0;
   text-transform: uppercase;
-  transition: color 0.1s linear;
+}
 
-  &:hover {
-    color: $accent-lite;
-  }
+// A separate span from .about_text below — matching how every other
+// bracket on the site is its own element (CastPanel.module.scss etc.)
+// rather than sharing a single color with the word it frames.
+.about_bracket {
+  color: $white;
+  // Delay on the base rule, not scoped to :hover — that only delayed turning
+  // the color on, not reverting it, and going straight back the instant the
+  // cursor left read as more of a glitch than a deliberate pause.
+  transition: color 0.15s ease-out 0.2s;
+}
+
+.about_text {
+  transition: color 0.15s ease-out 0.1s;
+}
+
+.about_link:hover .about_bracket,
+.about_link:hover .about_text {
+  color: $accent-lite;
 }

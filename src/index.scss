@@ -167,12 +167,21 @@ code {
   font-size: clamp(0.65rem, 2vw, 0.8rem);
   transition: 0.1s linear;
 
+  // Delay lives on this base rule rather than scoped to :hover, so it applies
+  // symmetrically — reverting the instant the cursor left read as more of a
+  // glitch than a deliberate pause.
   &::before,
   &::after {
     color: $accent-lite;
     text-shadow:
       0 0 3px rgba(255, 255, 255, 0.35),
       0 0 7px rgba($accent-lite, 0.3);
+    transition: color 0.15s ease-out 0.1s;
+  }
+
+  &:hover::before,
+  &:hover::after {
+    color: white;
   }
 
   &::before {
@@ -234,12 +243,21 @@ code {
   // Same bracket-and-bloom treatment as .order_type_btn — wraps the whole
   // control (dot included), not just the label, matching that button's
   // brackets framing all of its options rather than just the active one.
+  // Delay lives on this base rule rather than scoped to :hover, so it applies
+  // symmetrically — reverting the instant the cursor left read as more of a
+  // glitch than a deliberate pause.
   &::before,
   &::after {
     color: $accent-lite;
     text-shadow:
       0 0 3px rgba(255, 255, 255, 0.35),
       0 0 7px rgba($accent-lite, 0.3);
+    transition: color 0.15s ease-out 0.1s;
+  }
+
+  &:hover::before,
+  &:hover::after {
+    color: white;
   }
 
   &::before {

@@ -75,33 +75,35 @@
   display: inline;
 }
 
+// Delay lives on this base rule rather than scoped to :hover, so it applies
+// symmetrically — reverting the instant the cursor left read as more of a
+// glitch than a deliberate pause.
 .bracket {
   display: inline;
   color: $white;
+  transition: color 0.15s ease-out 0.1s;
 }
 
 .item:hover .bracket {
   color: $accent-lite;
 }
 
-.title_wrap {
-  position: relative;
-  display: inline;
-}
-
-.type_icon {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 8px;
-  font-size: 0.7em;
-  opacity: 0.9;
-  color: $accent-lite; // Default for movies
-}
-
-.is_tv .type_icon { color: $show; }
-.is_short .type_icon { color: $short; }
-.is_special .type_icon { color: $special; }
-
+// One real element, not CollectionPanel's own grey/white twin-layer trick (a
+// static base layer + an absolutely positioned overlay fading in on top) —
+// that trick anchors the overlay to its wrap's first line only, so a title
+// long enough to wrap onto a second line had its color reveal misalign
+// there. display: inline (a span's default) is what actually matters here,
+// separately: it's what lets this stay glued to its neighbouring brackets
+// like a normal parenthesized word, rather than being able to jump to a new
+// line as one atomic unit the way inline-block could.
+//
+// A CSS transition rather than Framer: Framer doesn't tween text-shadow as a
+// structured value the way it does box-shadow, so animating it directly (an
+// earlier attempt at this fix) just snapped straight to the end state.
+// CastPanel.tsx flips .revealed on a setTimeout rather than deriving it
+// straight from is_content_expanded, though — this panel mounts already
+// expanded, so a class present on the very first paint has no "before" style
+// to transition from and (a separate, earlier bug) also just snaps instantly.
 .title {
   color: $muted-text;
   transition: color 0.15s ease-out, text-shadow 0.15s ease-out;
@@ -112,24 +114,6 @@
       0 0 3px rgba(255, 255, 255, 0.35),
       0 0 7px rgba(102, 192, 204, 0.2); // Default movie glow
   }
-}
-
-.bracket {
-  display: inline;
-  color: $white;
-  transition: color 0.15s ease-out;
-}
-
-.item:hover .title {
-  color: $accent-lite;
-  transition-delay: 0s !important;
-}
-
-.year {
-  margin-left: 6px;
-  font-size: 0.8em;
-  letter-spacing: 1px;
-  color: rgba($white, 0.5);
 }
 
 .is_tv .title.revealed {
@@ -150,6 +134,33 @@
     0 0 7px rgba($special, 0.2);
 }
 
+.type_icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 0.7em;
+  opacity: 0.9;
+  color: $accent-lite; // Default for movies
+}
+
+.is_tv .type_icon { color: $show; }
+.is_short .type_icon { color: $short; }
+.is_special .type_icon { color: $special; }
+
+.item:hover .title {
+  color: $accent-lite;
+}
+
+.year {
+  margin-left: 6px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  color: rgba($white, 0.5);
+}
+
+// transition-delay isn't repeated here: .item:hover .bracket above already
+// applies to every hovered bracket regardless of type (these rules only need
+// to win on color), so it's already in effect underneath these.
 .is_tv:hover .bracket,
 .is_tv:hover .title {
   color: $show;
