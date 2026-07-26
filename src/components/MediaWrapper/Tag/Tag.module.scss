@@ -26,6 +26,10 @@
   opacity: 0.8;
 }
 
+.label {
+  white-space: nowrap;
+}
+
 .type_tag.movie {
   color: $accent-lite;
 }
@@ -65,8 +69,29 @@
   display: inline-block;
 }
 
+// Rather than hiding the whole tag once a card opens on mobile (its old
+// behaviour), the chip strips down to the bare icon: the background plate,
+// triangle notch, and text label all compete with the card's own header at
+// this width, but the shape alone still says the type without any of that.
+// Scoped to .show_type, not .type_tag on its own, so a single-type view
+// (is_movies_only) still shows nothing here — same call the un-scoped base
+// rule already makes above.
 @media only screen and (max-width: 800px) {
-  :global(.media):global(.active) .type_tag {
-    opacity: 0;
+  :global(.media):global(.active) .type_tag.show_type {
+    right: 10px;
+    padding: 0;
+    background-color: transparent;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  :global(.media):global(.active) .type_tag.show_type .icon {
+    margin-right: 0;
+  }
+
+  :global(.media):global(.active) .type_tag.show_type .label {
+    display: none;
   }
 }

@@ -2,10 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
-import { motion, MotionConfig, useMotionValueEvent } from 'motion/react';
+import {
+  motion,
+  MotionConfig,
+  useMotionValueEvent,
+  useTransform,
+} from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
 import { buildMediaList, summarizeMedia } from './utils/media-lists';
-import { scroll_progress, is_locked } from './utils/hud-telemetry';
+import {
+  scroll_progress,
+  is_locked,
+  is_charging,
+} from './utils/hud-telemetry';
 import { dashify } from './utils/format';
 
 Modal.setAppElement('#root');
@@ -49,6 +58,10 @@ function App() {
   // MotionValue specifically to dodge 60fps re-renders during scroll.
   const [is_card_expanded, setIsCardExpanded] = useState(is_locked.get());
   useMotionValueEvent(is_locked, 'change', setIsCardExpanded);
+  // Same reasoning as is_card_expanded above — a held arrow is a rare,
+  // human-paced state change, not a per-frame one.
+  const [is_holding_arrow, setIsHoldingArrow] = useState(is_charging.get());
+  useMotionValueEvent(is_charging, 'change', setIsHoldingArrow);
 
   function handleDOMLoad() {
     setIsDOMLoaded(true);
@@ -82,6 +95,11 @@ function App() {
   }, []);
 
   const order_type = order_types[order_index];
+
+  const progress_dot_left = useTransform(
+    scroll_progress,
+    (value) => `${value * 100}%`
+  );
 
   // Built through the same helper the rail uses, so the HUD tally always
   // describes exactly what is on screen — including release-date order, which
@@ -130,10 +148,20 @@ function App() {
             </button>
             {/* Doubles as the button's bottom border — same full-bleed span
                 its old fading underline used, just live instead of static. */}
-            <div className="progress">
+            <div className="progress_track">
+              <div className="progress">
+                <motion.div
+                  className={`progress_fill ${
+                    is_holding_arrow ? 'charging' : ''
+                  }`}
+                  style={{ scaleX: scroll_progress }}
+                />
+              </div>
               <motion.div
-                className="progress_fill"
-                style={{ scaleX: scroll_progress }}
+                className={`progress_dot ${
+                  is_holding_arrow ? 'charging' : ''
+                }`}
+                style={{ left: progress_dot_left }}
               />
             </div>
             <MediaListWrapper

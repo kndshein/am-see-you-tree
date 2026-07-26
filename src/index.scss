@@ -395,10 +395,22 @@ code {
 // really the first thing in it, landing at y=0. The HUD's top_bar is pushed
 // down to clear that block instead of this bar being pushed down to clear the
 // HUD — see top_bar's own comment in Hud.module.scss.
-.progress {
+// Wraps .progress (the masked bar/fill) and .progress_dot as siblings rather
+// than nesting the dot inside .progress itself: .progress's mask-image fades
+// its entire rendered content — bar and anything inside it alike — to
+// nothing over its outer 25%, so a dot living inside it would disappear
+// whenever the scroll position sat in that same outer band (in practice,
+// most of the time — including at rest, position 0). Keeping the dot a
+// sibling, positioned over the same track, lets it stay fully visible at any
+// scroll position while the bar underneath still gets its edge fade.
+.progress_track {
+  position: relative;
   flex-shrink: 0;
-  height: 2px;
   margin: 0 60px;
+}
+
+.progress {
+  height: 2px;
   background-color: rgba($accent, 0.3);
   overflow: hidden;
   // Same fade the button's old border used (transparent, solid by 25%, back to
@@ -428,6 +440,43 @@ code {
   width: 100%;
   transform-origin: left center;
   background-color: $accent-lite;
+  // Same delay + duration as the held arrow's own charge overlay
+  // (MediaListWrapper.module.scss's .charging::after) — driven by the same
+  // is_charging signal (hud-telemetry.ts), so the bar's color shift and the
+  // arrow's tint always move in the same rhythm.
+  transition: background-color 0.7s linear 0.3s;
+}
+
+// $corner-charging (variables.scss) — the same bright orange the HUD's own
+// rails/corner reticles use once armed, not the arrow's own dark red tint,
+// so the bar reads as agreeing with the HUD rather than the arrow.
+.progress_fill.charging {
+  background-color: $corner-charging;
+}
+
+// Marks the current position on the rail, not just how much of it is behind
+// you — left is driven by scroll_progress directly (App.tsx), the same
+// motion value .progress_fill's own scaleX reads, so the two always agree.
+// Teardrop rather than a plain circle: border-radius: 50% 50% 50% 0 rounds
+// every corner but the bottom-left, and rotate(45deg) spins that one sharp
+// corner around to point left, leaving the rounded bulk facing right. Kept
+// small and square (not elongated) — every attempt at stretching this into a
+// more dramatic point came out skewed instead, so this is back to the
+// simplest version that actually reads clean, just smaller.
+.progress_dot {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 50% 50% 0;
+  background-color: $accent-lite;
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: background-color 0.7s linear 0.3s;
+  pointer-events: none;
+}
+
+.progress_dot.charging {
+  background-color: $corner-charging;
 }
 
 // Gray at rest (not selected). Hovering an inactive option steps it toward a

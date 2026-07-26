@@ -16,6 +16,19 @@ $muted-text: grey;
 $hud-green: rgb(102, 204, 170);
 $shadow-faint: rgba(0, 0, 0, 0.1);
 
+// The scroll arrows' hold-to-jump charge tint (MediaListWrapper.module.scss)
+// — dark red, distinct from the other two alert colors below so it doesn't
+// get confused with either.
+$charge-red: rgb(130, 28, 22);
+
+// The HUD's own alert orange, once a held arrow is actually armed
+// (Hud.module.scss's rails/corner reticles, is_armed) — also used directly
+// by the progress bar/teardrop (index.scss) so all three visibly share the
+// exact same color rather than three separately-tuned oranges drifting
+// apart. Distinct from .locked's own red-orange (Hud.module.scss) and from
+// $charge-red above.
+$corner-charging: rgb(255, 145, 60);
+
 // $accent is roughly $accent-lite mixed 50/50 with black — the collapsed
 // card's own reflection gradient (index.scss) uses that dim tier rather than
 // the bright one everything else ($show/$short/$special themselves) uses, so

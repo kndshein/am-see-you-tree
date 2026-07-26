@@ -2,6 +2,13 @@
 
 $hud: rgba($hud-green, 0.55);
 $hud-dim: rgba($hud-green, 0.22);
+// $corner-charging (variables.scss) is the exact color the corner reticles'
+// border-color switches to below — the tick marks use it at close to full
+// opacity (rather than $hud's own 0.55) so they read as the same bright
+// orange, not a dimmer tint of it; the connecting line between ticks stays
+// softer, same relationship $hud-dim already has to $hud normally.
+$hud-charging: rgba($corner-charging, 0.9);
+$hud-charging-dim: rgba($corner-charging, 0.4);
 
 .hud {
   position: fixed;
@@ -93,6 +100,27 @@ $hud-dim: rgba($hud-green, 0.22);
   }
 }
 
+.hud.charging .rail_left,
+.hud.charging .rail_right {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    $hud-charging-dim 15%,
+    $hud-charging-dim 85%,
+    transparent
+  );
+
+  &::after {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      $hud-charging 0,
+      $hud-charging 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+}
+
 $corner-size: 34px;
 $corner-thick: 2px;
 $corner-inset: 14px;
@@ -142,6 +170,15 @@ $corner-inset: 14px;
   border-top: 0;
 }
 
+.hud.charging .corner_tl,
+.hud.charging .corner_tr,
+.hud.charging .corner_bl,
+.hud.charging .corner_br {
+  border-color: $corner-charging;
+  filter: drop-shadow(0 0 2px rgba($corner-charging, 0.8))
+    drop-shadow(0 0 10px rgba($corner-charging, 0.5));
+}
+
 // Pushed down from an original 20px: .app's flex flow has nothing above
 // .top_controls, so it and the progress bar right after it (index.scss) are
 // really the first content in that flow and land at y=0 — inside this band.
@@ -180,6 +217,19 @@ $corner-inset: 14px;
 // glance rather than needing the word to be parsed.
 .locked {
   color: rgb(255, 106, 61);
+}
+
+// Applied by PositionReadout to each ∞ glyph individually once armed (not to
+// the readout span as a whole) — that keeps the " / " between them at the
+// readout's normal size instead of scaling up along with the glyphs. The
+// glyphs themselves read small and lost at this readout's normal 11px, so
+// they get a size bump the plain digit readout never needed. line-height
+// pinned to the readout's own normal (unscaled) height rather than left to
+// scale with the bigger font-size — otherwise a glyph span alone grows
+// taller than the rest of .tracking_live and pushes the row's own height out.
+.infinity {
+  font-size: 1.6em;
+  line-height: 13px;
 }
 
 // Sits inboard of the left rail and clear of the bottom-left corner bracket.

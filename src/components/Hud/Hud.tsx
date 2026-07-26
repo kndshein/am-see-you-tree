@@ -9,6 +9,7 @@ import {
   focused_position,
   card_count,
   is_locked,
+  is_armed,
 } from '../../utils/hud-telemetry';
 import tmdb_meta from '../../assets/tmdb-data.meta.json';
 import type { OrderType } from '../../App';
@@ -42,6 +43,17 @@ const pad3 = (value: number) => String(value).padStart(3, '0');
 const formatRuntime = (minutes: number) =>
   `${Math.floor(minutes / 60)}h-${minutes % 60}m`;
 
+// A standalone ∞ glyph, sized up via its own .infinity class — kept as its
+// own element rather than baked into the armed readout's plain text so the
+// " / " separator between the two glyphs can stay at the readout's normal
+// size instead of scaling up along with them.
+function makeInfinityGlyph() {
+  const glyph = document.createElement('span');
+  glyph.className = styles.infinity;
+  glyph.textContent = '∞';
+  return glyph;
+}
+
 // Both readouts below write straight to their own text node. The values behind
 // them change every animation frame while scrolling, so going through React
 // state would re-render the app at 60fps to update a handful of characters.
@@ -50,15 +62,29 @@ function PositionReadout() {
   const ref = useRef<HTMLSpanElement>(null);
 
   const write = useCallback(() => {
-    const total = card_count.get();
     if (!ref.current) return;
-    ref.current.textContent = total
-      ? `${pad3(focused_position.get())} / ${pad3(total)}`
-      : '';
+    const armed = is_armed.get();
+    // An armed hold-to-jump is about to leave the current position behind
+    // entirely, not move to a countable one — an actual number here would
+    // claim to know where it's headed before it does.
+    if (armed) {
+      ref.current.replaceChildren(
+        makeInfinityGlyph(),
+        document.createTextNode(' / '),
+        makeInfinityGlyph()
+      );
+    } else {
+      const total = card_count.get();
+      ref.current.textContent = total
+        ? `${pad3(focused_position.get())} / ${pad3(total)}`
+        : '';
+    }
+    ref.current.classList.toggle(styles.locked, armed);
   }, []);
 
   useMotionValueEvent(focused_position, 'change', write);
   useMotionValueEvent(card_count, 'change', write);
+  useMotionValueEvent(is_armed, 'change', write);
   // The rail may have written its first values before this mounted.
   useEffect(write, [write]);
 
@@ -68,16 +94,25 @@ function PositionReadout() {
 function StatusReadout() {
   const ref = useRef<HTMLSpanElement>(null);
 
-  // Toggles a class as well as the text: LOCKED reads as an alert state, so it
-  // breaks out of the HUD's green and goes orange-red.
-  const write = useCallback((locked: boolean) => {
+  // Toggles a class as well as the text: an alert state (locked, or an armed
+  // hold-to-jump) reads as one by breaking out of the HUD's green into
+  // .locked's own orange-red — reused rather than a separate color, so both
+  // alerts read the same way.
+  const write = useCallback(() => {
     if (!ref.current) return;
-    ref.current.textContent = locked ? 'Locked' : 'Scanning';
-    ref.current.classList.toggle(styles.locked, locked);
+    const armed = is_armed.get();
+    const locked = is_locked.get();
+    ref.current.textContent = armed
+      ? 'Sling-shotting'
+      : locked
+        ? 'Locked'
+        : 'Scanning';
+    ref.current.classList.toggle(styles.locked, armed || locked);
   }, []);
 
   useMotionValueEvent(is_locked, 'change', write);
-  useEffect(() => write(is_locked.get()), [write]);
+  useMotionValueEvent(is_armed, 'change', write);
+  useEffect(write, [write]);
 
   return <span ref={ref} />;
 }
@@ -94,8 +129,21 @@ export default function Hud({
   // purely decorative (aria-hidden, pointer-events: none, see below).
   const [is_about_open, setIsAboutOpen] = useState(false);
 
+  // Same direct-DOM-write approach as StatusReadout/PositionReadout above,
+  // rather than React state, to stay consistent with the rest of this
+  // component even though is_armed itself isn't a per-frame value. One class
+  // on the root rather than one per element — Hud.module.scss's rails and
+  // corner reticles both key off .hud.charging, so a single toggle here
+  // covers all of them.
+  const hud_ref = useRef<HTMLDivElement>(null);
+  const writeArmed = useCallback((armed: boolean) => {
+    hud_ref.current?.classList.toggle(styles.charging, armed);
+  }, []);
+  useMotionValueEvent(is_armed, 'change', writeArmed);
+  useEffect(() => writeArmed(is_armed.get()), [writeArmed]);
+
   return (
-    <div className={styles.hud} aria-hidden="true">
+    <div className={styles.hud} aria-hidden="true" ref={hud_ref}>
       <div className={styles.vignette} />
       <div className={styles.sheen} />
 
