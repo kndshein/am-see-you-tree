@@ -91,6 +91,20 @@ export default function Backdrop({
           .backdrop_wrapper above) — see .bottom_scrim's own comment
           (Backdrop.module.scss) for why that distinction matters. */}
       <div className={styles.bottom_scrim} />
+      {/* A one-shot scanner sweep down the backdrop as the card opens, ahead
+          of Reticle's own lock (which starts at delay 0.55s) — reads as the
+          system scanning the target before the brackets snap onto it.
+          Mounting only while is_active is what makes it replay each open:
+          {is_active && ...} goes from unmounted to mounted fresh every time,
+          re-running the initial→animate tween from scratch. */}
+      {is_active && (
+        <motion.div
+          className={styles.scan_sweep}
+          initial={{ top: '-10%' }}
+          animate={{ top: '110%' }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+        />
+      )}
     </>
   );
 }

@@ -55,6 +55,25 @@ $hud-charging-dim: rgba($corner-charging, 0.4);
   );
 }
 
+// A full-viewport twin of Backdrop.module.scss's own scan_sweep — same
+// mechanic, scaled up to the whole screen instead of one card, in a plain
+// low-opacity white rather than $hud-green so it reads as a separate,
+// system-wide sweep rather than a bigger version of the card's own.
+.full_sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 32%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .rail_left,
 .rail_right {
   position: absolute;
@@ -198,6 +217,18 @@ $corner-inset: 14px;
   color: $hud;
 }
 
+// Left cell of the top bar: the fixed label, then the live clock beneath —
+// same rhythm as .tracking on the right (label, then a dimmer live line).
+.system_id {
+  display: flex;
+  flex-flow: column;
+  gap: 4px;
+}
+
+.system_time {
+  opacity: 0.75;
+}
+
 // Right cell of the top bar: the fixed label, then the live readouts beneath.
 .tracking {
   display: flex;
@@ -211,6 +242,55 @@ $corner-inset: 14px;
   display: flex;
   gap: 14px;
   opacity: 0.75;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status_led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: $hud-green;
+  box-shadow: 0 0 4px rgba($hud-green, 0.9);
+  animation: status_blink 1.6s ease-in-out infinite;
+  // .status's align-items: center centers this against the text's full line
+  // box, but .hud uppercase-transforms that text — with no descenders left
+  // to fill the line box's own lower half, the text's visual weight sits
+  // above the line box's geometric center, so a "correctly" centered dot
+  // reads as sitting too low against it. Nudges it back up to match.
+  margin-bottom: 2px;
+}
+
+// Same alert color .locked (below) switches the readout's text to. Locked
+// (not armed) goes solid — a steady lock, not an alarm — rather than
+// carrying the idle blink over.
+.status_led.locked {
+  background-color: rgb(255, 106, 61);
+  box-shadow: 0 0 4px rgba(255, 106, 61, 0.9);
+  animation: none;
+  opacity: 1;
+}
+
+// Armed (sling-shotting) — same alert color, but blinking fast instead of
+// steady, so the urgency reads even with the sound off, so to speak.
+.status_led.armed {
+  background-color: rgb(255, 106, 61);
+  box-shadow: 0 0 4px rgba(255, 106, 61, 0.9);
+  animation: status_blink 0.35s ease-in-out infinite;
+}
+
+@keyframes status_blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 // Applied by StatusReadout when a card is open, so the state change reads at a

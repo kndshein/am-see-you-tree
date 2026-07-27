@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMotionValueEvent } from 'motion/react';
+import { motion, useMotionValueEvent } from 'motion/react';
 import { FaSquare, FaBars, FaPlay, FaCircle } from 'react-icons/fa';
 import styles from './Hud.module.scss';
 import { MediaSummary } from '../../utils/media-lists';
@@ -91,13 +91,37 @@ function PositionReadout() {
   return <span ref={ref} />;
 }
 
+// Same direct-DOM-write approach as the other two below — a 1Hz tick doesn't
+// need it the way a per-frame value does, but it keeps every live readout in
+// this file on one pattern instead of this one alone going through React
+// state/re-renders.
+function SystemClock() {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const write = () => {
+      if (!ref.current) return;
+      const now = new Date();
+      ref.current.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    };
+    write();
+    const interval = setInterval(write, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span ref={ref} />;
+}
+
 function StatusReadout() {
   const ref = useRef<HTMLSpanElement>(null);
+  const led_ref = useRef<HTMLSpanElement>(null);
 
   // Toggles a class as well as the text: an alert state (locked, or an armed
   // hold-to-jump) reads as one by breaking out of the HUD's green into
   // .locked's own orange-red — reused rather than a separate color, so both
-  // alerts read the same way.
+  // alerts read the same way. The LED dot next to it (led_ref) rides the
+  // same class, rather than tracking is_locked/is_armed a second time.
   const write = useCallback(() => {
     if (!ref.current) return;
     const armed = is_armed.get();
@@ -108,13 +132,23 @@ function StatusReadout() {
         ? 'Locked'
         : 'Scanning';
     ref.current.classList.toggle(styles.locked, armed || locked);
+    // The LED's own blink behavior is more specific than the text's: solid
+    // (no blink) once locked, fast blink once armed — armed wins if both are
+    // true, same priority the text above already uses.
+    led_ref.current?.classList.toggle(styles.armed, armed);
+    led_ref.current?.classList.toggle(styles.locked, locked && !armed);
   }, []);
 
   useMotionValueEvent(is_locked, 'change', write);
   useMotionValueEvent(is_armed, 'change', write);
   useEffect(write, [write]);
 
-  return <span ref={ref} />;
+  return (
+    <span className={styles.status}>
+      <span ref={led_ref} className={styles.status_led} aria-hidden="true" />
+      <span ref={ref} />
+    </span>
+  );
 }
 
 // Fixed, non-interactive "helmet interior" frame that overlays the whole
@@ -142,6 +176,17 @@ export default function Hud({
   useMotionValueEvent(is_armed, 'change', writeArmed);
   useEffect(() => writeArmed(is_armed.get()), [writeArmed]);
 
+  // Bumping this remounts .full_sweep below (key={sweep_key}), which is what
+  // replays its initial→animate tween — same "fresh mount, fresh tween"
+  // trick Backdrop.tsx's own sweep gets for free by mounting only while
+  // is_active. This one has nowhere to unmount to (it's not per-card), so it
+  // needs an explicit remount signal instead. Only fires on the rising edge
+  // (a card actually opening), not on close too.
+  const [sweep_key, setSweepKey] = useState(0);
+  useMotionValueEvent(is_locked, 'change', (locked) => {
+    if (locked) setSweepKey((key) => key + 1);
+  });
+
   return (
     <div className={styles.hud} aria-hidden="true" ref={hud_ref}>
       <div className={styles.vignette} />
@@ -149,6 +194,16 @@ export default function Hud({
 
       <div className={styles.rail_left} />
       <div className={styles.rail_right} />
+      {/* Same idea as Backdrop.module.scss's own scan_sweep, scaled to the
+          whole viewport instead of one card — plays once whenever a card
+          locks open (sweep_key above). */}
+      <motion.div
+        key={sweep_key}
+        className={styles.full_sweep}
+        initial={{ top: '-10%' }}
+        animate={{ top: '110%' }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+      />
 
       <div className={styles.corner_tl} />
       <div className={styles.corner_tr} />
@@ -158,7 +213,12 @@ export default function Hud({
       {/* Centre stays empty: the order-type button sits under it, and it's
           reserved for a site title. */}
       <div className={styles.top_bar}>
-        <span>MCU&nbsp;//&nbsp;DATABASE</span>
+        <span className={styles.system_id}>
+          <span>MCU&nbsp;//&nbsp;DATABASE</span>
+          <span className={styles.system_time}>
+            <SystemClock />
+          </span>
+        </span>
         <span className={styles.tracking}>
           <span>{dashify('Stark Industries')}</span>
           <span className={styles.tracking_live}>

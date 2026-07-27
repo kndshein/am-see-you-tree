@@ -187,6 +187,26 @@ $scanline: 9px;
   opacity: 0.15;
 }
 
+// Same reasoning as .bottom_scrim above for being a sibling of
+// .backdrop_wrapper rather than nested inside its oversized/offset box: a
+// `top` tween anchored inside that box wouldn't track the actual visible
+// card area. mix-blend-mode: screen brightens whatever it passes over
+// instead of dimming it, reading like a scanning light rather than a shadow.
+.scan_sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba($hud-green, 0.3),
+    transparent
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 @keyframes pan-overlay {
   from {
     transform: translate3d(0, 0, 0);
