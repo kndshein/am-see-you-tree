@@ -50,7 +50,7 @@ export function collectionSiblingsOf(
   if (!collection_id) return [];
 
   return media_list_chrono
-    .filter((item) => item.type !== 'tv' && item.id !== ele.id)
+    .filter((item) => item.type !== 'tv')
     .filter(
       (item) => tmdb_data[tmdbKeyOf(item)]?.collection?.id === collection_id,
     )

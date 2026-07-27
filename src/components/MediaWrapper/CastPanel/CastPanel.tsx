@@ -39,14 +39,7 @@ export default function CastPanel({
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const cast_matches = selected_cast
-    ? castMatchesInMediaList(selected_cast, media_list, tmdb_data_map, is_movies_only).filter(
-        (item) =>
-          !(
-            item.id === media_data.id &&
-            (item.type !== 'tv' ||
-              (item.type === 'tv' && media_data.type === 'tv' && item.season === media_data.season))
-          ),
-      )
+    ? castMatchesInMediaList(selected_cast, media_list, tmdb_data_map, is_movies_only)
     : [];
 
   useEffect(() => {
@@ -124,7 +117,16 @@ export default function CastPanel({
                     item.type === 'tv' &&
                     m.season === item.season)),
             );
-            const is_clickable = target_idx !== -1;
+            // The card currently on screen — still listed (the filmography
+            // would look incomplete without it) but jumping to where you
+            // already are is a no-op, so it's never clickable.
+            const is_active =
+              item.id === media_data.id &&
+              (item.type !== 'tv' ||
+                (item.type === 'tv' &&
+                  media_data.type === 'tv' &&
+                  item.season === media_data.season));
+            const is_clickable = target_idx !== -1 && !is_active;
 
             return (
               <CastItem
@@ -133,6 +135,7 @@ export default function CastPanel({
                 year={year}
                 is_content_expanded={is_content_expanded}
                 is_clickable={is_clickable}
+                is_active={is_active}
                 item_idx={item_idx}
                 total_items={cast_matches.length}
                 type={item.type}
@@ -155,6 +158,7 @@ type ItemPropTypes = {
   year?: string;
   is_content_expanded: boolean;
   is_clickable: boolean;
+  is_active: boolean;
   item_idx: number;
   // Needed to compute when all items have finished entering, so brackets
   // can pop in sync right after the last one lands.
@@ -171,6 +175,7 @@ function CastItem({
   year,
   is_content_expanded,
   is_clickable,
+  is_active,
   item_idx,
   total_items,
   type,
@@ -217,7 +222,9 @@ function CastItem({
 
   return (
     <motion.button
-      className={`${styles.item} ${!is_clickable ? styles.not_in_rail : ''} ${
+      className={`${styles.item} ${
+        !is_clickable && !is_active ? styles.not_in_rail : ''
+      } ${is_active ? styles.is_active : ''} ${
         type === 'tv'
           ? styles.is_tv
           : type === 'short'
@@ -232,15 +239,20 @@ function CastItem({
       onClick={onClick}
     >
       <span className={styles.name}>
-        <motion.span
-          className={styles.bracket}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: is_content_expanded ? 1 : 0 }}
-          transition={reveal_transition}
-          onAnimationComplete={() => setIsRevealed(is_content_expanded)}
-        >
-          [
-        </motion.span>
+        {/* No brackets for the active entry — they're the site-wide cue
+            that something is a link (About.module.scss's own comment on
+            .link_bracket), and this one isn't. */}
+        {!is_active && (
+          <motion.span
+            className={styles.bracket}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: is_content_expanded ? 1 : 0 }}
+            transition={reveal_transition}
+            onAnimationComplete={() => setIsRevealed(is_content_expanded)}
+          >
+            [
+          </motion.span>
+        )}
         {/* A single element, not the grey/white twin-layer trick
             CollectionPanel uses (a static base layer + an absolutely
             positioned overlay that fades in on top): that trick anchors the
@@ -253,14 +265,16 @@ function CastItem({
         >
           {title}
         </span>
-        <motion.span
-          className={styles.bracket}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: is_content_expanded ? 1 : 0 }}
-          transition={reveal_transition}
-        >
-          ]
-        </motion.span>
+        {!is_active && (
+          <motion.span
+            className={styles.bracket}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: is_content_expanded ? 1 : 0 }}
+            transition={reveal_transition}
+          >
+            ]
+          </motion.span>
+        )}
       </span>
       <span className={styles.type_icon}>{TYPE_ICONS[type]}</span>
       {year && <span className={styles.year}>{year}</span>}

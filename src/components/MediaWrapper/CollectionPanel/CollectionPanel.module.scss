@@ -139,6 +139,17 @@
   color: $accent-lite;
 }
 
+// The entry currently on screen — held at the same grey as .title_grey's own
+// pre-reveal base layer, and stripped of .title_white's bloom, so it reads as
+// disabled rather than merely mid-reveal (its brackets are dropped entirely
+// in CollectionPanel.tsx, so there's no .bracket override needed here).
+// Higher specificity than .title_white's own base rule is what lets this win
+// without touching its transition.
+.item.is_active .title_white {
+  color: $muted-text;
+  text-shadow: none;
+}
+
 .year {
   margin-left: 6px;
   font-size: 0.8em;

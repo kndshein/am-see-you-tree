@@ -65,6 +65,16 @@
   cursor: default;
 }
 
+// The card currently on screen — a different reason to be non-interactive
+// than .not_in_rail above (it's exactly what's showing, not missing from the
+// rail), so it gets its own grey rather than that dimmed-opacity treatment.
+// No .bracket override needed here: its brackets are dropped entirely in
+// CastPanel.tsx. Higher specificity than .title's own base rule is what lets
+// this win without touching its transition.
+.item.is_active .title {
+  color: $muted-text;
+}
+
 .item:disabled {
   pointer-events: none;
   cursor: default;

@@ -73,12 +73,15 @@ export default function CollectionPanel({
             const title = sibling_data?.original_title || sibling.id;
             const year = sibling_data?.release_date?.slice(0, 4);
 
+            const is_active = sibling.id === media_data.id;
+
             return (
               <CollectionItem
                 key={sibling.id}
                 title={title}
                 year={year}
                 is_content_expanded={is_content_expanded}
+                is_active={is_active}
                 stagger_delay={COLOR_REVEAL_DELAY + sibling_idx * COLOR_STAGGER}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -100,6 +103,10 @@ type ItemPropTypes = {
   title: string;
   year?: string;
   is_content_expanded: boolean;
+  // The entry currently on screen — still shown (the sequence would look
+  // incomplete without it) but jumping to where you already are is a no-op,
+  // so it's never interactive regardless of reveal state.
+  is_active: boolean;
   stagger_delay: number;
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
 };
@@ -111,6 +118,7 @@ function CollectionItem({
   title,
   year,
   is_content_expanded,
+  is_active,
   stagger_delay,
   onClick,
 }: ItemPropTypes) {
@@ -128,23 +136,28 @@ function CollectionItem({
 
   return (
     <motion.button
-      className={styles.item}
+      className={`${styles.item} ${is_active ? styles.is_active : ''}`}
       variants={entry}
-      disabled={!is_revealed}
+      disabled={!is_revealed || is_active}
       onClick={onClick}
     >
       <span className={styles.name}>
-        <motion.span
-          className={styles.bracket}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: is_content_expanded ? 1 : 0 }}
-          transition={bracket_transition}
-          // Both brackets and the title share stagger_delay/REVEAL_DURATION,
-          // so this fires right as the whole reveal actually finishes.
-          onAnimationComplete={() => setIsRevealed(is_content_expanded)}
-        >
-          [
-        </motion.span>
+        {/* No brackets for the active entry — they're the site-wide cue
+            that something is a link (About.module.scss's own comment on
+            .link_bracket), and this one isn't. */}
+        {!is_active && (
+          <motion.span
+            className={styles.bracket}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: is_content_expanded ? 1 : 0 }}
+            transition={bracket_transition}
+            // Both brackets and the title share stagger_delay/REVEAL_DURATION,
+            // so this fires right as the whole reveal actually finishes.
+            onAnimationComplete={() => setIsRevealed(is_content_expanded)}
+          >
+            [
+          </motion.span>
+        )}
         <span className={styles.title_wrap}>
           <span className={styles.title_grey}>{title}</span>
           <motion.span
@@ -156,14 +169,16 @@ function CollectionItem({
             {title}
           </motion.span>
         </span>
-        <motion.span
-          className={styles.bracket}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: is_content_expanded ? 1 : 0 }}
-          transition={bracket_transition}
-        >
-          ]
-        </motion.span>
+        {!is_active && (
+          <motion.span
+            className={styles.bracket}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: is_content_expanded ? 1 : 0 }}
+            transition={bracket_transition}
+          >
+            ]
+          </motion.span>
+        )}
       </span>
       {year && <span className={styles.year}>{year}</span>}
     </motion.button>
