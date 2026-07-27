@@ -367,7 +367,10 @@
   {
     "version": "4.9.4",
     "date": "July 2026",
-    "notes": ["Modified assets to serve from /static-v4 for archival purposes."]
+    "notes": [
+      "Modified assets to serve from /static-v4 for archival purposes."
+    ],
+    "url": "/v4"
   },
   {
     "version": "5.0.0",
