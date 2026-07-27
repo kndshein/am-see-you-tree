@@ -80,6 +80,10 @@
   font-family: $accent-text;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
+  // Thin, same as [About]'s own link — 200 is $accent-text's own thin tier
+  // (main.tsx loads monaspace-krypton/200.css alongside its default 400),
+  // the same relationship 300 has to $body-text below.
+  font-weight: 200;
 }
 
 // Not interactive until its own reveal finishes (CollectionPanel.tsx) — blocks
@@ -139,15 +143,32 @@
   color: $accent-lite;
 }
 
-// The entry currently on screen — held at the same grey as .title_grey's own
-// pre-reveal base layer, and stripped of .title_white's bloom, so it reads as
-// disabled rather than merely mid-reveal (its brackets are dropped entirely
-// in CollectionPanel.tsx, so there's no .bracket override needed here).
-// Higher specificity than .title_white's own base rule is what lets this win
-// without touching its transition.
+// The entry currently on screen — not the flat $muted-text grey every other
+// disabled/informational bit of the site uses, but $accent: the same dim
+// tier of this list's own hover color ($accent-lite) that $show-dim/
+// $short-dim/$special-dim (variables.scss) give CastPanel's own types, so it
+// still reads as "this list's link, dimmed" rather than generically grey.
+// Also stripped of .title_white's bloom, so it reads as disabled rather than
+// merely mid-reveal (its brackets are dropped entirely in CollectionPanel.tsx,
+// so there's no .bracket override needed here). Higher specificity than
+// .title_white's own base rule is what lets this win without touching its
+// transition.
 .item.is_active .title_white {
-  color: $muted-text;
+  color: $accent;
   text-shadow: none;
+}
+
+// A dim grey close-out below the list, in the same monospace/uppercase
+// language as .label above but deliberately muted rather than accent-lit —
+// it isn't naming anything, just marking that the list has actually ended.
+.end_of_line {
+  padding-top: 8px;
+  border-top: 1px dashed rgba($muted-text, 0.3);
+  font-family: $accent-text;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: rgba($muted-text, 0.6);
 }
 
 .year {

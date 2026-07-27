@@ -59,6 +59,23 @@ export function collectionSiblingsOf(
     );
 }
 
+// TV's own answer to collectionSiblingsOf: TMDB has no collection concept for
+// shows, so in its place this is every season of ele's own show that's in
+// this app's own curated list — one row per season number, not per fragment
+// (mergeTvFragments' same concern: a season can appear as several entries
+// when a movie was watched partway through it), in season order.
+export function showSeasonsOf(ele: MediaType): Array<ShowType> {
+  if (ele.type !== 'tv') return [];
+
+  const by_season = new Map<number, ShowType>();
+  for (const item of media_list_chrono) {
+    if (item.type !== 'tv' || item.id !== ele.id) continue;
+    if (!by_season.has(item.season)) by_season.set(item.season, item);
+  }
+
+  return [...by_season.values()].sort((a, b) => a.season - b.season);
+}
+
 // All media in the list (or current filtered list) featuring the given actor
 export function castMatchesInMediaList(
   cast_name: string,

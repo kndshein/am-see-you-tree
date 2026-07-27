@@ -4,9 +4,9 @@ import { MediaType } from '../../../types/Media';
 import { TmdbType } from '../../../types/Tmdb';
 import { HandleToggleType } from '../../../types/Toggles';
 import {
-  castMatchesInMediaList,
   collectionSiblingsOf,
   releaseDateOf,
+  showSeasonsOf,
   tmdbKeyOf,
 } from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
@@ -45,12 +45,25 @@ export default function CollectionPanel({
   listRef,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
+  const is_tv = media_data.type === 'tv';
   const collection = tmdb_data.collection;
-  const siblings = collection
-    ? collectionSiblingsOf(media_data, tmdb_data_map)
-    : [];
 
-  if (!collection || siblings.length === 0) return null;
+  // TMDB has no collection concept for TV — in its place, every season of
+  // this show stands in for Film Collections' sibling movies below.
+  const siblings: Array<MediaType> = is_tv
+    ? showSeasonsOf(media_data)
+    : collection
+      ? collectionSiblingsOf(media_data, tmdb_data_map)
+      : [];
+
+  if (siblings.length === 0) return null;
+
+  // Movie branch only reaches here once collection is confirmed truthy
+  // (siblings is otherwise []), so the fallback below never actually fires —
+  // it just spares TypeScript a narrowing it can't otherwise see.
+  const label = is_tv
+    ? tmdb_data.original_name || media_data.id
+    : (collection?.name ?? '');
 
   return (
     <motion.div
@@ -66,18 +79,30 @@ export default function CollectionPanel({
       <div className={styles.frame}>
         <div className={styles.list} ref={listRef}>
           <motion.span className={styles.label} variants={entry}>
-            {collection.name}
+            {label}
           </motion.span>
           {siblings.map((sibling, sibling_idx) => {
-            const sibling_data = tmdb_data_map[sibling.id];
-            const title = sibling_data?.original_title || sibling.id;
-            const year = sibling_data?.release_date?.slice(0, 4);
+            const sibling_data = tmdb_data_map[tmdbKeyOf(sibling)];
+            const title =
+              sibling.type === 'tv'
+                ? `Season ${sibling.season}`
+                : sibling_data?.original_title || sibling.id;
+            const year =
+              sibling.type === 'tv'
+                ? releaseDateOf(sibling, tmdb_data_map).slice(0, 4)
+                : sibling_data?.release_date?.slice(0, 4);
 
-            const is_active = sibling.id === media_data.id;
+            // Same id repeats across a show's seasons, so TV needs the
+            // season number too — a plain id match would call every season
+            // "active" at once.
+            const is_active =
+              sibling.type === 'tv' && media_data.type === 'tv'
+                ? sibling.season === media_data.season
+                : sibling.id === media_data.id;
 
             return (
               <CollectionItem
-                key={sibling.id}
+                key={tmdbKeyOf(sibling)}
                 title={title}
                 year={year}
                 is_content_expanded={is_content_expanded}
@@ -85,14 +110,21 @@ export default function CollectionPanel({
                 stagger_delay={COLOR_REVEAL_DELAY + sibling_idx * COLOR_STAGGER}
                 onClick={(event) => {
                   event.stopPropagation();
-                  const target_idx = media_list.findIndex(
-                    (item) => item.id === sibling.id,
+                  const target_idx = media_list.findIndex((item) =>
+                    sibling.type === 'tv'
+                      ? item.type === 'tv' &&
+                        item.id === sibling.id &&
+                        item.season === sibling.season
+                      : item.id === sibling.id,
                   );
                   if (target_idx !== -1) handleJump(target_idx);
                 }}
               />
             );
           })}
+          <motion.span className={styles.end_of_line} variants={entry}>
+            End of List
+          </motion.span>
         </div>
       </div>
     </motion.div>
@@ -125,13 +157,21 @@ function CollectionItem({
   const [is_revealed, setIsRevealed] = useState(false);
 
   const title_transition = is_content_expanded
-    ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: stagger_delay }
+    ? {
+        duration: REVEAL_DURATION,
+        ease: 'easeOut' as const,
+        delay: stagger_delay,
+      }
     : { duration: 0 };
   // Same duration as the title, not a matching literal — this one's completion
   // is what unlocks the button below, so the two drifting apart would gate
   // interactivity on the wrong moment.
   const bracket_transition = is_content_expanded
-    ? { duration: REVEAL_DURATION, ease: 'easeOut' as const, delay: stagger_delay }
+    ? {
+        duration: REVEAL_DURATION,
+        ease: 'easeOut' as const,
+        delay: stagger_delay,
+      }
     : { duration: 0 };
 
   return (

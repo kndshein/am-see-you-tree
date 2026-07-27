@@ -158,6 +158,10 @@
   @include bloom-link;
   text-decoration: none;
   transition: color 0.15s ease-out 0.1s;
+  // Thin, same as [About] itself (Hud.module.scss's about_link) — 300 is
+  // $body-text's own thin tier (main.tsx loads space-grotesk/300.css
+  // alongside its default 400).
+  font-weight: 300;
 }
 
 // No color of its own: inherits .link's white at rest. Lags half a beat

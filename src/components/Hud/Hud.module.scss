@@ -326,6 +326,10 @@ $corner-inset: 14px;
   border: none;
   padding: 0;
   text-transform: uppercase;
+  // Thin — $body-text's own thin tier (main.tsx loads space-grotesk/300.css
+  // alongside its default 400). The reference every other site link's own
+  // thin weight (CastPanel/CollectionPanel/About.module.scss) now matches.
+  font-weight: 300;
 }
 
 // A separate span from .about_text below — matching how every other
