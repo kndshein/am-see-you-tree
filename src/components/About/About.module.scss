@@ -160,10 +160,13 @@
   transition: color 0.15s ease-out 0.1s;
 }
 
-// No color of its own: inherits .link's white at rest, and moves with it on
-// hover below — one unit, same as [About] itself (Hud.module.scss).
+// No color of its own: inherits .link's white at rest. Lags half a beat
+// behind .link on hover — same stagger as [About] itself (Hud.module.scss's
+// about_bracket vs about_text) — rather than moving in lockstep with it.
+// Delay lives on the base rule, not scoped to :hover, so it also applies
+// symmetrically on the way back out.
 .link_bracket {
-  transition: color 0.15s ease-out 0.1s;
+  transition: color 0.15s ease-out 0.2s;
 }
 
 .link:hover,
@@ -200,7 +203,7 @@
   left: 0;
   width: 5px;
   height: 100%;
-  background-color: $accent-lite;
+  background-color: $muted-text;
 }
 
 .patch_row.current {
