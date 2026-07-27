@@ -400,5 +400,10 @@
       "Implement increased scroll distance based on held clicks.",
       "Added MCU phase info."
     ]
+  },
+  {
+    "version": "5.2.0",
+    "date": "2026-07",
+    "notes": ["Fixed misc. UI bugs.", "Added more animations and HUD elements."]
   }
 ]
