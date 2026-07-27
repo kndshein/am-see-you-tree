@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 import styles from './Overview.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
+import { WORD_STAGGER, WORD_DURATION } from '../../../utils/motion';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -51,7 +52,7 @@ export default function Overview({
         visible: {
           opacity: 1,
           transition: {
-            staggerChildren: 0.015,
+            staggerChildren: WORD_STAGGER,
           },
         },
         hidden: {
@@ -74,7 +75,7 @@ export default function Overview({
               opacity: 1,
               y: 0,
               transition: {
-                duration: 0.1,
+                duration: WORD_DURATION,
               },
             },
             hidden: {

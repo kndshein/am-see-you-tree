@@ -82,3 +82,8 @@ export const GLOW_DURATION = 0.8;
 export const COLOR_REVEAL_DELAY = GLOW_DELAY;
 export const REVEAL_DURATION = GLOW_DURATION;
 export const COLOR_STAGGER = 0.1;
+
+// Overview.tsx's own per-word cadence: 0.015 between words, each taking
+// 0.1s to fade/lift in. Shared here so Ambient's echo can't drift from it.
+export const WORD_STAGGER = 0.015;
+export const WORD_DURATION = 0.1;

@@ -15,6 +15,7 @@ import Phase from './Phase/Phase';
 import Reticle from './Reticle/Reticle';
 import CollectionPanel from './CollectionPanel/CollectionPanel';
 import CastPanel from './CastPanel/CastPanel';
+import Ambient from './Ambient/Ambient';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
 import { useTmdbData } from '../../utils/tmdb-data';
@@ -180,6 +181,21 @@ export default function MediaWrapper({
                 exit={{ opacity: 0, transition: { duration: 0.3 } }}
                 transition={{ duration: 0.7 }}
               ></motion.div>
+            )}
+          </AnimatePresence>
+          {/* Before .content in the DOM, not after — Framer's layout
+              projection can put an explicit z-index on .content during/after
+              its FLIP animation, which would tie with Ambient's own negative
+              z-index (Ambient.module.scss) and fall back to DOM order. Behind
+              in the DOM is behind regardless of how that tie resolves. */}
+          <AnimatePresence>
+            {is_active && (
+              <Ambient
+                key="ambient"
+                tmdb_data={data}
+                media_data={media_data}
+                is_content_expanded={is_content_expanded}
+              />
             )}
           </AnimatePresence>
           <motion.div

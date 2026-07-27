@@ -1,0 +1,60 @@
+@use '../../../sass/variables.scss' as *;
+
+// Positioned like Reticle's own .reticle (absolute, inside
+// .content_container.active — position: fixed there, so this reads off the
+// true viewport) but deliberately NOT mirroring .content_container.active's
+// 50px/50px/100px padding the way Reticle does: this is meant to bleed off
+// the left edge of the whole screen, not sit inset around the card.
+.ambient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 48vw;
+  display: flex;
+  align-items: center;
+  // Without this, the word spans are flex items in a single nowrap row (the
+  // flex default) — they just ran off the right edge of the fixed width
+  // instead of wrapping onto more lines within it.
+  flex-wrap: wrap;
+  // align-content's own default (normal, effectively stretch for a
+  // multi-line flex container) spreads the wrapped lines themselves across
+  // the full 100%-height box — fine for a long synopsis that wraps to many
+  // lines, but a short one that only wraps to one or two left huge gaps
+  // between them. center packs the lines on their own natural line-height
+  // instead, then centers that tighter block as a whole.
+  align-content: center;
+  overflow: hidden;
+  padding: 0 0 0 4vw;
+  // Negative — .content itself is positioned with no z-index of its own
+  // (z-index: auto), which paints above any negative-z sibling regardless of
+  // DOM order, so this sits behind the card itself. Still above .overlay's
+  // own -1 (MediaWrapper.module.scss) because it's later in the DOM than
+  // .overlay (MediaWrapper.tsx) — same z-index value, later DOM wins the tie
+  // — so it isn't blacked out by the dimming layer.
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+
+  font-family: $accent-text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1.05;
+  // So large that most readers will never resolve it into words — the point
+  // is the impression of text, not the text itself, like it's inches from
+  // the viewer's eye rather than sized to be read.
+  font-size: clamp(2.5rem, 6vw, 6rem);
+  // Flat $hud-green for every type now, not the card's own type color — this
+  // reads as one consistent HUD readout rather than something that's meant to
+  // match the card underneath it.
+  color: $hud-green;
+  // A ceiling on the whole block, not an animated value — Ambient.tsx now
+  // animates each word's own opacity (0 to 1, same as Overview.tsx's real
+  // synopsis words), and CSS opacity stacks multiplicatively: a fully-"on"
+  // word here still only ever reads at 0.24, while a hidden one (0) stays at
+  // 0 either way. That's what keeps this dim without fighting the per-word
+  // reveal over the same property.
+  opacity: 0.14;
+  filter: blur(6px);
+  text-shadow: 0 0 40px rgba($hud-green, 0.5);
+}
