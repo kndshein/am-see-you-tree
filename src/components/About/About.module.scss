@@ -39,7 +39,9 @@
   height: 100%;
   opacity: 0;
   transform: scale(0.96);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .modal_after_open {
@@ -98,8 +100,8 @@
   // blurred once by .overlay) shows through faintly behind it, reading as a
   // glass HUD panel rather than a plain box.
   background-color: rgba($background, 0.85);
-  backdrop-filter: blur(36px);
   -webkit-backdrop-filter: blur(36px);
+  backdrop-filter: blur(36px);
   // Same border the expanded card's own panel uses
   // (MediaWrapper.module.scss's .content).
   border: 1px solid $accent-lite;
