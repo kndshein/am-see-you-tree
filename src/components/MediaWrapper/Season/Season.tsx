@@ -5,6 +5,12 @@ import styles from './Season.module.scss';
 type PropTypes = {
   media_data: ShowType;
   is_content_collapsed: boolean;
+  // Phase.tsx renders one row when unassigned (just its own pill) instead
+  // of two ("Phase: N" plus the saga pill) — this badge's own bottom offset
+  // (Season.module.scss) needs to know which, so it can sit close to
+  // whichever one is actually visible instead of always leaving room for
+  // the taller, two-row case.
+  is_phase_assigned: boolean;
 };
 
 const nums = [
@@ -23,10 +29,13 @@ const nums = [
 export default function Season({
   media_data,
   is_content_collapsed,
+  is_phase_assigned,
 }: PropTypes) {
   return (
     <motion.div
-      className={styles.season_wrapper}
+      className={`${styles.season_wrapper} ${
+        !is_phase_assigned ? styles.season_wrapper_phase_unassigned : ''
+      }`}
       layout="position"
       variants={{
         visible: {

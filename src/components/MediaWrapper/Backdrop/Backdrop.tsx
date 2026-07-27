@@ -87,6 +87,10 @@ export default function Backdrop({
           />
         )}
       </motion.div>
+      {/* Sized against .content directly (a sibling here, not nested inside
+          .backdrop_wrapper above) — see .bottom_scrim's own comment
+          (Backdrop.module.scss) for why that distinction matters. */}
+      <div className={styles.bottom_scrim} />
     </>
   );
 }

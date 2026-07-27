@@ -2,6 +2,8 @@ import { motion } from 'motion/react';
 import { MediaType } from '../../../types/Media';
 import { TmdbType } from '../../../types/Tmdb';
 import { entry } from '../../../utils/motion';
+import { phaseOf } from '../../../utils/media-lists';
+import { sagaDisplayName } from '../../../assets/mcu-phases';
 import styles from './Record.module.scss';
 
 type PropTypes = {
@@ -29,6 +31,12 @@ export default function Record({ media_data, tmdb_data }: PropTypes) {
         )}`
       : media_data.type;
 
+  // Undefined outside Marvel Studios' own numbered Phase list (mcu-phases.ts)
+  // — unlike IMDB below (omitted entirely when there's no imdb_id), this
+  // field always prints: PHASE is as much a fact about this entry as CLS is,
+  // so "not part of the MCU" is worth stating rather than leaving a gap.
+  const phase_data = phaseOf(media_data);
+
   return (
     <motion.div
       className={styles.record}
@@ -49,6 +57,21 @@ export default function Record({ media_data, tmdb_data }: PropTypes) {
         <motion.span variants={entry}>
           <span className={styles.key}>CLS</span>
           {classification}
+        </motion.span>
+        <motion.span variants={entry}>
+          <span className={styles.key}>PHASE</span>
+          {phase_data ? (
+            <>
+              {phase_data.phase}
+              {/* Full stop, not the middle-dot this used to be — matches
+                  the HUD's own separator convention (Hud.tsx's
+                  SOURCE_SYNCED, "2026-07-23" rendered "2026.07.23"). */}
+              <span className={styles.phase_divider}>.</span>
+              {sagaDisplayName(phase_data.saga)}
+            </>
+          ) : (
+            'Unassigned'
+          )}
         </motion.span>
       </span>
       <span className={`${styles.group} ${styles.group_end}`}>

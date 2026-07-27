@@ -12,6 +12,35 @@ $short: #75ffbc;
 $special: #ffe875;
 $white: rgb(255, 255, 255);
 $muted-text: grey;
+
+// Shared between Phase.module.scss and Season.module.scss, both anchored to
+// the collapsed card's bottom-right corner: $badge-corner-gap is both
+// Phase's own inset from the card's bottom/right borders AND (via Season's
+// own bottom offset, derived from these) the vertical gap between the two
+// stacked badges — one number instead of two hand-tuned ones that could
+// silently drift apart. $badge-inner-gap is each badge's own internal
+// label-to-value gap (Phase's "Phase: N" to its pill, Season's "Season" to
+// its number chip) — shared for the same reason, so the two read as the same
+// rhythm rather than two separately-tuned gaps that happen to look similar.
+// $phase-row-height/$phase-badge-height are Phase's own two stacked rows,
+// set explicitly on .phase_wrapper (rather than left to derive from font
+// metrics) so Season's offset above can be computed from them exactly,
+// instead of guessed.
+$badge-corner-gap: 12px;
+$badge-inner-gap: 0.4rem;
+$phase-row-height: 1.1rem;
+$phase-badge-height: $phase-row-height * 2 + $badge-inner-gap;
+
+// Saga-branded gradients — Phase.module.scss's own pill border and
+// Record.module.scss's own PHASE field text both draw from these, so a color
+// tweak (like this one, pushed toward more saturated/further-apart stops for
+// more contrast) updates both at once instead of drifting apart. Near-max
+// saturation on both stops of each pair, rather than the softer CSS-named
+// colors this started as (gold/limegreen, blueviolet/deeppink) — the point
+// is for the two ends to read as clearly distinct colors, not a smooth
+// analogous blend.
+$infinity-saga-gradient: linear-gradient(135deg, #ffd700, #39ff14);
+$multiverse-saga-gradient: linear-gradient(135deg, #7b00ff, #ff0060);
 // The HUD's green, shared so the director pill matches the frame readouts.
 $hud-green: rgb(102, 204, 170);
 $shadow-faint: rgba(0, 0, 0, 0.1);

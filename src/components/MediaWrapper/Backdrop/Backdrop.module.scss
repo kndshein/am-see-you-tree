@@ -143,6 +143,39 @@ $scanline: 9px;
   pointer-events: none;
 }
 
+// A scrim over just the bottom of the card, darkening whatever the backdrop
+// image happens to be there so Phase's own text (Phase.module.scss) stays
+// legible regardless — the same reasoning behind that badge's own dark
+// text-shadow halo, but covering the box behind it too, not just the
+// glyphs. A sibling of .backdrop_wrapper, not a pseudo-element inside it:
+// .backdrop_wrapper is deliberately oversized and offset (1000px/100vh,
+// left: -155%, see its own comment) for the expand-in-place animation, with
+// only a slice of it actually visible through .content's own clipping — a
+// bottom:0 anchored inside it lands far below the real, small visible card
+// area. This instead sits directly in MediaWrapper's own .content (Backdrop.tsx
+// renders it as .content's child, same level as .backdrop_wrapper), whose box
+// actually matches the visible card. No explicit z-index needed: .content's
+// other children (Title, Tag, Phase, etc.) come later in DOM order at the
+// same default stacking level, so they still land on top without one, while
+// .backdrop_wrapper's own z-index: -1 keeps it beneath both regardless of
+// order.
+.bottom_scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 35%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+  pointer-events: none;
+  transition: opacity $transition-base;
+}
+
+// Phase itself fades out on expand, and the expanded layout already darkens
+// this same area via .backdrop_blurred's own reduced opacity above.
+:global(.media):global(.expanded-layout) .bottom_scrim {
+  opacity: 0;
+}
+
 // Cross-fades to the pre-blurred twin instead of running `filter: blur(20px)`
 // over this surface. A blur is a convolution the compositor has to redo; this
 // is two opacity changes.

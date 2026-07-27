@@ -11,12 +11,14 @@ import styles from './MediaWrapper.module.scss';
 import { motion, AnimatePresence } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
 import Season from './Season/Season';
+import Phase from './Phase/Phase';
 import Reticle from './Reticle/Reticle';
 import CollectionPanel from './CollectionPanel/CollectionPanel';
 import CastPanel from './CastPanel/CastPanel';
 import { OrderType } from '../../App';
 import { TmdbType } from '../../types/Tmdb';
 import { useTmdbData } from '../../utils/tmdb-data';
+import { phaseOf } from '../../utils/media-lists';
 import { GLOW_DELAY, GLOW_DURATION } from '../../utils/motion';
 
 // rgb components (not the SCSS variables themselves — variables.scss isn't
@@ -79,6 +81,7 @@ export default function MediaWrapper({
   const media_ui_type: MediaUiType =
     media_data.type === 'tv' ? 'show' : media_data.type;
   const glow_rgb = GLOW_RGB[media_data.type];
+  const phase_data = phaseOf(media_data);
 
   const tmdb_data_map = useTmdbData();
   const tmdb_key =
@@ -252,8 +255,13 @@ export default function MediaWrapper({
               <Season
                 media_data={media_data}
                 is_content_collapsed={is_content_collapsed}
+                is_phase_assigned={!!phase_data}
               />
             )}
+            <Phase
+              phase_data={phase_data}
+              is_content_collapsed={is_content_collapsed}
+            />
             <Media
               tmdb_data={data}
               media_data={media_data}

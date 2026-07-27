@@ -2,10 +2,23 @@
 
 .season_wrapper {
   position: absolute;
-  bottom: 0;
+  // Shifted up from bottom: 0 — Phase.module.scss's own .phase_wrapper now
+  // sits flush in that corner instead. Derived (not guessed) from its
+  // height plus two lots of the shared corner gap (variables.scss), minus
+  // this element's own 15px margin-bottom below (which already accounts for
+  // one gap's worth of the offset) — so the visible space between the
+  // bottom of this badge and the top of Phase's comes out exactly
+  // $badge-corner-gap, the same as Phase's own gap from the card borders.
+  bottom: calc(#{$badge-corner-gap} * 2 + #{$phase-badge-height} - 15px);
   right: 0;
   color: $show;
-  margin: 0 15px 15px 0;
+  // Right margin matches $badge-corner-gap (Phase.module.scss's own
+  // .phase_wrapper) rather than a separate 15px, so this badge's own right
+  // edge lines up with Phase's instead of landing 3px off from it. Bottom
+  // margin stays a literal 15px — the calc() above already accounts for it
+  // by name, so changing it here without updating that formula would throw
+  // the vertical gap off.
+  margin: 0 $badge-corner-gap 15px 0;
   text-transform: uppercase;
   transition: color $transition-fast;
 
@@ -25,9 +38,13 @@
     align-items: center;
     color: $show;
     background-color: rgba($show, 0.8);
-    width: 55px;
+    width: 100%;
     padding: 0.2rem;
-    margin-top: 0.2rem;
+    // Matches $badge-inner-gap (variables.scss) — Phase.module.scss's own
+    // "Phase: N" to its pill uses the same gap, so the two badges' internal
+    // label-to-value spacing reads as one shared rhythm rather than two
+    // separately-tuned numbers that happened to look similar.
+    margin-top: $badge-inner-gap;
     border-radius: $radius-sm;
     font-family: $title-text;
     font-weight: 800;
@@ -37,6 +54,16 @@
     mix-blend-mode: screen;
     transition: background-color $transition-fast;
   }
+}
+
+// Phase.tsx renders a single row when unassigned (just its own pill,
+// bottom-anchored — Phase.module.scss's own .phase_wrapper_unassigned)
+// instead of the full two-row "Phase: N" + saga pill. The base bottom above
+// leaves room for that taller two-row case; reusing it here regardless would
+// leave a tall empty gap above the shorter unassigned pill. Same formula,
+// $phase-row-height (one row) in place of $phase-badge-height (two).
+.season_wrapper.season_wrapper_phase_unassigned {
+  bottom: calc(#{$badge-corner-gap} * 2 + #{$phase-row-height} - 15px);
 }
 
 :global(.media):hover,

@@ -47,6 +47,13 @@
   color: rgba($accent-lite, 0.25);
 }
 
+// Between the phase number and the saga name — same dimness as .key, so it
+// recedes as a plain separator rather than competing with either.
+.phase_divider {
+  margin: 0 2px;
+  color: rgba($accent-lite, 0.25);
+}
+
 @media only screen and (max-width: 800px) {
   .record {
     left: 20px;

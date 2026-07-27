@@ -1,5 +1,6 @@
 import { MediaType, ShowType } from '../types/Media';
 import media_list_json from '../assets/media-list.json';
+import { mcu_phases, McuPhase } from '../assets/mcu-phases';
 import { TmdbMap } from './tmdb-data';
 // Type-only, so this erases at compile time and no import cycle exists.
 import type { OrderType } from '../App';
@@ -16,6 +17,13 @@ export const media_list_chrono_reversed = [
 // The key a card's row is stored under, matching what MediaWrapper looks up.
 export function tmdbKeyOf(ele: MediaType): string {
   return ele.type === 'tv' ? `${ele.id}__season${ele.season}` : ele.id;
+}
+
+// The MCU Phase/Saga a card belongs to, if any (mcu-phases.ts) — undefined
+// for everything outside Marvel Studios' own numbered Phase list, including
+// media never in the MCU at all.
+export function phaseOf(ele: MediaType): McuPhase | undefined {
+  return mcu_phases[tmdbKeyOf(ele)];
 }
 
 // Minutes for one card. TV counts only the episodes that card actually covers,
