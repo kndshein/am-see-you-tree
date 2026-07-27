@@ -1,7 +1,7 @@
 {
   "name": "am-see-you-v2",
   "private": true,
-  "version": "5.1.0",
+  "version": "5.2.0",
   "type": "module",
   "scripts": {
     "prefetch": "node scripts/prefetch-tmdb.mjs && node scripts/process-backdrops.mjs",
