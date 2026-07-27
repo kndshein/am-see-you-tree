@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PATCH_NOTES_PATH = resolve(root, 'src/assets/patch-notes.json');
 const PACKAGE_PATH = resolve(root, 'package.json');
+const PACKAGE_LOCK_PATH = resolve(root, 'package-lock.json');
 const RELEASE_BRANCH = 'main';
 
 const git = (...args) =>
@@ -53,11 +54,15 @@ if (branch !== RELEASE_BRANCH) {
 }
 
 // The tag points at HEAD, so uncommitted work would not be part of the release
-// it claims to name. package.json is exempt because this script rewrites it.
+// it claims to name. package.json and package-lock.json are exempt because
+// this script rewrites both.
 const dirty = git('status', '--porcelain')
   .split('\n')
   .filter(Boolean)
-  .filter((line) => !line.endsWith('package.json'));
+  .filter(
+    (line) =>
+      !line.endsWith('package.json') && !line.endsWith('package-lock.json'),
+  );
 
 if (dirty.length) {
   fail(
@@ -85,13 +90,54 @@ if (JSON.parse(pkg_next).version !== version) {
 }
 
 const package_changed = pkg_next !== pkg_raw;
+if (package_changed) await writeFile(PACKAGE_PATH, pkg_next);
+
+// --- sync package-lock.json --------------------------------------------------
+
+// package-lock.json carries this same version in two places — the top-level
+// field and packages[""], its own mirrored entry for this package — and npm
+// never touches either on its own once written. Without this they'd silently
+// drift from package.json until someone happened to run a full `npm
+// install`. Both share the identical "name": "am-see-you-v2" pairing (no
+// dependency in node_modules is named that), so one global replace safely
+// reaches both without a JSON round-trip, same approach as package.json above.
+const lock_raw = await readFile(PACKAGE_LOCK_PATH, 'utf8');
+const lock_next = lock_raw.replace(
+  /("name": "am-see-you-v2",\s*\n\s*"version": ")[^"]*(")/g,
+  `$1${version}$2`,
+);
+
+const lock_parsed = JSON.parse(lock_next);
+if (
+  lock_parsed.version !== version ||
+  lock_parsed.packages?.['']?.version !== version
+) {
+  fail('could not rewrite the version field(s) in package-lock.json');
+}
+
+const lock_changed = lock_next !== lock_raw;
+if (lock_changed) await writeFile(PACKAGE_LOCK_PATH, lock_next);
+
+// --- commit --------------------------------------------------------------
+
+// Path-scoped commit: never sweeps in anything else that happens to be staged.
+const changed_paths = [
+  ...(package_changed ? [PACKAGE_PATH] : []),
+  ...(lock_changed ? [PACKAGE_LOCK_PATH] : []),
+];
+
+if (changed_paths.length) {
+  git('commit', ...changed_paths, '-m', `Bump version to ${version}`);
+}
 if (package_changed) {
-  await writeFile(PACKAGE_PATH, pkg_next);
-  // Path-scoped commit: never sweeps in anything else that happens to be staged.
-  git('commit', PACKAGE_PATH, '-m', `Bump version to ${version}`);
-  console.log(`  package.json  ${JSON.parse(pkg_raw).version} -> ${version}`);
+  console.log(`  package.json       ${JSON.parse(pkg_raw).version} -> ${version}`);
 } else {
-  console.log(`  package.json  already at ${version}`);
+  console.log(`  package.json       already at ${version}`);
+}
+if (lock_changed) {
+  console.log(`  package-lock.json  ${JSON.parse(lock_raw).version} -> ${version}`);
+} else {
+  console.log(`  package-lock.json  already at ${version}`);
 }
 
 // --- tag --------------------------------------------------------------------
