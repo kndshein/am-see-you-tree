@@ -266,6 +266,14 @@ $corner-inset: 14px;
 
 .readout_icon {
   display: flex;
+  // Missing here (unlike Tag.module.scss's .icon and CastPanel.module.scss's
+  // .type_icon, the same icon-next-to-text pattern) is exactly what let the
+  // icon sit off-center against the label text.
+  align-items: center;
+  // align-items: center alone still left it reading off against the label
+  // text — this glyph's own ink isn't centered in its box the way the
+  // label's text is in its line box, so a small manual nudge closes it.
+  margin-bottom: 2px;
   font-size: 0.8em;
   opacity: 0.8;
 }
@@ -325,11 +333,21 @@ $corner-inset: 14px;
   background: none;
   border: none;
   padding: 0;
+  // <button> doesn't reliably inherit font-size/line-height from its
+  // ancestors the way plain text does, so without this it was rendering at
+  // the browser's own default button size instead of matching .build_version
+  // (the "v1.2.3" text) right next to it — different height, not just
+  // different font.
+  font-size: inherit;
+  line-height: inherit;
   text-transform: uppercase;
-  // Thin — $body-text's own thin tier (main.tsx loads space-grotesk/300.css
-  // alongside its default 400). The reference every other site link's own
-  // thin weight (CastPanel/CollectionPanel/About.module.scss) now matches.
-  font-weight: 300;
+  // 400, not $body-text's thin (300) tier — that's what was actually behind
+  // the height mismatch against .build_version (the "v1.2.3" text) next to
+  // it, not the font-size/line-height inheritance alone: different weight
+  // files of the same font don't always share identical metrics. Every
+  // other site link (CastPanel/CollectionPanel/About.module.scss) had the
+  // same thin-weight pattern and got the same fix.
+  font-weight: 400;
 }
 
 // A separate span from .about_text below — matching how every other

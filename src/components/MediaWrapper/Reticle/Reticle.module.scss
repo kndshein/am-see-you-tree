@@ -2,7 +2,7 @@
 
 $bracket: 38px;
 $thick: 2px;
-$glow: rgba(102, 192, 204, 0.9);
+$glow: rgba($hud-green, 0.9);
 // How far the brackets stand off the card's edges.
 $standoff: 24px;
 
@@ -32,29 +32,12 @@ $standoff: 24px;
   position: absolute;
   width: $bracket;
   height: $bracket;
-  border: $thick solid $accent-lite;
+  // Flat $hud-green regardless of type now — unlike the card's own
+  // border/reflection (index.scss's .media, MediaWrapper.module.scss's
+  // .content), the reticle locking on reads as one consistent HUD system
+  // color, not something that changes per target.
+  border: $thick solid $hud-green;
   filter: drop-shadow(0 0 4px $glow);
-
-  // Same type colors the card's own border/reflection use (index.scss's
-  // .media, MediaWrapper.module.scss's .content) — the reticle locking onto
-  // a TV card should read as locking onto a TV card, not always the movie
-  // color. Nested inside .corner itself (not top-level with a bare &,
-  // which has no parent selector to attach to outside a rule and silently
-  // targeted .media directly instead of .corner).
-  :global(.media.is_tv) & {
-    border-color: $show;
-    filter: drop-shadow(0 0 4px rgba($show, 0.9));
-  }
-
-  :global(.media.is_short) & {
-    border-color: $short;
-    filter: drop-shadow(0 0 4px rgba($short, 0.9));
-  }
-
-  :global(.media.is_special) & {
-    border-color: $special;
-    filter: drop-shadow(0 0 4px rgba($special, 0.9));
-  }
 }
 
 .tl {

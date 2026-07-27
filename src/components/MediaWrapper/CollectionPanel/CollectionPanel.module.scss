@@ -80,10 +80,11 @@
   font-family: $accent-text;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
-  // Thin, same as [About]'s own link — 200 is $accent-text's own thin tier
-  // (main.tsx loads monaspace-krypton/200.css alongside its default 400),
-  // the same relationship 300 has to $body-text below.
-  font-weight: 200;
+  // 400, not $accent-text's thin (200) tier — [About]'s own link
+  // (Hud.module.scss's about_link) had the same thin-tier pattern and got
+  // bumped to 400 after it turned out to render at a different height than
+  // surrounding 400 text.
+  font-weight: 400;
 }
 
 // Not interactive until its own reveal finishes (CollectionPanel.tsx) — blocks

@@ -183,7 +183,7 @@ export default function Hud({
                   {TYPE_ICONS[row.type]}
                 </span>
               )}
-              {row.label}
+              <span>{row.label}</span>
             </span>
             <span className={styles.readout_value}>{row.count}</span>
           </span>

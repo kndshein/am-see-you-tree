@@ -115,23 +115,7 @@
   height: 100%;
   overflow-y: scroll;
   padding: 0 30px;
-}
-
-.wrapper::-webkit-scrollbar {
-  width: 8px;
-}
-
-.wrapper::-webkit-scrollbar-track {
-  background: rgba($accent-lite, 0.05);
-}
-
-.wrapper::-webkit-scrollbar-thumb {
-  background: rgba($accent-lite, 0.3);
-  border-radius: 4px;
-}
-
-.wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba($accent-lite, 0.5);
+  @include custom-scrollbar;
 }
 
 .title {
@@ -158,10 +142,12 @@
   @include bloom-link;
   text-decoration: none;
   transition: color 0.15s ease-out 0.1s;
-  // Thin, same as [About] itself (Hud.module.scss's about_link) — 300 is
-  // $body-text's own thin tier (main.tsx loads space-grotesk/300.css
-  // alongside its default 400).
-  font-weight: 300;
+  // 400, not $body-text's thin (300) tier — [About] itself
+  // (Hud.module.scss's about_link) used to match this and got bumped to 400
+  // too, after 300 turned out to render at a different height than
+  // surrounding 400 text (different weight files of the same font don't
+  // always share identical metrics).
+  font-weight: 400;
 }
 
 // No color of its own: inherits .link's white at rest. Lags half a beat

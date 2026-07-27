@@ -127,6 +127,39 @@ $font-size-lg: 2rem;
     0 0 7px rgba($accent-lite, 0.2);
 }
 
+// The site's standard scrollbar, wherever a panel scrolls its own content
+// (RightContainer's original) — pulled out here so LeftContainer and About's
+// own scrollable areas read as the same control instead of each one
+// hand-rolling (or, in LeftContainer's case, only partly rolling) their own.
+// Callers still own overflow-y/scrollbar-width themselves via their own
+// layout rules where relevant.
+@mixin custom-scrollbar {
+  scrollbar-color: $accent-lite $main;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    cursor: pointer;
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track-piece {
+    background-color: $main;
+  }
+
+  &::-webkit-scrollbar-track-piece:hover {
+    background-color: $main-lite;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $accent-lite;
+    border-radius: 50px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: $white;
+  }
+}
+
 // A vertical accent bar hugging a title's left edge — TopContainer's card
 // title and About's own heading both used to hand-roll this same ::before
 // separately. Callers still own their own position/padding-left/font-size;
