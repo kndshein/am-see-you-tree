@@ -10,9 +10,6 @@ interface Props {
   media_data: MediaType;
   is_backdrop_loaded: boolean;
   setIsBackdropLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-  // True once the card has been hovered at least once. Gates the full-color
-  // variant so it is never requested for cards nobody points at.
-  has_been_hovered: boolean;
   is_active: boolean;
 }
 
@@ -21,7 +18,6 @@ export default function Backdrop({
   media_data,
   is_backdrop_loaded,
   setIsBackdropLoaded,
-  has_been_hovered,
   is_active,
 }: Props) {
   // Prefer the locally processed images: cropped to the shape this box actually
@@ -62,8 +58,11 @@ export default function Backdrop({
           onLoad={() => setIsGradedReady(true)}
           onError={() => setIsGradedReady(true)}
         />
-        {/* The ungraded twin, cross-faded in on hover. We now mount this immediately
-            so both the color and blue versions are fetched, preventing a flash on hover. */}
+        {/* The ungraded twin, cross-faded in on hover. Mounted immediately
+            (not only once actually hovered) so both the color and blue
+            versions start fetching right away — the CSS hover rule itself
+            is also gated on .media.ready (Backdrop.module.scss) so it can
+            never try to reveal this before onLoad below has actually fired. */}
         {local?.plain && (
           <img
             className={styles.backdrop_plain}

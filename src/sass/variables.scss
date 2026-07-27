@@ -62,6 +62,13 @@ $charge-red: rgb(70, 13, 10);
 // $charge-red above.
 $corner-charging: rgb(255, 145, 60);
 
+// The HUD's other alert color — redder than $corner-charging above, used
+// once an arrow hold is actually locked/armed (Hud.module.scss's status LED
+// and StatusReadout text) rather than just charging toward it. Shared here
+// so UnreleasedBadge can flag "not out yet" with the same color the HUD
+// itself uses for "slingshotting" instead of a separately-tuned orange.
+$hud-alert: rgb(255, 106, 61);
+
 // $accent is roughly $accent-lite mixed 50/50 with black — the collapsed
 // card's own reflection gradient (index.scss) uses that dim tier rather than
 // the bright one everything else ($show/$short/$special themselves) uses, so

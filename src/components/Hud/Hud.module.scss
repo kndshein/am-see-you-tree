@@ -269,8 +269,8 @@ $corner-inset: 14px;
 // (not armed) goes solid — a steady lock, not an alarm — rather than
 // carrying the idle blink over.
 .status_led.locked {
-  background-color: rgb(255, 106, 61);
-  box-shadow: 0 0 4px rgba(255, 106, 61, 0.9);
+  background-color: $hud-alert;
+  box-shadow: 0 0 4px rgba($hud-alert, 0.9);
   animation: none;
   opacity: 1;
 }
@@ -278,8 +278,8 @@ $corner-inset: 14px;
 // Armed (sling-shotting) — same alert color, but blinking fast instead of
 // steady, so the urgency reads even with the sound off, so to speak.
 .status_led.armed {
-  background-color: rgb(255, 106, 61);
-  box-shadow: 0 0 4px rgba(255, 106, 61, 0.9);
+  background-color: $hud-alert;
+  box-shadow: 0 0 4px rgba($hud-alert, 0.9);
   animation: status_blink 0.35s ease-in-out infinite;
 }
 
@@ -296,7 +296,7 @@ $corner-inset: 14px;
 // Applied by StatusReadout when a card is open, so the state change reads at a
 // glance rather than needing the word to be parsed.
 .locked {
-  color: rgb(255, 106, 61);
+  color: $hud-alert;
 }
 
 // Applied by PositionReadout to each ∞ glyph individually once armed (not to

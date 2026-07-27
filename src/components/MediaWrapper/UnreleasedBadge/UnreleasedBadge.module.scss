@@ -1,0 +1,46 @@
+@use '../../../sass/variables.scss' as *;
+
+// rotate(-90deg) around the box's own *right* edge, not left (unlike
+// Title.module.scss's own strip) — right: 100% pins that edge to .content's
+// left edge regardless of the badge's own (text-length-dependent) width, so
+// top then names exactly where that edge — visually the top of the rotated
+// strip, i.e. what reads as the badge's "right edge" before rotation — lands
+// on screen, independent of how wide "Unreleased" itself renders. Anchoring
+// from the left edge instead (position: left + transform-origin: top left,
+// the first version of this) made that position drift with the text's own
+// width, which is what let it land on top of Index.module.scss's big
+// background number instead of clearing it.
+.badge {
+  position: absolute;
+  right: 100%;
+  top: 115px;
+  color: $background;
+  // $hud-alert — the same red-orange the HUD's status LED/readout switch to
+  // once an arrow hold is actually locked/armed (Hud.module.scss), not the
+  // dimmer $corner-charging used mid-charge — so an unreleased title reads
+  // with the HUD's own "slingshotting" urgency color, not a calmer one.
+  background-color: $hud-alert;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: $body-text;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  transform: rotate(-90deg);
+  transform-origin: top right;
+  z-index: 2;
+  // Animates the collapsed <-> expanded top jump (135px to 20px) instead of
+  // snapping, so it reads as sliding up alongside the card's own layout
+  // animation rather than teleporting once .expanded-layout lands.
+  transition: top $transition-base;
+}
+
+// Media.module.scss's own .container carries padding-top: 20px, and
+// TopContainer.tsx's h2 sits flush at that grid row's own top with no
+// further offset of its own (title-accent-bar's ::before is an overlay, not
+// spacing) — 20px lines this badge's own top (== its right edge, see above)
+// up with the h2 title's top edge once expanded.
+:global(.media.expanded-layout) .badge {
+  top: 20px;
+}

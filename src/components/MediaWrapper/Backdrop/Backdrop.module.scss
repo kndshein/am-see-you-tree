@@ -4,8 +4,18 @@
 // so the loop is seamless.
 $scanline: 9px;
 
-:global(.media):hover,
-:global(.media):focus {
+// .ready specifically (not just :hover) — that class only lands once
+// is_backdrop_loaded is true (Backdrop.tsx/MediaWrapper.tsx's own
+// isDisabled), which itself only flips once BOTH the graded and plain
+// images have actually fired onLoad. Without it, hovering a card whose
+// plain twin was still in flight set this opacity to 1 on an as-yet-unloaded
+// <img> — nothing to see yet, so no visible fade — and then the real pixels
+// just popped in the instant the network/decode caught up, mid-hover,
+// which is the flash this is guarding against. Gating on .ready guarantees
+// the image data is already sitting there decoded before hover can ever
+// trigger this, so the opacity change is an actual fade instead of a race.
+:global(.media.ready):hover,
+:global(.media.ready):focus {
   &:not(:global(.expanded-layout)) {
     .backdrop_motion {
       opacity: 1;

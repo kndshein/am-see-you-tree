@@ -4,14 +4,16 @@
     "id": "241388-eyes-of-wakanda",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 4
+    "epiEnd": 4,
+    "phase": 6
   },
   {
     "type": "movie",
     "id": "1771-captain-america-the-first-avenger",
-    "theme": { "title": "captain_america" }
+    "theme": { "title": "captain_america" },
+    "phase": 1
   },
-  { "type": "short", "id": "211387-marvel-one-shot-agent-carter" },
+  { "type": "short", "id": "211387-marvel-one-shot-agent-carter", "phase": 2 },
   {
     "type": "tv",
     "id": "61550-marvel-s-agent-carter",
@@ -26,30 +28,39 @@
     "epiStart": 1,
     "epiEnd": 10
   },
-  { "type": "movie", "id": "299537-captain-marvel" },
+  { "type": "movie", "id": "299537-captain-marvel", "phase": 3 },
   {
     "type": "movie",
     "id": "1726-iron-man",
-    "theme": { "title": "iron_man" }
+    "theme": { "title": "iron_man" },
+    "phase": 1
   },
   {
     "type": "movie",
     "id": "10138-iron-man-2",
-    "theme": { "title": "iron_man" }
+    "theme": { "title": "iron_man" },
+    "phase": 1
   },
   {
     "type": "movie",
     "id": "1724-the-incredible-hulk",
-    "theme": { "title": "hulk" }
+    "theme": { "title": "hulk" },
+    "phase": 1
   },
-  { "type": "short", "id": "76122-marvel-one-shot-the-consultant" },
+  { "type": "short", "id": "76122-marvel-one-shot-the-consultant", "phase": 1 },
   {
     "type": "short",
-    "id": "76535-marvel-one-shot-a-funny-thing-happened-on-the-way-to-thor-s-hammer"
+    "id": "76535-marvel-one-shot-a-funny-thing-happened-on-the-way-to-thor-s-hammer",
+    "phase": 1
   },
-  { "type": "movie", "id": "10195-thor", "theme": { "title": "thor" } },
-  { "type": "movie", "id": "24428-the-avengers" },
-  { "type": "short", "id": "119569-marvel-one-shot-item-47" },
+  {
+    "type": "movie",
+    "id": "10195-thor",
+    "theme": { "title": "thor" },
+    "phase": 1
+  },
+  { "type": "movie", "id": "24428-the-avengers", "phase": 1 },
+  { "type": "short", "id": "119569-marvel-one-shot-item-47", "phase": 1 },
   {
     "type": "tv",
     "id": "1403-marvel-s-agents-of-s-h-i-e-l-d",
@@ -60,7 +71,8 @@
   {
     "type": "movie",
     "id": "76338-thor-the-dark-world",
-    "theme": { "title": "thor" }
+    "theme": { "title": "thor" },
+    "phase": 2
   },
   {
     "type": "tv",
@@ -74,13 +86,19 @@
     "id": "68721-iron-man-3",
     "theme": {
       "title": "iron_man"
-    }
+    },
+    "phase": 2
   },
-  { "type": "short", "id": "253980-marvel-one-shot-all-hail-the-king" },
+  {
+    "type": "short",
+    "id": "253980-marvel-one-shot-all-hail-the-king",
+    "phase": 2
+  },
   {
     "type": "movie",
     "id": "100402-captain-america-the-winter-soldier",
-    "theme": { "title": "captain_america" }
+    "theme": { "title": "captain_america" },
+    "phase": 2
   },
   {
     "type": "tv",
@@ -89,21 +107,23 @@
     "epiStart": 17,
     "epiEnd": 22
   },
-  { "type": "movie", "id": "118340-guardians-of-the-galaxy" },
-  { "type": "movie", "id": "283995-guardians-of-the-galaxy-2" },
+  { "type": "movie", "id": "118340-guardians-of-the-galaxy", "phase": 2 },
+  { "type": "movie", "id": "283995-guardians-of-the-galaxy-2", "phase": 3 },
   {
     "type": "tv",
     "id": "232125-i-am-groot",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 5
+    "epiEnd": 5,
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "232125-i-am-groot",
     "season": 2,
     "epiStart": 1,
-    "epiEnd": 5
+    "epiEnd": 5,
+    "phase": 5
   },
   {
     "type": "tv",
@@ -133,7 +153,7 @@
     "epiStart": 11,
     "epiEnd": 19
   },
-  { "type": "movie", "id": "99861-avengers-age-of-ultron" },
+  { "type": "movie", "id": "99861-avengers-age-of-ultron", "phase": 2 },
   {
     "type": "tv",
     "id": "1403-marvel-s-agents-of-s-h-i-e-l-d",
@@ -183,7 +203,12 @@
     "epiStart": 9,
     "epiEnd": 13
   },
-  { "type": "movie", "id": "102899-ant-man", "theme": { "title": "ant-man" } },
+  {
+    "type": "movie",
+    "id": "102899-ant-man",
+    "theme": { "title": "ant-man" },
+    "phase": 2
+  },
   {
     "type": "tv",
     "id": "1403-marvel-s-agents-of-s-h-i-e-l-d",
@@ -201,14 +226,16 @@
   {
     "type": "movie",
     "id": "271110-captain-america-civil-war",
-    "theme": { "title": "captain_america" }
+    "theme": { "title": "captain_america" },
+    "phase": 3
   },
-  { "type": "short", "id": "413279-team-thor" },
-  { "type": "short", "id": "441829-team-thor-part-2" },
+  { "type": "short", "id": "413279-team-thor", "phase": 3 },
+  { "type": "short", "id": "441829-team-thor-part-2", "phase": 3 },
   {
     "type": "movie",
     "id": "497698-black-widow",
-    "theme": { "title": "black-widow" }
+    "theme": { "title": "black-widow" },
+    "phase": 4
   },
   {
     "type": "tv",
@@ -231,11 +258,12 @@
     "epiStart": 1,
     "epiEnd": 6
   },
-  { "type": "movie", "id": "284052-doctor-strange" },
+  { "type": "movie", "id": "284052-doctor-strange", "phase": 3 },
   {
     "type": "movie",
     "id": "284054-black-panther",
-    "theme": { "title": "black_panther" }
+    "theme": { "title": "black_panther" },
+    "phase": 3
   },
   {
     "type": "tv",
@@ -261,14 +289,16 @@
   {
     "type": "movie",
     "id": "315635-spider-man-homecoming",
-    "theme": { "title": "spider-man" }
+    "theme": { "title": "spider-man" },
+    "phase": 3
   },
   {
     "type": "movie",
     "id": "284053-thor-ragnarok",
-    "theme": { "title": "thor" }
+    "theme": { "title": "thor" },
+    "phase": 3
   },
-  { "type": "short", "id": "505945-team-darryl" },
+  { "type": "short", "id": "505945-team-darryl", "phase": 3 },
   {
     "type": "tv",
     "id": "68716-marvel-s-inhumans",
@@ -370,9 +400,10 @@
   {
     "type": "movie",
     "id": "363088-ant-man-and-the-wasp",
-    "theme": { "title": "ant-man" }
+    "theme": { "title": "ant-man" },
+    "phase": 3
   },
-  { "type": "movie", "id": "299536-avengers-infinity-war" },
+  { "type": "movie", "id": "299536-avengers-infinity-war", "phase": 3 },
   {
     "type": "tv",
     "id": "1403-marvel-s-agents-of-s-h-i-e-l-d",
@@ -401,79 +432,94 @@
     "epiStart": 1,
     "epiEnd": 10
   },
-  { "type": "movie", "id": "299534-avengers-endgame" },
+  { "type": "movie", "id": "299534-avengers-endgame", "phase": 3 },
   {
     "type": "tv",
     "id": "84958-loki",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "84958-loki",
     "season": 2,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 5
   },
   {
     "type": "tv",
     "id": "91363-what-if",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "91363-what-if",
     "season": 2,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 5
   },
   {
     "type": "tv",
     "id": "91363-what-if",
     "season": 3,
     "epiStart": 1,
-    "epiEnd": 8
+    "epiEnd": 8,
+    "phase": 5
   },
   {
     "type": "tv",
     "id": "138505-marvel-zombies",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 4
+    "epiEnd": 4,
+    "phase": 6
   },
   {
     "type": "tv",
     "id": "85271-wandavision",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 4
   },
-  { "type": "movie", "id": "533535-deadpool-wolverine" },
-  { "type": "movie", "id": "566525-shang-chi-and-the-legend-of-the-ten-rings" },
+  { "type": "movie", "id": "533535-deadpool-wolverine", "phase": 5 },
+  {
+    "type": "movie",
+    "id": "566525-shang-chi-and-the-legend-of-the-ten-rings",
+    "phase": 4
+  },
   {
     "type": "tv",
     "id": "88396-falcon-winter-soldier",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 4
   },
-  { "type": "movie", "id": "524434-eternals" },
+  { "type": "movie", "id": "524434-eternals", "phase": 4 },
   {
     "type": "movie",
     "id": "429617-spider-man-far-from-home",
-    "theme": { "title": "spider-man" }
+    "theme": { "title": "spider-man" },
+    "phase": 3
   },
   {
     "type": "movie",
     "id": "634649-spider-man-no-way-home",
-    "theme": { "title": "spider-man" }
+    "theme": { "title": "spider-man" },
+    "phase": 4
   },
   {
     "type": "movie",
-    "id": "453395-doctor-strange-in-the-multiverse-of-madness"
+    "id": "453395-doctor-strange-in-the-multiverse-of-madness",
+    "phase": 4
   },
 
   {
@@ -481,115 +527,165 @@
     "id": "88329-hawkeye",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "92749-moon-knight",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 4
   },
   {
     "type": "movie",
     "id": "505642-black-panther-wakanda-forever",
-    "theme": { "title": "black_panther" }
+    "theme": { "title": "black_panther" },
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "122226-echo",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 5
+    "epiEnd": 5,
+    "phase": 5
   },
   {
     "type": "tv",
     "id": "92783-she-hulk-attorney-at-law",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "92782-ms-marvel",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 4
   },
   {
     "type": "movie",
     "id": "616037-thor-love-and-thunder",
-    "theme": { "title": "thor" }
+    "theme": { "title": "thor" },
+    "phase": 4
   },
   {
     "type": "tv",
     "id": "114471-ironheart",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 5
   },
-  { "type": "special", "id": "894205-werewolf-by-night" },
+  { "type": "special", "id": "894205-werewolf-by-night", "phase": 4 },
   {
     "type": "special",
-    "id": "774752-the-guardians-of-the-galaxy-holiday-special"
+    "id": "774752-the-guardians-of-the-galaxy-holiday-special",
+    "phase": 4
   },
   {
     "type": "movie",
     "id": "640146-ant-man-and-the-wasp-quantumania",
-    "theme": { "title": "ant-man" }
+    "theme": { "title": "ant-man" },
+    "phase": 5
   },
-  { "type": "movie", "id": "447365-guardians-of-the-galaxy-volume-3" },
+  {
+    "type": "movie",
+    "id": "447365-guardians-of-the-galaxy-volume-3",
+    "phase": 5
+  },
   {
     "type": "tv",
     "id": "114472-secret-invasion",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 6
+    "epiEnd": 6,
+    "phase": 5
   },
-  { "type": "movie", "id": "609681-the-marvels" },
+  { "type": "movie", "id": "609681-the-marvels", "phase": 5 },
   {
     "type": "tv",
     "id": "138501-agatha-all-along",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 5
   },
   {
     "type": "tv",
     "id": "202555-daredevil-born-again",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 9
+    "epiEnd": 9,
+    "phase": 5
   },
   {
     "type": "movie",
     "id": "822119-captain-america-brave-new-world",
-    "theme": { "title": "captain_america" }
+    "theme": { "title": "captain_america" },
+    "phase": 5
   },
   {
     "type": "movie",
-    "id": "986056-thunderbolts"
+    "id": "986056-thunderbolts",
+    "phase": 5
   },
   {
     "type": "movie",
-    "id": "617126-the-fantastic-4-first-steps"
+    "id": "617126-the-fantastic-4-first-steps",
+    "phase": 6
   },
   {
     "type": "tv",
     "id": "198178-wonder-man",
     "season": 1,
     "epiStart": 1,
-    "epiEnd": 8
+    "epiEnd": 8,
+    "phase": 6
   },
   {
     "type": "tv",
     "id": "202555-daredevil-born-again",
     "season": 2,
     "epiStart": 1,
-    "epiEnd": 8
+    "epiEnd": 8,
+    "phase": 6
   },
   {
     "type": "special",
-    "id": "1439930-the-punisher-one-last-kill"
+    "id": "1439930-the-punisher-one-last-kill",
+    "phase": 6
+  },
+  {
+    "type": "movie",
+    "id": "969681-spider-man-brand-new-day",
+    "phase": 6,
+    "unreleased": true
+  },
+  {
+    "type": "movie",
+    "id": "1003596-avengers-doomsday",
+    "phase": 6,
+    "unreleased": true
+  },
+  {
+    "type": "movie",
+    "id": "1003598-avengers-secret-wars",
+    "phase": 6,
+    "unreleased": true
+  },
+  {
+    "type": "tv",
+    "id": "213375-vision-quest",
+    "season": 1,
+    "epiStart": 1,
+    "epiEnd": 8,
+    "phase": 6,
+    "unreleased": true
   }
 ]

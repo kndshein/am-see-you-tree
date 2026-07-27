@@ -88,24 +88,24 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
               <p>
                 <i>AmSeeYou</i> showcases and cherishes the Marvel Cinematic
                 Universe (MCU) films and TV shows. This website presents the
-                entire universe in in-universe chronological order from{' '}
+                entire universe in in-universe chronological order from this
+                list:{' '}
                 <Link href="https://www.digitalspy.com/movies/a825774/marvel-cinematic-universe-in-chronological-order/">
                   Digital Spy
                 </Link>
                 .
               </p>
               <p>
-                The project was conceived in January of 2021 as a class project
-                after having learned what React was just a week prior. During
-                the project, I fell in love with the process of bringing json
-                objects to life -- it's satisfyingly beautiful. Even though the
+                The project was conceived in January of 2021 as a way to learn
+                React. During the project, I fell in love with the process of
+                designing web UIs and bringing them to life. Even though the
                 project is long over, I have been adding new features and
-                building on existing code ever since.
+                building on the existing code ever since.
               </p>
               <p>
                 I will continue to maintain the site as long as it still brings
-                me joy. Follow along the progression of this site by viewing
-                each major versions of the project:{' '}
+                me joy. Each major versions of the project have been archived as
+                the site gets improved upon:{' '}
                 <Link href="/v1" external={false}>
                   v1
                 </Link>
@@ -121,11 +121,13 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
                 <Link href="/v4" external={false}>
                   v4
                 </Link>
-                . Here's to small things in life!
+                . Here's to small silly things in life!
               </p>
               <p>
-                Warmly,
-                <br /> Kaung <br />
+                With love,
+                <br />
+                Kaung
+                <br />
                 <Link href="https://knds.art">knds.art</Link>
               </p>
             </section>
@@ -161,13 +163,9 @@ export default function About({ isModalOpen, setIsModalOpen }: PropTypes) {
                 ))}
             </div>
             <p>
-              Special shoutout to{' '}
-              <Link href="https://www.themoviedb.org/">TMDB</Link> for the API,{' '}
-              <Link href="https://30000fps.com/#">30000fps</Link> for the{' '}
-              <Link href="https://giphy.com/gifs/loop-sci-fi-XmppNRlrlu2SA">
-                Sci-fi GIF
-              </Link>
-              , and{' '}
+              Special thanks to{' '}
+              <Link href="https://www.themoviedb.org/">TMDB</Link> for the API
+              and{' '}
               <Link href="https://twitter.com/Hyperplexed">Hyperplexed</Link>{' '}
               for this <Link href="https://youtu.be/jMVhxBB3l0w">tutorial</Link>
               .

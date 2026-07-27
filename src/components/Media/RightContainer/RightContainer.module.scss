@@ -89,6 +89,13 @@
   color: rgba($accent-lite, 0.5);
 }
 
+// No votes yet — same size as a real percentage would read at (not a
+// caption like .sub_value above), just flat and muted instead of the live
+// score color VoteCounter's own count-up would land on.
+.no_rating {
+  color: rgba($muted-text, 0.7);
+}
+
 // Names the block it's in — the space above (from the previous block) now
 // comes from .container's own gap, so this only carries its own small
 // separation from the content it labels.
@@ -232,6 +239,13 @@
   letter-spacing: 1px;
   color: rgba($accent-lite, 0.6);
   margin-bottom: 1px;
+}
+
+// TMDB has no character credited — reads as a flat gray caption instead of
+// this type's own tinted one, so it's clearly "no data" rather than just a
+// dimmer version of a real role.
+.actor_role.unassigned {
+  color: rgba($muted-text, 0.7);
 }
 
 // Same pill, HUD green — so the people who made it read as a distinct group

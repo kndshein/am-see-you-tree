@@ -265,10 +265,10 @@
     "width": 1000,
     "height": 1080
   },
-  "/3zvZ699gMW2RhWc0GisIukzq0Ls.jpg": {
-    "graded": "/backdrops/3zvZ699gMW2RhWc0GisIukzq0Ls.webp",
-    "plain": "/backdrops/3zvZ699gMW2RhWc0GisIukzq0Ls.plain.webp",
-    "blurred": "/backdrops/3zvZ699gMW2RhWc0GisIukzq0Ls.blur.webp",
+  "/kkoiH8ZWxJ9WSAjOadGtuHUQxbm.jpg": {
+    "graded": "/backdrops/kkoiH8ZWxJ9WSAjOadGtuHUQxbm.webp",
+    "plain": "/backdrops/kkoiH8ZWxJ9WSAjOadGtuHUQxbm.plain.webp",
+    "blurred": "/backdrops/kkoiH8ZWxJ9WSAjOadGtuHUQxbm.blur.webp",
     "width": 1000,
     "height": 1080
   },
@@ -691,5 +691,33 @@
     "blurred": "/backdrops/qO55CD8tgVL1T4WKn6zYFFiD6lL.blur.webp",
     "width": 1000,
     "height": 1080
+  },
+  "/vjMvFSmGUxEtqVdaZgvFee9XkZl.jpg": {
+    "graded": "/backdrops/vjMvFSmGUxEtqVdaZgvFee9XkZl.webp",
+    "plain": "/backdrops/vjMvFSmGUxEtqVdaZgvFee9XkZl.plain.webp",
+    "blurred": "/backdrops/vjMvFSmGUxEtqVdaZgvFee9XkZl.blur.webp",
+    "width": 1000,
+    "height": 1080
+  },
+  "/6KDDoTq8Vq3HuQHULzuvPiCJbMI.jpg": {
+    "graded": "/backdrops/6KDDoTq8Vq3HuQHULzuvPiCJbMI.webp",
+    "plain": "/backdrops/6KDDoTq8Vq3HuQHULzuvPiCJbMI.plain.webp",
+    "blurred": "/backdrops/6KDDoTq8Vq3HuQHULzuvPiCJbMI.blur.webp",
+    "width": 1000,
+    "height": 1080
+  },
+  "/rytc6Lf4447C0CDncwFa4gxe0vY.jpg": {
+    "graded": "/backdrops/rytc6Lf4447C0CDncwFa4gxe0vY.webp",
+    "plain": "/backdrops/rytc6Lf4447C0CDncwFa4gxe0vY.plain.webp",
+    "blurred": "/backdrops/rytc6Lf4447C0CDncwFa4gxe0vY.blur.webp",
+    "width": 1000,
+    "height": 1080
+  },
+  "/hgo15B8eUnbEjszVV1qdV8sGz9S.jpg": {
+    "graded": "/backdrops/hgo15B8eUnbEjszVV1qdV8sGz9S.webp",
+    "plain": "/backdrops/hgo15B8eUnbEjszVV1qdV8sGz9S.plain.webp",
+    "blurred": "/backdrops/hgo15B8eUnbEjszVV1qdV8sGz9S.blur.webp",
+    "width": 1000,
+    "height": 800
   }
 }

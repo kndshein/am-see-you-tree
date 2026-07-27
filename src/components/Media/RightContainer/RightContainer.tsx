@@ -18,7 +18,7 @@ import { motion, useMotionValue, useTransform } from 'motion/react';
 import Overview from '../Overview/Overview';
 import VoteCounter from './VoteCounter';
 import GlitchText from './GlitchText';
-import { castMatchesInMediaList } from '../../../utils/media-lists';
+import { castMatchesInMediaList, isUnreleased } from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
 
 type PropTypes = {
@@ -74,6 +74,12 @@ export default function RightContainer({
       ? tmdb_data[`season/${media_data.season}`]
       : undefined;
 
+  const is_unreleased = isUnreleased(media_data, tmdb_data);
+
+  // TMDB returns vote_average: 0 for anything with no votes yet, same as a
+  // (never actually seen) genuine 0.0 score — this is what tells the two
+  // apart, so the field can show "N/A" instead of a misleading "0%".
+  const has_rating = tmdb_data.vote_average > 0;
   const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
   // A MotionValue, not React state: motion writes the derived color straight
   // to the DOM node, keeping the per-frame count-up from re-rendering this
@@ -138,24 +144,37 @@ export default function RightContainer({
             <motion.span variants={element}>
               <span className={styles.label}>Rating</span>
               <span className={styles.value_row}>
-                <motion.span style={{ color: vote_color }}>
-                  <VoteCounter
-                    value={vote_percent}
-                    play={is_content_expanded}
-                    delay={VITALS_DELAY}
-                    motion_value={vote_value}
-                  />
-                </motion.span>
-                {typeof tmdb_data.vote_count === 'number' && (
-                  <span className={styles.sub_value}>
-                    {compactCount(tmdb_data.vote_count)}
-                  </span>
+                {has_rating ? (
+                  <>
+                    <motion.span style={{ color: vote_color }}>
+                      <VoteCounter
+                        value={vote_percent}
+                        play={is_content_expanded}
+                        delay={VITALS_DELAY}
+                        motion_value={vote_value}
+                      />
+                    </motion.span>
+                    {typeof tmdb_data.vote_count === 'number' && (
+                      <span className={styles.sub_value}>
+                        {compactCount(tmdb_data.vote_count)}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  // No votes yet, not a genuine 0% — scoreColor would map an
+                  // actual 0 to red, which reads as "rated terribly" rather
+                  // than "not rated at all". Plain muted text instead of
+                  // VoteCounter's own count-up, since there's no real number
+                  // to animate toward.
+                  <span className={styles.no_rating}>N/A</span>
                 )}
               </span>
             </motion.span>
             {media_data.type === 'tv' ? (
               <motion.span variants={element}>
-                <span className={styles.label}>Aired</span>
+                <span className={styles.label}>
+                  {is_unreleased ? 'Will Release' : 'Aired'}
+                </span>
                 <GlitchText
                   final_text={dateCalc(season_data?.air_date)}
                   seed_text={dateEpochSeed(season_data?.air_date)}
@@ -166,7 +185,9 @@ export default function RightContainer({
             ) : (
               <>
                 <motion.span variants={element}>
-                  <span className={styles.label}>Released</span>
+                  <span className={styles.label}>
+                    {is_unreleased ? 'Will Release' : 'Released'}
+                  </span>
                   <GlitchText
                     final_text={dateCalc(tmdb_data.release_date)}
                     seed_text={dateEpochSeed(tmdb_data.release_date)}
@@ -238,11 +259,13 @@ export default function RightContainer({
                         variants={element}
                         aria-label={`${actor.name} (no other titles in this list)`}
                       >
-                        {actor.character && (
-                          <span className={styles.actor_role}>
-                            {actor.character}
-                          </span>
-                        )}
+                        <span
+                          className={`${styles.actor_role} ${
+                            actor.character ? '' : styles.unassigned
+                          }`}
+                        >
+                          {actor.character || 'Unassigned'}
+                        </span>
                         <span className={styles.actor_name}>{actor.name}</span>
                       </motion.span>
                     );
@@ -259,11 +282,13 @@ export default function RightContainer({
                       variants={element}
                       onClick={() => onSelectCast?.(actor.name)}
                     >
-                      {actor.character && (
-                        <span className={styles.actor_role}>
-                          {actor.character}
-                        </span>
-                      )}
+                      <span
+                        className={`${styles.actor_role} ${
+                          actor.character ? '' : styles.unassigned
+                        }`}
+                      >
+                        {actor.character || 'Unassigned'}
+                      </span>
                       <span className={styles.actor_name}>
                         {actor.name}
                       </span>
