@@ -144,17 +144,15 @@
 }
 
 // The entry currently on screen — not the flat $muted-text grey every other
-// disabled/informational bit of the site uses, but $accent: the same dim
-// tier of this list's own hover color ($accent-lite) that $show-dim/
-// $short-dim/$special-dim (variables.scss) give CastPanel's own types, so it
-// still reads as "this list's link, dimmed" rather than generically grey.
-// Also stripped of .title_white's bloom, so it reads as disabled rather than
-// merely mid-reveal (its brackets are dropped entirely in CollectionPanel.tsx,
-// so there's no .bracket override needed here). Higher specificity than
-// .title_white's own base rule is what lets this win without touching its
-// transition.
+// disabled/informational bit of the site uses, but $accent-lite: this list's
+// own hover color, so it still reads as "this list's link" rather than
+// generically grey. Also stripped of .title_white's bloom, so it reads as
+// disabled rather than merely mid-reveal (its brackets are dropped entirely
+// in CollectionPanel.tsx, so there's no .bracket override needed here).
+// Higher specificity than .title_white's own base rule is what lets this win
+// without touching its transition.
 .item.is_active .title_white {
-  color: $accent;
+  color: $accent-lite;
   text-shadow: none;
 }
 

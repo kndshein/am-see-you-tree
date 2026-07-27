@@ -71,12 +71,10 @@
 
 // The card currently on screen — a different reason to be non-interactive
 // than .not_in_rail above (it's exactly what's showing, not missing from the
-// rail), so instead of that dimmed-opacity treatment it gets the dim tier of
-// whatever color its own type would hover to: $accent (the dim tier of the
-// default $accent-lite hover, same relationship as $accent-lite/$accent
-// themselves) here, overridden per type below by $show-dim/$short-dim/
-// $special-dim (variables.scss) — so it still reads as "this type's link,
-// dimmed" rather than generically grey. text-shadow: none strips
+// rail), so instead of that dimmed-opacity treatment it gets its own type's
+// full hover color ($accent-lite here, overridden per type below by
+// $show/$short/$special, variables.scss) — so it still reads as "this type's
+// link" rather than generically grey. text-shadow: none strips
 // .title.revealed's own bloom too — a glow is a cue that something's lit up
 // and interactive, which this deliberately isn't. No .bracket override
 // needed here: its brackets are dropped entirely in CastPanel.tsx. Higher
@@ -84,22 +82,22 @@
 // rules below, same reason) is what lets this win without touching the
 // transition itself.
 .item.is_active .title {
-  color: $accent;
+  color: $accent-lite;
   text-shadow: none;
 }
 
 .item.is_tv.is_active .title {
-  color: $show-dim;
+  color: $show;
   text-shadow: none;
 }
 
 .item.is_short.is_active .title {
-  color: $short-dim;
+  color: $short;
   text-shadow: none;
 }
 
 .item.is_special.is_active .title {
-  color: $special-dim;
+  color: $special;
   text-shadow: none;
 }
 
