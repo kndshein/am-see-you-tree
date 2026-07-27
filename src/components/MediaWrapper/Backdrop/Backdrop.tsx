@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Loading from '../../Loading/Loading';
 import styles from './Backdrop.module.scss';
 import { motion } from 'motion/react';
@@ -33,19 +34,33 @@ export default function Backdrop({
     local?.graded ??
     `https://image.tmdb.org/t/p/w1280${backdropPathOf(media_data, data)}`;
 
+  // Both the graded (blue) and plain (color) twins are fetched immediately
+  // — see the comment on .backdrop_plain below — so the spinner shouldn't
+  // drop until both have actually resolved, not just the graded one.
+  // Otherwise it could disappear while the plain twin is still loading in
+  // the background, and that gap would only surface the first time the card
+  // is hovered. is_plain_ready starts true when there's no plain variant to
+  // wait for at all.
+  const [is_graded_ready, setIsGradedReady] = useState(false);
+  const [is_plain_ready, setIsPlainReady] = useState(!local?.plain);
+
+  useEffect(() => {
+    if (is_graded_ready && is_plain_ready) setIsBackdropLoaded(true);
+  }, [is_graded_ready, is_plain_ready, setIsBackdropLoaded]);
+
   return (
     <>
       {!is_backdrop_loaded && <Loading />}
       <motion.div layout="preserve-aspect" className={styles.backdrop_wrapper}>
         <div className={styles.screen_overlay}></div>
         <img
-          className={styles.backdrop}
+          className={`${styles.backdrop} ${!is_backdrop_loaded ? styles.loading : ''}`}
           // `decoding="async"` keeps decode off the main thread during scroll.
           src={backdrop_src}
           alt={data.original_title}
           decoding="async"
-          onLoad={() => setIsBackdropLoaded(true)}
-          onError={() => setIsBackdropLoaded(true)}
+          onLoad={() => setIsGradedReady(true)}
+          onError={() => setIsGradedReady(true)}
         />
         {/* The ungraded twin, cross-faded in on hover. We now mount this immediately
             so both the color and blue versions are fetched, preventing a flash on hover. */}
@@ -56,6 +71,8 @@ export default function Backdrop({
             alt=""
             aria-hidden="true"
             decoding="async"
+            onLoad={() => setIsPlainReady(true)}
+            onError={() => setIsPlainReady(true)}
           />
         )}
         {/* Pre-blurred twin for the expanded state, so no CSS blur has to run

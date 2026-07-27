@@ -119,6 +119,15 @@ $scanline: 9px;
   transition: opacity $transition-base;
 }
 
+// Starts invisible and fades in on the same transition above once the image
+// has actually finished loading (is_backdrop_loaded, Backdrop.tsx) — without
+// this, .backdrop sits at its default opacity: 1 from the moment it mounts,
+// so the loaded image just pops in the instant onLoad fires instead of
+// fading in.
+.backdrop.loading {
+  opacity: 0;
+}
+
 // The alternate twins, stacked directly over .backdrop: the ungraded one for
 // hover, the pre-blurred one for the expanded state. Same box and object-fit as
 // the original so all three register exactly.
