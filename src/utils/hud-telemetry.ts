@@ -25,3 +25,18 @@ export const is_charging = motionValue(false);
 // to their own alert color once the hold has actually turned orange, not
 // from the first moment of the press.
 export const is_armed = motionValue(false);
+
+// 0 to 1 across the same hold (MediaListWrapper.tsx's HOLD_TO_EDGE_MS),
+// written every frame via requestAnimationFrame rather than derived from
+// is_charging's own on/off — MediaListWrapper.tsx's own linear_blur needs
+// the actual in-between progress, not just whether a hold is happening at
+// all, so it can ramp in smoothly rather than snapping to full blur the
+// instant a hold starts. Reset to 0 on release/cancel.
+export const charge_progress = motionValue(0);
+
+// Incremented (not toggled) each time a held arrow actually completes its
+// jump-to-edge (MediaListWrapper.tsx's releaseHold) — a counter rather than
+// a boolean so consecutive slingshots each produce their own 'change' event,
+// even back-to-back, instead of a same-value set being silently ignored.
+// Read by Hud.tsx to replay its full_sweep on the same beat.
+export const sling_fired = motionValue(0);

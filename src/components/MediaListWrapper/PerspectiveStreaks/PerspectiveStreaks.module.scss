@@ -1,0 +1,18 @@
+// z-index: 0 and DOM position (rendered after <MediaList>, MediaListWrapper.tsx)
+// mirror .perspective_blur's own placement (MediaListWrapper.module.scss) —
+// same reasoning: ties with .media_list's own z-index: auto cards on DOM
+// order, landing behind .arrow_left/.arrow_right (z-index: 1) and .hud
+// (z-index: 40) without needing to match this element's bounds to the
+// rail's own.
+.streaks {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  // Additive-reading composite with the page beneath it — pairs with the
+  // WebGL side's own additive (ONE, ONE) blend function (PerspectiveStreaks.tsx),
+  // rather than sitting over the content as a translucent layer.
+  mix-blend-mode: screen;
+}

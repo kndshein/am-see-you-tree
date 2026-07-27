@@ -1,13 +1,16 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMotionValueEvent } from 'motion/react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import MediaList from '../MediaList/MediaList';
+import PerspectiveStreaks from './PerspectiveStreaks/PerspectiveStreaks';
 import styles from './MediaListWrapper.module.scss';
 import { OrderType } from '../../App';
 import {
   scroll_progress,
   is_charging,
   is_armed,
+  charge_progress,
+  sling_fired,
 } from '../../utils/hud-telemetry';
 
 type PropTypes = {
@@ -56,6 +59,16 @@ export default function MediaListWrapper({
   // fires a click straight away with no pointerdown/up at all) — that case
   // falls through to pending_scroll_distance_ref's own default below.
   const hold_start_ref = useRef<number | null>(null);
+  // Drives charge_progress every frame while a hold is in progress —
+  // separate from hold_timeout_ref's own one-shot timer, which only fires
+  // once at the HOLD_TO_EDGE_MS threshold and says nothing about anything in
+  // between.
+  const charge_raf_ref = useRef<number | null>(null);
+  // Mirrors did_charge_complete_ref into render — that ref exists for
+  // releaseHold to read without triggering a re-render on every frame, but
+  // the arrow's own hint text needs to actually re-render once, at the
+  // moment charging finishes.
+  const [is_charge_complete, setIsChargeComplete] = useState(false);
   // What the next click should actually scroll by. A real pointer hold
   // computes this on release (see holdScrollDistance) for handleClick to
   // read a moment later; a keyboard activation never touches it, so it stays
@@ -102,14 +115,38 @@ export default function MediaListWrapper({
     el.scrollLeft = direction === 'left' ? 0 : el.scrollWidth - el.clientWidth;
   };
 
+  // Writes charge_progress every frame for as long as hold_start_ref is set
+  // — stops itself once the hold reaches 1 rather than continuing to tick a
+  // value that can't change further.
+  const tickCharge = () => {
+    const start = hold_start_ref.current;
+    if (start === null) return;
+    const t = Math.min((performance.now() - start) / HOLD_TO_EDGE_MS, 1);
+    charge_progress.set(t);
+    if (t < 1) {
+      charge_raf_ref.current = requestAnimationFrame(tickCharge);
+    }
+  };
+
+  const stopChargeTick = () => {
+    if (charge_raf_ref.current !== null) {
+      cancelAnimationFrame(charge_raf_ref.current);
+      charge_raf_ref.current = null;
+    }
+    charge_progress.set(0);
+  };
+
   const startHold = (direction: 'right' | 'left') => {
     did_jump_ref.current = false;
     did_charge_complete_ref.current = false;
+    setIsChargeComplete(false);
     hold_start_ref.current = performance.now();
     setChargingDirection(direction);
     is_charging.set(true);
+    charge_raf_ref.current = requestAnimationFrame(tickCharge);
     hold_timeout_ref.current = setTimeout(() => {
       did_charge_complete_ref.current = true;
+      setIsChargeComplete(true);
       is_armed.set(true);
     }, HOLD_TO_EDGE_MS);
   };
@@ -121,9 +158,11 @@ export default function MediaListWrapper({
       clearTimeout(hold_timeout_ref.current);
       hold_timeout_ref.current = null;
     }
+    stopChargeTick();
     hold_start_ref.current = null;
     pending_scroll_distance_ref.current = SCROLL_INTENSITY;
     setChargingDirection(null);
+    setIsChargeComplete(false);
     is_charging.set(false);
     is_armed.set(false);
   };
@@ -133,12 +172,15 @@ export default function MediaListWrapper({
       clearTimeout(hold_timeout_ref.current);
       hold_timeout_ref.current = null;
     }
+    stopChargeTick();
     setChargingDirection(null);
+    setIsChargeComplete(false);
     is_charging.set(false);
     is_armed.set(false);
     if (did_charge_complete_ref.current) {
       did_jump_ref.current = true;
       jumpToEdge(direction);
+      sling_fired.set(sling_fired.get() + 1);
     } else {
       const elapsed = hold_start_ref.current
         ? performance.now() - hold_start_ref.current
@@ -147,6 +189,25 @@ export default function MediaListWrapper({
     }
     hold_start_ref.current = null;
   };
+
+  // A held arrow's own button unmounts the instant its side reaches the edge
+  // ({!is_at_start && ...}/{!is_at_end && ...} below) — which can happen
+  // mid-hold if a second hold starts while an earlier slingshot's smooth
+  // scroll (.media_list's own scroll-behavior: smooth) is still animating
+  // toward that same edge. A pointerup/pointerleave/pointercancel never
+  // fires for an element that's already gone, so nothing would otherwise
+  // ever call cancelHold — leaving is_charging/the blur/the zoom stuck on
+  // forever. Catching the edge being reached here, for whichever side is
+  // actually being held, cleans it up regardless of how the button feels
+  // about still existing.
+  useEffect(() => {
+    if (
+      (charging_direction === 'left' && is_at_start) ||
+      (charging_direction === 'right' && is_at_end)
+    ) {
+      cancelHold();
+    }
+  }, [is_at_start, is_at_end, charging_direction]);
 
   const handleClick = (direction: 'right' | 'left') => {
     if (did_jump_ref.current) {
@@ -158,12 +219,35 @@ export default function MediaListWrapper({
     pending_scroll_distance_ref.current = SCROLL_INTENSITY;
   };
 
+  // Only mounted while a hold is actually happening — controls
+  // PerspectiveStreaks' own mount below. React state (not a per-frame value)
+  // is fine here: a hold starting/ending is a rare, human-paced transition —
+  // charge_progress itself, read directly inside that component's own
+  // per-frame draw loop, is what actually ticks every frame.
+  const [is_charging_state, setIsChargingState] = useState(is_charging.get());
+  useMotionValueEvent(is_charging, 'change', setIsChargingState);
+
+  // A subtle zoom on the rail itself as a hold charges. Direct DOM write
+  // (not a motion-controlled style) since .media_list is a plain ref here,
+  // not a motion component — same reasoning as MediaList.tsx's own per-card
+  // transform writes, which this doesn't fight over: that one sets
+  // card.style.transform per card, this sets .media_list's own transform
+  // once, a level up.
+  useMotionValueEvent(charge_progress, 'change', (t) => {
+    if (!media_list_ref.current) return;
+    media_list_ref.current.style.transform = t > 0 ? `scale(${1 + t * 0.02})` : '';
+  });
+
   return (
     <>
       {!is_at_start && (
         <button
           className={`${styles.arrow_left} ${
             charging_direction === 'left' ? styles.charging : ''
+          } ${
+            charging_direction === 'left' && is_charge_complete
+              ? styles.armed
+              : ''
           }`}
           onClick={() => handleClick('left')}
           onPointerDown={() => startHold('left')}
@@ -171,7 +255,11 @@ export default function MediaListWrapper({
           onPointerLeave={cancelHold}
           onPointerCancel={cancelHold}
         >
-          <span className={styles.arrow_hint}>Hold to slingshot</span>
+          <span className={styles.arrow_hint}>
+            {charging_direction === 'left' && is_charge_complete
+              ? 'Release to slingshot'
+              : 'Hold to slingshot'}
+          </span>
           <MdKeyboardArrowLeft />
         </button>
       )}
@@ -179,6 +267,10 @@ export default function MediaListWrapper({
         <button
           className={`${styles.arrow_right} ${
             charging_direction === 'right' ? styles.charging : ''
+          } ${
+            charging_direction === 'right' && is_charge_complete
+              ? styles.armed
+              : ''
           }`}
           onClick={() => handleClick('right')}
           onPointerDown={() => startHold('right')}
@@ -186,7 +278,11 @@ export default function MediaListWrapper({
           onPointerLeave={cancelHold}
           onPointerCancel={cancelHold}
         >
-          <span className={styles.arrow_hint}>Hold to slingshot</span>
+          <span className={styles.arrow_hint}>
+            {charging_direction === 'right' && is_charge_complete
+              ? 'Release to slingshot'
+              : 'Hold to slingshot'}
+          </span>
           <MdKeyboardArrowRight />
         </button>
       )}
@@ -195,6 +291,21 @@ export default function MediaListWrapper({
         is_movies_only={is_movies_only}
         media_list_ref={media_list_ref}
       />
+      {/* After MediaList in the DOM, not before: z-index: 0 (its own
+          stylesheet) and .media_list's own z-index: auto paint in the same
+          stacking tier, ordered by DOM position among themselves — putting
+          this earlier let .media_list (later, same tier) win that tie and
+          paint on top, uncovered, while order_type_btn (App.tsx, earlier in
+          .app's own children, same tier too) lost it and got covered
+          instead. Being later than .media_list here is what actually shows
+          over it; z-index: 0 alone only settled this against .arrow_left/
+          .arrow_right (z-index: 1) and .hud (z-index: 40), both of which
+          have an explicit, unambiguous edge that doesn't depend on DOM
+          order the way this tie did. See PerspectiveStreaks.module.scss for
+          the same reasoning in full. */}
+      {is_charging_state && charging_direction && (
+        <PerspectiveStreaks direction={charging_direction} />
+      )}
     </>
   );
 }

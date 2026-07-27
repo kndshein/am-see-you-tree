@@ -36,19 +36,23 @@ $phase-badge-height: $phase-row-height * 2 + $badge-inner-gap;
 // tweak (like this one, pushed toward more saturated/further-apart stops for
 // more contrast) updates both at once instead of drifting apart. Near-max
 // saturation on both stops of each pair, rather than the softer CSS-named
-// colors this started as (gold/limegreen, blueviolet/deeppink) — the point
+// colors this started as (gold-orange/violet, blueviolet/limegreen) — the point
 // is for the two ends to read as clearly distinct colors, not a smooth
 // analogous blend.
-$infinity-saga-gradient: linear-gradient(135deg, #ffd700, #39ff14);
-$multiverse-saga-gradient: linear-gradient(135deg, #7b00ff, #ff0060);
+$infinity-saga-gradient: linear-gradient(135deg, #ffaa00, #7a14ff);
+$multiverse-saga-gradient: linear-gradient(135deg, #7b00ff, #6aff00);
 // The HUD's green, shared so the director pill matches the frame readouts.
 $hud-green: rgb(102, 204, 170);
 $shadow-faint: rgba(0, 0, 0, 0.1);
 
 // The scroll arrows' hold-to-jump charge tint (MediaListWrapper.module.scss)
 // — dark red, distinct from the other two alert colors below so it doesn't
-// get confused with either.
-$charge-red: rgb(130, 28, 22);
+// get confused with either. A prior "redder" attempt (155, 20, 14) actually
+// read as lighter/less saturated than this — back to the original hue,
+// darker than that too. Opacity (the ::after rules using this) went up, not
+// down, alongside this — darker color and lower opacity together just read
+// as too dim to actually see, rather than as a deep, saturated red.
+$charge-red: rgb(70, 13, 10);
 
 // The HUD's own alert orange, once a held arrow is actually armed
 // (Hud.module.scss's rails/corner reticles, is_armed) — also used directly

@@ -205,6 +205,16 @@ code {
 // to the mixin's body font and flat white.
 .order_type_btn {
   position: relative;
+  // Explicit rather than left at auto — MediaListWrapper.module.scss's own
+  // .linear_blur is a full-viewport position: fixed layer at z-index: 0, and
+  // a positioned z-index: auto element compared against an explicit 0 one
+  // ties, falling back to DOM order (this comes first in .app's own
+  // children, so it lost that tie and got blurred along with everything
+  // else behind the blur layer instead of staying above it). Matches
+  // .arrow_left/.arrow_right's own tier (MediaListWrapper.module.scss),
+  // which never had this problem precisely because it already had an
+  // explicit z-index.
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: baseline;
@@ -405,6 +415,10 @@ code {
 // scroll position while the bar underneath still gets its edge fade.
 .progress_track {
   position: relative;
+  // Same reason as .order_type_btn's own z-index above — without it, this
+  // ties with MediaListWrapper.module.scss's .linear_blur (z-index: 0) and
+  // loses on DOM order, getting blurred instead of staying above it.
+  z-index: 1;
   flex-shrink: 0;
   margin: 0 60px;
 }

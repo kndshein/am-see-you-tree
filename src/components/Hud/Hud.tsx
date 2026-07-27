@@ -10,6 +10,7 @@ import {
   card_count,
   is_locked,
   is_armed,
+  sling_fired,
 } from '../../utils/hud-telemetry';
 import tmdb_meta from '../../assets/tmdb-data.meta.json';
 import type { OrderType } from '../../App';
@@ -180,12 +181,37 @@ export default function Hud({
   // replays its initial→animate tween — same "fresh mount, fresh tween"
   // trick Backdrop.tsx's own sweep gets for free by mounting only while
   // is_active. This one has nowhere to unmount to (it's not per-card), so it
-  // needs an explicit remount signal instead. Only fires on the rising edge
-  // (a card actually opening), not on close too.
+  // needs an explicit remount signal instead.
   const [sweep_key, setSweepKey] = useState(0);
-  useMotionValueEvent(is_locked, 'change', (locked) => {
-    if (locked) setSweepKey((key) => key + 1);
+  // A held arrow completing its jump-to-edge (sling_fired, hud-telemetry.ts
+  // — a counter, so back-to-back slingshots each still fire their own
+  // 'change' event).
+  useMotionValueEvent(sling_fired, 'change', () => {
+    setSweepKey((key) => key + 1);
   });
+  // The sort order being cycled — skips the very first render (a ref, not
+  // comparing order_type to some initial value) so this doesn't also fire
+  // once for free on page load, on top of sweep_key's own initial mount
+  // already playing .full_sweep once.
+  const is_first_order_render_ref = useRef(true);
+  useEffect(() => {
+    if (is_first_order_render_ref.current) {
+      is_first_order_render_ref.current = false;
+      return;
+    }
+    setSweepKey((key) => key + 1);
+  }, [order_type]);
+  // The Movies Only toggle — same skip-first-render reasoning as order_type
+  // just above, its own separate ref since each needs to skip only its own
+  // first render, not the other's.
+  const is_first_movies_only_render_ref = useRef(true);
+  useEffect(() => {
+    if (is_first_movies_only_render_ref.current) {
+      is_first_movies_only_render_ref.current = false;
+      return;
+    }
+    setSweepKey((key) => key + 1);
+  }, [is_movies_only]);
 
   return (
     <div className={styles.hud} aria-hidden="true" ref={hud_ref}>

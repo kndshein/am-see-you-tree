@@ -115,7 +115,7 @@
   background-image: linear-gradient(
     to left,
     transparent,
-    rgba($charge-red, 0.85)
+    rgba($charge-red, 0.6)
   );
 }
 
@@ -124,7 +124,7 @@
   background-image: linear-gradient(
     to right,
     transparent,
-    rgba($charge-red, 0.85)
+    rgba($charge-red, 0.6)
   );
 }
 
@@ -185,6 +185,15 @@
 .arrow_left.charging .arrow_hint,
 .arrow_right.charging .arrow_hint {
   color: rgba($white, 0.75);
+}
+
+// .armed always co-occurs with .charging (the pointer is still down), so
+// this needs to come after it in source order too, same reasoning as above —
+// $corner-charging is the same bright alert orange the HUD's own rails/
+// corner reticles switch to once armed (Hud.module.scss).
+.arrow_left.armed .arrow_hint,
+.arrow_right.armed .arrow_hint {
+  color: $corner-charging;
 }
 
 .arrow_left svg,
