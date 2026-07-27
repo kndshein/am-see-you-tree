@@ -391,5 +391,14 @@
     "version": "5.0.2",
     "date": "2026-07",
     "notes": ["Misc. typos.", "Archive v4."]
+  },
+  {
+    "version": "5.1.0",
+    "date": "2026-07",
+    "notes": [
+      "Fixed misc. UI bugs.",
+      "Implement increased scroll distance based on held clicks.",
+      "Added MCU phase info."
+    ]
   }
 ]
