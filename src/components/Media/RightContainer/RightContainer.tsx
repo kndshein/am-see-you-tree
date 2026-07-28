@@ -4,7 +4,6 @@ import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
-import scoreColor from '../../../utils/score-color';
 import { compactCount } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
@@ -14,12 +13,14 @@ import {
   CARD_DELAY_CHILDREN,
   CARD_STAGGER,
 } from '../../../utils/motion';
-import { motion, useMotionValue, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
-import VoteCounter from './VoteCounter';
+import ScoreField from './ScoreField';
+import { formatPlain, formatDecimal } from './VoteCounter';
 import GlitchText from './GlitchText';
 import { castMatchesInMediaList, isUnreleased } from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
+import { useOmdbData } from '../../../utils/omdb-data';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -50,6 +51,11 @@ export default function RightContainer({
   is_movies_only,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
+  // Keyed by imdb_id (prefetch-omdb.mjs), not this card's own tmdb_key —
+  // OMDb has no per-season concept, so every season of a show looks itself
+  // up under the same series-level entry.
+  const omdb_data_map = useOmdbData();
+  const omdb = tmdb_data.imdb_id ? omdb_data_map[tmdb_data.imdb_id] : undefined;
 
   // Episodes waits on this rather than the flat staggerChildren step below —
   // a synopsis's word-by-word reveal (Overview.tsx) runs far longer than one
@@ -69,6 +75,35 @@ export default function RightContainer({
     },
   };
 
+  // Release date/runtime need a fixed spot right after the scores row,
+  // regardless of how many of the four OMDb score fields actually rendered
+  // ahead of them in .info_group's own DOM order — left to .info_group's own
+  // staggerChildren (index-based: delay = base + index * 0.18), 0-4 score
+  // fields ahead of them meant their entrance kept sliding later the more of
+  // them rendered, sometimes past Cast's own entrance. An explicit `delay`
+  // inside a child's own variant transition overrides what the parent's
+  // stagger would otherwise compute for it — same one-step-after-ratings
+  // beat every time, instead of a variable one. Also used as GlitchText's own
+  // delay below, so the field's fade-in and its text-scramble resolve
+  // together rather than the scramble (previously pinned to VITALS_DELAY)
+  // finishing before a late-staggered field had even faded in.
+  const RELEASE_ENTRY_DELAY = VITALS_DELAY + 0.18;
+  const RUNTIME_ENTRY_DELAY = RELEASE_ENTRY_DELAY + 0.05;
+  const release_entry = {
+    ...entry,
+    visible: {
+      ...entry.visible,
+      transition: { ...entry.visible.transition, delay: RELEASE_ENTRY_DELAY },
+    },
+  };
+  const runtime_entry = {
+    ...entry,
+    visible: {
+      ...entry.visible,
+      transition: { ...entry.visible.transition, delay: RUNTIME_ENTRY_DELAY },
+    },
+  };
+
   const season_data =
     media_data.type === 'tv'
       ? tmdb_data[`season/${media_data.season}`]
@@ -81,11 +116,11 @@ export default function RightContainer({
   // apart, so the field can show "N/A" instead of a misleading "0%".
   const has_rating = tmdb_data.vote_average > 0;
   const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
-  // A MotionValue, not React state: motion writes the derived color straight
-  // to the DOM node, keeping the per-frame count-up from re-rendering this
-  // whole subtree (cast, Overview, Episodes).
-  const vote_value = useMotionValue(0);
-  const vote_color = useTransform(vote_value, (latest) => scoreColor(latest));
+  // Kept raw (not x10'd like vote_percent above) — IMDb's own field shows
+  // its native 0-10/one-decimal shape rather than TMDB's percent, so this is
+  // the value ScoreField actually animates/displays; color_value at the call
+  // site below is what still gets it onto scoreColor's 0-100 basis.
+  const imdb_rating = omdb?.imdb_rating;
 
   // Stored comma-joined (two directors is common), split back out so each gets
   // its own pill alongside the cast.
@@ -126,8 +161,12 @@ export default function RightContainer({
               )
             )}
           </motion.p>
-          {/* Staggered harder than the rest: these are four short values on one
-              line, so they need the spacing to register as arriving in turn. */}
+          {/* Every score TMDB/OMDb offers, one row — same ScoreField shape
+              (count-up + 0-100 colour scale) for all four, so this reads as
+              one instrument with four readings rather than four different
+              widgets. Staggered harder than the rest: these are short values
+              on one line, so they need the spacing to register as arriving
+              in turn. */}
           <motion.section
             className={styles.info_group}
             variants={{
@@ -141,37 +180,79 @@ export default function RightContainer({
               },
             }}
           >
-            <motion.span variants={element}>
-              <span className={styles.label}>Rating</span>
-              <span className={styles.value_row}>
-                {has_rating ? (
-                  <>
-                    <motion.span style={{ color: vote_color }}>
-                      <VoteCounter
-                        value={vote_percent}
-                        play={is_content_expanded}
-                        delay={VITALS_DELAY}
-                        motion_value={vote_value}
-                      />
-                    </motion.span>
-                    {typeof tmdb_data.vote_count === 'number' && (
-                      <span className={styles.sub_value}>
-                        {compactCount(tmdb_data.vote_count)}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  // No votes yet, not a genuine 0% — scoreColor would map an
-                  // actual 0 to red, which reads as "rated terribly" rather
-                  // than "not rated at all". Plain muted text instead of
-                  // VoteCounter's own count-up, since there's no real number
-                  // to animate toward.
-                  <span className={styles.no_rating}>N/A</span>
-                )}
-              </span>
-            </motion.span>
-            {media_data.type === 'tv' ? (
+            {has_rating ? (
+              <ScoreField
+                label="TMDB"
+                full_name="The Movie Database"
+                value={vote_percent}
+                sub_value={
+                  typeof tmdb_data.vote_count === 'number'
+                    ? compactCount(tmdb_data.vote_count)
+                    : undefined
+                }
+                play={is_content_expanded}
+                delay={VITALS_DELAY}
+              />
+            ) : (
               <motion.span variants={element}>
+                <span className={styles.label} title="The Movie Database">
+                  TMDB
+                </span>
+                <span className={styles.value_row}>
+                  {/* No votes yet, not a genuine 0% — scoreColor would map an
+                      actual 0 to red, which reads as "rated terribly" rather
+                      than "not rated at all". Plain muted text instead of
+                      ScoreField's own count-up, since there's no real number
+                      to animate toward. */}
+                  <span className={styles.no_rating}>N/A</span>
+                </span>
+              </motion.span>
+            )}
+            {omdb?.rotten_tomatoes != null && (
+              <ScoreField
+                label="RT"
+                full_name="Rotten Tomatoes"
+                value={omdb.rotten_tomatoes}
+                play={is_content_expanded}
+                delay={VITALS_DELAY}
+              />
+            )}
+            {omdb?.metascore != null && (
+              <ScoreField
+                label="MC"
+                full_name="Metacritic"
+                value={omdb.metascore}
+                format={formatPlain}
+                play={is_content_expanded}
+                delay={VITALS_DELAY}
+              />
+            )}
+            {imdb_rating != null && (
+              <ScoreField
+                label="IMDb"
+                full_name="Internet Movie Database"
+                value={imdb_rating}
+                color_value={imdb_rating * 10}
+                format={formatDecimal}
+                sub_value={
+                  omdb?.imdb_votes != null
+                    ? compactCount(omdb.imdb_votes)
+                    : undefined
+                }
+                play={is_content_expanded}
+                delay={VITALS_DELAY}
+              />
+            )}
+            {/* Forces a flex-wrap line break so release date/runtime land on
+                their own visual row below the scores, without a second
+                motion.section — two of those (each with its own
+                staggerChildren orchestration) mounting on every card open
+                turned out to be the actual regression, not the extra score
+                fields, per the "every card, right at the click" symptom
+                (ScoreField's own count varies per card; this doesn't). */}
+            <div className={styles.row_break} />
+            {media_data.type === 'tv' ? (
+              <motion.span variants={release_entry}>
                 <span className={styles.label}>
                   {is_unreleased ? 'Will Release' : 'Aired'}
                 </span>
@@ -179,12 +260,12 @@ export default function RightContainer({
                   final_text={dateCalc(season_data?.air_date)}
                   seed_text={dateEpochSeed(season_data?.air_date)}
                   play={is_content_expanded}
-                  delay={VITALS_DELAY}
+                  delay={RELEASE_ENTRY_DELAY}
                 />
               </motion.span>
             ) : (
               <>
-                <motion.span variants={element}>
+                <motion.span variants={release_entry}>
                   <span className={styles.label}>
                     {is_unreleased ? 'Will Release' : 'Released'}
                   </span>
@@ -192,16 +273,16 @@ export default function RightContainer({
                     final_text={dateCalc(tmdb_data.release_date)}
                     seed_text={dateEpochSeed(tmdb_data.release_date)}
                     play={is_content_expanded}
-                    delay={VITALS_DELAY}
+                    delay={RELEASE_ENTRY_DELAY}
                   />
                 </motion.span>
-                <motion.span variants={element}>
+                <motion.span variants={runtime_entry}>
                   <span className={styles.label}>Runtime</span>
                   <GlitchText
                     final_text={runtimeCalc(tmdb_data.runtime)}
                     seed_text={runtimeMsSeed(tmdb_data.runtime)}
                     play={is_content_expanded}
-                    delay={VITALS_DELAY}
+                    delay={RUNTIME_ENTRY_DELAY}
                   />
                 </motion.span>
               </>

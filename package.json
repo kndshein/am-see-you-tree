@@ -4,14 +4,14 @@
   "version": "5.2.0",
   "type": "module",
   "scripts": {
-    "prefetch": "node scripts/prefetch-tmdb.mjs && node scripts/process-backdrops.mjs",
+    "prefetch": "node scripts/prefetch-tmdb.mjs && node scripts/prefetch-omdb.mjs && node scripts/process-backdrops.mjs",
     "predev": "npm run prefetch",
     "dev": "vite",
     "prebuild": "npm run prefetch",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "release": "node scripts/release.mjs",
-    "prefetch:force": "node scripts/prefetch-tmdb.mjs --force && node scripts/process-backdrops.mjs --force"
+    "prefetch:force": "node scripts/prefetch-tmdb.mjs --force && node scripts/prefetch-omdb.mjs --force && node scripts/process-backdrops.mjs --force"
   },
   "dependencies": {
     "@fontsource/monaspace-krypton": "^5.3.0",

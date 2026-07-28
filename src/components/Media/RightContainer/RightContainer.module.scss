@@ -52,6 +52,16 @@
   width: 100%;
 }
 
+// A zero-height flex item spanning the full row width, forcing whatever
+// comes after it (release date/runtime) onto a new flex-wrap line — without
+// splitting .info_group into a second motion.section. A div rather than a
+// span deliberately dodges the `.info_group > span` rule below, which is
+// meant only for actual labelled fields.
+.row_break {
+  flex-basis: 100%;
+  height: 0;
+}
+
 // Direct children only — each of these is one labelled field. VoteCounter and
 // GlitchText nest a span inside them, and a descendant selector would put the
 // field gap on those too, splitting a label from its own value.

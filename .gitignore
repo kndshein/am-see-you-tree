@@ -16,6 +16,10 @@ dist-ssr
 src/assets/tmdb-data.json
 src/assets/tmdb-data.meta.json
 
+# Regenerated on every dev/build by scripts/prefetch-omdb.mjs
+src/assets/omdb-data.json
+src/assets/omdb-data.meta.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

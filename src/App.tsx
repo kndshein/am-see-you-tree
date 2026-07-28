@@ -9,6 +9,7 @@ import {
   useTransform,
 } from 'motion/react';
 import { loadTmdbData, TmdbContext, TmdbMap } from './utils/tmdb-data';
+import { loadOmdbData, OmdbContext, OmdbMap } from './utils/omdb-data';
 import { buildMediaList, summarizeMedia } from './utils/media-lists';
 import {
   scroll_progress,
@@ -52,6 +53,7 @@ function App() {
   const [is_movies_only, setIsMoviesOnly] = useState(true);
   const [order_index, setOrderIndex] = useState(getInitialOrderIndex);
   const [tmdb_data, setTmdbData] = useState<TmdbMap | null>(null);
+  const [omdb_data, setOmdbData] = useState<OmdbMap>({});
   const [has_load_error, setHasLoadError] = useState(false);
   // Rarely changes (only on card open/close), so a plain re-render here is
   // fine — unlike is_locked's other reader (Hud's readouts), which is on a
@@ -76,6 +78,18 @@ function App() {
       (data) => !cancelled && setTmdbData(data),
       () => !cancelled && setHasLoadError(true),
     );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Supplementary, not core data (unlike tmdb_data above) — no error state,
+  // no gate on has_load_error/is_DOM_loaded. A failed or slow fetch here just
+  // means cards render without critic scores rather than the whole
+  // site staying blank for a non-essential extra.
+  useEffect(() => {
+    let cancelled = false;
+    loadOmdbData().then((data) => !cancelled && setOmdbData(data));
     return () => {
       cancelled = true;
     };
@@ -124,74 +138,76 @@ function App() {
       )}
       {is_DOM_loaded && tmdb_data && (
         <TmdbContext.Provider value={tmdb_data}>
-          <main className="app">
-            <button
-              className="order_type_btn"
-              onClick={() =>
-                setOrderIndex((prevState) => {
-                  if (prevState == order_types.length - 1) return 0;
-                  return prevState + 1;
-                })
-              }
-              aria-label={`Sort order: ${order_types[order_index]}. Click to switch to the next order.`}
-            >
-              {order_types.map((type, idx) => (
-                <span
-                  key={type}
-                  className={`order_type_option ${
-                    idx === order_index ? 'active' : ''
-                  }`}
-                >
-                  {dashify(type)}
-                </span>
-              ))}
-            </button>
-            {/* Doubles as the button's bottom border — same full-bleed span
-                its old fading underline used, just live instead of static. */}
-            <div className="progress_track">
-              <div className="progress">
+          <OmdbContext.Provider value={omdb_data}>
+            <main className="app">
+              <button
+                className="order_type_btn"
+                onClick={() =>
+                  setOrderIndex((prevState) => {
+                    if (prevState == order_types.length - 1) return 0;
+                    return prevState + 1;
+                  })
+                }
+                aria-label={`Sort order: ${order_types[order_index]}. Click to switch to the next order.`}
+              >
+                {order_types.map((type, idx) => (
+                  <span
+                    key={type}
+                    className={`order_type_option ${
+                      idx === order_index ? 'active' : ''
+                    }`}
+                  >
+                    {dashify(type)}
+                  </span>
+                ))}
+              </button>
+              {/* Doubles as the button's bottom border — same full-bleed span
+                  its old fading underline used, just live instead of static. */}
+              <div className="progress_track">
+                <div className="progress">
+                  <motion.div
+                    className={`progress_fill ${
+                      is_holding_arrow ? 'charging' : ''
+                    }`}
+                    style={{ scaleX: scroll_progress }}
+                  />
+                </div>
                 <motion.div
-                  className={`progress_fill ${
+                  className={`progress_dot ${
                     is_holding_arrow ? 'charging' : ''
                   }`}
-                  style={{ scaleX: scroll_progress }}
+                  style={{ left: progress_dot_left }}
                 />
               </div>
-              <motion.div
-                className={`progress_dot ${
-                  is_holding_arrow ? 'charging' : ''
-                }`}
-                style={{ left: progress_dot_left }}
+              <MediaListWrapper
+                is_movies_only={is_movies_only}
+                order_type={order_type}
               />
-            </div>
-            <MediaListWrapper
-              is_movies_only={is_movies_only}
-              order_type={order_type}
-            />
-            <Hud
-              summary={summary}
-              order_type={order_type}
-              is_movies_only={is_movies_only}
-            />
-            {/* Bottom-centre, in the HUD's own reserved gap between .readout
-                and .build (see .build's comment in Hud.module.scss) — where
-                the old nav bar's centrepiece used to sit. */}
-            <button
-              className={`movies_only_toggle ${
-                is_movies_only ? 'active' : ''
-              }`}
-              aria-pressed={is_movies_only}
-              // The expanded card's own darkened overlay sits above this in
-              // z-index (see index.scss's :disabled rule) — disabling the
-              // click keeps the two in sync instead of leaving a control
-              // that's invisible but still technically toggleable.
-              disabled={is_card_expanded}
-              onClick={() => setIsMoviesOnly((prev) => !prev)}
-            >
-              <span className="status_dot" aria-hidden="true" />
-              {dashify('Movies Only')}
-            </button>
-          </main>
+              <Hud
+                summary={summary}
+                order_type={order_type}
+                is_movies_only={is_movies_only}
+              />
+              {/* Bottom-centre, in the HUD's own reserved gap between .readout
+                  and .build (see .build's comment in Hud.module.scss) — where
+                  the old nav bar's centrepiece used to sit. */}
+              <button
+                className={`movies_only_toggle ${
+                  is_movies_only ? 'active' : ''
+                }`}
+                aria-pressed={is_movies_only}
+                // The expanded card's own darkened overlay sits above this in
+                // z-index (see index.scss's :disabled rule) — disabling the
+                // click keeps the two in sync instead of leaving a control
+                // that's invisible but still technically toggleable.
+                disabled={is_card_expanded}
+                onClick={() => setIsMoviesOnly((prev) => !prev)}
+              >
+                <span className="status_dot" aria-hidden="true" />
+                {dashify('Movies Only')}
+              </button>
+            </main>
+          </OmdbContext.Provider>
         </TmdbContext.Provider>
       )}
     </MotionConfig>
