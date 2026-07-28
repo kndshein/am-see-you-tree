@@ -405,5 +405,10 @@
     "version": "5.2.0",
     "date": "2026-07",
     "notes": ["Fixed misc. UI bugs.", "Added more animations and HUD elements."]
+  },
+  {
+    "version": "5.3.0",
+    "date": "2026-07",
+    "notes": ["Added more rating types: Rotten Tomatoes, Metacritic, and IMDB."]
   }
 ]
