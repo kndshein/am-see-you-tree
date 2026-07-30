@@ -29,6 +29,11 @@
 // the code — and widening the gutter to fit the code made that *more* likely,
 // not less, by leaving the name even less room. As siblings they simply can't
 // overlap at any width.
+// Bottom-right corner cut on a diagonal (HUD-panel notch, same idiom as the
+// bracket/reticle corners elsewhere on the card) rather than a border-radius
+// — clips the row's background/shadow and its .bar/.code children all as one
+// shape, so the cut reads as the tab's own silhouette instead of a rounded
+// box with a triangle stuck on top of it.
 .genre_row {
   position: relative;
   display: flex;
@@ -38,6 +43,13 @@
   margin: 10px 0 10px 0;
   background-color: $tab-background;
   box-shadow: 0 0 5px $shadow-faint;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - #{$notch-size}),
+    calc(100% - #{$notch-size}) 100%,
+    0 100%
+  );
 
   &:last-child {
     margin-bottom: 0;

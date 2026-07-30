@@ -81,6 +81,11 @@ $special-dim: color.mix($special, black, 50%);
 // above the 10px used between rows inside a block.
 $block-gap: 18px;
 
+// The HUD-panel corner cut (Genres' own genre_row, LeftContainer's poster) —
+// one shared size so every clipped bottom-right corner on the card reads as
+// the same motif rather than several independently-eyeballed cuts.
+$notch-size: 10px;
+
 // Gap between the expanded card's top-level sections — RightContainer's own
 // blocks on desktop, and every section once the grid collapses to a single
 // column on mobile. Shared so the two read as one rhythm.

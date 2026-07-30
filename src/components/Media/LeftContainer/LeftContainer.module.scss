@@ -7,12 +7,22 @@
   @include custom-scrollbar;
 }
 
+// Same bottom-right corner cut as Genres' own genre_row (Genres.module.scss)
+// — one shared $notch-size so the motif reads the same wherever it shows up
+// on the card.
 .poster {
   position: relative;
   width: 100%;
   overflow: hidden;
   background-color: rgba($accent-lite, 0.3);
   box-shadow: 0 0 15px $background;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - #{$notch-size}),
+    calc(100% - #{$notch-size}) 100%,
+    0 100%
+  );
 }
 
 .poster img {
