@@ -80,6 +80,27 @@ export default function RightContainer({
     },
   };
 
+  // .cast's own pills (below) use this instead of the ambient staggerChildren
+  // above: that only computes a delay for children present at the moment the
+  // ancestor's own hidden->visible transition actually fires (card open), so
+  // pills revealed later by Show All — mounting well after that already
+  // happened — got no stagger and just snapped in flat instead of cascading
+  // like the first five. An explicit per-pill delay (same 0.05 step) plays
+  // out identically regardless of whether a pill mounts at initial card-open
+  // or a later Show All click, since a fresh mount always re-runs its own
+  // hidden->visible transition off whatever delay it's given.
+  const PILL_STAGGER = 0.05;
+  const pillEntry = (pill_idx: number) => ({
+    ...entry,
+    visible: {
+      ...entry.visible,
+      transition: {
+        ...entry.visible.transition,
+        delay: pill_idx * PILL_STAGGER,
+      },
+    },
+  });
+
   // Release/runtime's own explicit delay, rather than relying purely on
   // info_group's staggerChildren propagation — this same value is also
   // GlitchText's own `delay` below (a separate imperative animation, outside
@@ -229,11 +250,23 @@ export default function RightContainer({
               )}
             </span>
             <section className={styles.cast}>
-              {authors.map((name) => (
+              {authors.map((name, author_idx) => (
                 <motion.span
                   className={`${styles.actor} ${styles.director}`}
                   key={`author-${name}`}
-                  variants={element}
+                  variants={pillEntry(author_idx)}
+                  // Explicit animate, not just inherited context — this and
+                  // every other pill below own their reveal outright rather
+                  // than propagating from .cast_header's ancestor (which still
+                  // carries its own staggerChildren for its label/button), so
+                  // pillEntry's delay above is the only stagger source. Left
+                  // to ambient propagation, a pill mounting at initial card
+                  // open would get that ancestor's own computed stagger ON TOP
+                  // of pillEntry's, double-delaying it relative to one
+                  // revealed later by Show All (which gets no ambient
+                  // contribution at all, since the ancestor's own transition
+                  // already resolved by the time it mounts).
+                  animate={is_content_expanded ? 'visible' : 'hidden'}
                 >
                   <span className={styles.actor_role}>
                     {media_data.type === 'tv' ? 'Creator' : 'Director'}
@@ -242,6 +275,9 @@ export default function RightContainer({
                 </motion.span>
               ))}
               {visible_cast.map((actor: CastMember, idx: number) => {
+                // Authors come first in the row, so a cast pill's own
+                // cascade position continues right after theirs.
+                const pill_idx = authors.length + idx;
                 const is_selected = selected_cast === actor.name;
                 // Check if this actor appears in any other item in the rail.
                 // castMatchesInMediaList already filters by isShown and
@@ -268,7 +304,8 @@ export default function RightContainer({
                     <motion.span
                       className={`${styles.actor} ${styles.actor_no_matches}`}
                       key={actor.name || idx}
-                      variants={element}
+                      variants={pillEntry(pill_idx)}
+                      animate={is_content_expanded ? 'visible' : 'hidden'}
                       aria-label={`${actor.name} (no other titles in this list)`}
                     >
                       <span
@@ -298,7 +335,8 @@ export default function RightContainer({
                       className={`${styles.actor} ${styles.actor_button} ${
                         is_selected ? styles.selected : ''
                       }`}
-                      variants={element}
+                      variants={pillEntry(pill_idx)}
+                      animate={is_content_expanded ? 'visible' : 'hidden'}
                       onClick={() => onSelectCast?.(actor.name)}
                     >
                       <span

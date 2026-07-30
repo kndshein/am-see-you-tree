@@ -421,6 +421,28 @@ code {
   z-index: 1;
   flex-shrink: 0;
   margin: 0 60px;
+  cursor: pointer;
+  // The rail's own scroll is the thing actually being dragged here, not this
+  // element — without this, touch drags on mobile get eaten by the browser's
+  // own scroll/refresh gestures instead of reaching the pointer handlers.
+  touch-action: none;
+  // Padding widens the actual draggable strip well past .progress's own 2px
+  // (a near-impossible target otherwise) while the matching negative margin
+  // cancels padding's own contribution to layout height, so nothing below
+  // this shifts — same box-model trick, just used for hit-area instead of
+  // visual size.
+  padding: 8px 0;
+  margin-top: -8px;
+  margin-bottom: -8px;
+}
+
+// While a card is open the rail sits fully covered by its fullscreen overlay
+// (App.tsx's own comment on handleProgressPointerDown) — same case
+// .movies_only_toggle's disabled attribute already guards against, just a
+// class instead of `disabled` since this isn't a <button>.
+.progress_track.disabled {
+  cursor: default;
+  pointer-events: none;
 }
 
 .progress {
@@ -485,12 +507,47 @@ code {
   border-radius: 50% 50% 50% 0;
   background-color: $accent-lite;
   transform: translate(-50%, -50%) rotate(45deg);
-  transition: background-color 0.7s linear 0.3s;
+  // The color transition stays slow/delayed (matching .progress_fill's own,
+  // both driven by is_charging) — scale/box-shadow get their own fast,
+  // undelayed one, since those are immediate hover/drag feedback rather than
+  // a state that fades in a beat later.
+  transition:
+    background-color 0.7s linear 0.3s,
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
   pointer-events: none;
 }
 
 .progress_dot.charging {
   background-color: $corner-charging;
+}
+
+// Hover: a size bump reads as "this is grabbable" before anything's actually
+// been picked up. :hover lives on .progress_track (the actual pointer
+// target — .progress_dot itself is pointer-events: none) rather than on the
+// dot, so this still fires no matter where in the widened hit area
+// (the padding trick above) the pointer actually sits.
+.progress_track:hover .progress_dot {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.6);
+}
+
+// Dragging (a real state, not CSS :active — see App.tsx's own comment on
+// is_dragging_progress) goes further still: bigger again, plus a glow so the
+// knob reads as actively "lit up" while it's actually being moved, not just
+// hovered.
+.progress_track.dragging .progress_dot {
+  transform: translate(-50%, -50%) rotate(45deg) scale(2);
+  box-shadow: 0 0 6px 1px rgba($accent-lite, 0.7);
+}
+
+.progress_track.dragging .progress_dot.charging {
+  box-shadow: 0 0 6px 1px rgba($corner-charging, 0.7);
+}
+
+// The track itself brightens a touch too, so the whole strip (not just the
+// knob) reads as interactive under the pointer.
+.progress_track:hover .progress {
+  background-color: rgba($accent, 0.45);
 }
 
 // Gray at rest (not selected). Hovering an inactive option steps it toward a

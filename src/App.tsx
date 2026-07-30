@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Hud from './components/Hud/Hud';
 import Modal from 'react-modal';
@@ -64,6 +70,16 @@ function App() {
   // human-paced state change, not a per-frame one.
   const [is_holding_arrow, setIsHoldingArrow] = useState(is_charging.get());
   useMotionValueEvent(is_charging, 'change', setIsHoldingArrow);
+  // Owned here (not MediaListWrapper, which used to create its own) so the
+  // progress bar's drag handlers below can scrub the rail's actual scrollLeft
+  // directly — same rail MediaListWrapper's own arrow buttons already scroll.
+  const media_list_ref = useRef<HTMLDivElement | null>(null);
+  // Drives the knob's own "being dragged" visual (bigger/glowing, see
+  // index.scss's .progress_track.dragging) explicitly, rather than leaning on
+  // CSS :active — with setPointerCapture in play, :active's behavior once the
+  // pointer strays outside the element varies enough across browsers that a
+  // real state flag reads more reliably than trusting it.
+  const [is_dragging_progress, setIsDraggingProgress] = useState(false);
 
   function handleDOMLoad() {
     setIsDOMLoaded(true);
@@ -115,6 +131,55 @@ function App() {
     (value) => `${value * 100}%`
   );
 
+  // Writes scrollLeft directly, same as MediaListWrapper's own handleScroll/
+  // jumpToEdge — scroll_progress itself is never set from here. MediaList.tsx's
+  // scroll listener is the only writer of that motion value (derived from the
+  // rail's real scrollLeft), so the dot/fill just follow the scroll this
+  // triggers, the same way they follow a wheel scroll or an arrow click.
+  const scrollToFraction = (fraction: number) => {
+    const el = media_list_ref.current;
+    if (!el) return;
+    const max_scroll = el.scrollWidth - el.clientWidth;
+    el.scrollLeft = Math.max(0, Math.min(1, fraction)) * max_scroll;
+  };
+
+  const fractionFromClientX = (clientX: number, track: HTMLElement) => {
+    const rect = track.getBoundingClientRect();
+    return rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
+  };
+
+  // Pointer capture (not window-level move/up listeners) keeps the drag on
+  // this same element even once the pointer strays outside the track's own
+  // thin strip — same reasoning as a native <input type="range">'s own drag
+  // handling. Disabled while a card is open: the rail sits fully covered by
+  // the expanded card overlay then, so scrubbing it would move something the
+  // user can't even see (same case movies_only_toggle's own `disabled` below
+  // already guards against).
+  const handleProgressPointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (is_card_expanded) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsDraggingProgress(true);
+    scrollToFraction(fractionFromClientX(event.clientX, event.currentTarget));
+  };
+
+  const handleProgressPointerMove = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+    scrollToFraction(fractionFromClientX(event.clientX, event.currentTarget));
+  };
+
+  const handleProgressPointerUp = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setIsDraggingProgress(false);
+  };
+
   // Built through the same helper the rail uses, so the HUD tally always
   // describes exactly what is on screen — including release-date order, which
   // merges TV fragments and so shows fewer cards than the other two.
@@ -162,8 +227,21 @@ function App() {
                 ))}
               </button>
               {/* Doubles as the button's bottom border — same full-bleed span
-                  its old fading underline used, just live instead of static. */}
-              <div className="progress_track">
+                  its old fading underline used, just live instead of static.
+                  Draggable: a pointer down anywhere on the strip grabs the
+                  knob and scrubs the rail to that position, the same way a
+                  native <input type="range"> track works — not just the tiny
+                  7px dot itself, which pointer-events: none anyway (see its
+                  own comment, index.scss). */}
+              <div
+                className={`progress_track ${
+                  is_card_expanded ? 'disabled' : ''
+                } ${is_dragging_progress ? 'dragging' : ''}`}
+                onPointerDown={handleProgressPointerDown}
+                onPointerMove={handleProgressPointerMove}
+                onPointerUp={handleProgressPointerUp}
+                onPointerCancel={handleProgressPointerUp}
+              >
                 <div className="progress">
                   <motion.div
                     className={`progress_fill ${
@@ -182,6 +260,7 @@ function App() {
               <MediaListWrapper
                 is_movies_only={is_movies_only}
                 order_type={order_type}
+                media_list_ref={media_list_ref}
               />
               <Hud
                 summary={summary}

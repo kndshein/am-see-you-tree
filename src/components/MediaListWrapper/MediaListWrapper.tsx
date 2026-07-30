@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import { useMotionValueEvent } from 'motion/react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import MediaList from '../MediaList/MediaList';
@@ -16,6 +16,10 @@ import {
 type PropTypes = {
   is_movies_only: boolean;
   order_type: OrderType;
+  // Owned by App.tsx, not here — the draggable progress knob (App.tsx's own
+  // .progress_track) needs the same rail element to scrub its scrollLeft
+  // directly, the same way handleScroll/jumpToEdge below already do.
+  media_list_ref: RefObject<HTMLDivElement | null>;
 };
 
 // scroll_progress (hud-telemetry.ts) is clamped to exactly [0, 1] by
@@ -37,8 +41,8 @@ const SCROLL_INTENSITY = 800;
 export default function MediaListWrapper({
   is_movies_only,
   order_type,
+  media_list_ref,
 }: PropTypes) {
-  const media_list_ref = useRef<HTMLDivElement | null>(null);
   const [is_at_start, setIsAtStart] = useState(true);
   const [is_at_end, setIsAtEnd] = useState(false);
   const [charging_direction, setChargingDirection] = useState<
