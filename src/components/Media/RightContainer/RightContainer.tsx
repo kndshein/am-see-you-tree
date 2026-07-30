@@ -5,7 +5,6 @@ import { MediaType } from '../../../types/Media';
 import { HandleToggleType } from '../../../types/Toggles';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
-import { compactCount } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
 import {
@@ -16,12 +15,9 @@ import {
 } from '../../../utils/motion';
 import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
-import ScoreField from './ScoreField';
-import { formatPlain, formatDecimal } from './VoteCounter';
 import GlitchText from './GlitchText';
 import { castMatchesInMediaList, isUnreleased } from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
-import { useOmdbData } from '../../../utils/omdb-data';
 import CollectionPanel from '../../MediaWrapper/CollectionPanel/CollectionPanel';
 import CastPanel from '../../MediaWrapper/CastPanel/CastPanel';
 
@@ -37,12 +33,12 @@ type PropTypes = {
   handleJump: HandleToggleType;
 };
 
-// When the vitals row actually starts entering: this container is Media's 3rd
-// child (delayChildren + 2 stagger steps), and the row is this container's 2nd
-// (+1 more step). The count-up and glitch readouts inside it start on that
-// beat — their old flat 1s default had them running for ~0.2s while the row
-// they live in was still invisible.
-const VITALS_DELAY = CARD_DELAY_CHILDREN + 2 * CARD_STAGGER + CARD_STAGGER;
+// When info_group actually starts entering: this container is Media's 3rd
+// child (delayChildren + 2 stagger steps), and info_group is this container's
+// 2nd (+1 more step). GlitchText's own scramble below starts on that beat —
+// its flat 1s default would otherwise have it running for ~0.2s while the row
+// it lives in was still invisible.
+const INFO_GROUP_DELAY = CARD_DELAY_CHILDREN + 2 * CARD_STAGGER + CARD_STAGGER;
 
 export default function RightContainer({
   tmdb_data,
@@ -56,11 +52,6 @@ export default function RightContainer({
   handleJump,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
-  // Keyed by imdb_id (prefetch-omdb.mjs), not this card's own tmdb_key —
-  // OMDb has no per-season concept, so every season of a show looks itself
-  // up under the same series-level entry.
-  const omdb_data_map = useOmdbData();
-  const omdb = tmdb_data.imdb_id ? omdb_data_map[tmdb_data.imdb_id] : undefined;
 
   // Episodes waits on this rather than the flat staggerChildren step below —
   // a synopsis's word-by-word reveal (Overview.tsx) runs far longer than one
@@ -80,19 +71,13 @@ export default function RightContainer({
     },
   };
 
-  // Release date/runtime need a fixed spot right after the scores row,
-  // regardless of how many of the four OMDb score fields actually rendered
-  // ahead of them in .info_group's own DOM order — left to .info_group's own
-  // staggerChildren (index-based: delay = base + index * 0.18), 0-4 score
-  // fields ahead of them meant their entrance kept sliding later the more of
-  // them rendered, sometimes past Cast's own entrance. An explicit `delay`
-  // inside a child's own variant transition overrides what the parent's
-  // stagger would otherwise compute for it — same one-step-after-ratings
-  // beat every time, instead of a variable one. Also used as GlitchText's own
-  // delay below, so the field's fade-in and its text-scramble resolve
-  // together rather than the scramble (previously pinned to VITALS_DELAY)
-  // finishing before a late-staggered field had even faded in.
-  const RELEASE_ENTRY_DELAY = VITALS_DELAY + 0.18;
+  // Release/runtime's own explicit delay, rather than relying purely on
+  // info_group's staggerChildren propagation — this same value is also
+  // GlitchText's own `delay` below (a separate imperative animation, outside
+  // Framer's variant system), so the field's fade-in and its text-scramble
+  // resolve together instead of the scramble finishing before the field has
+  // even faded in.
+  const RELEASE_ENTRY_DELAY = INFO_GROUP_DELAY;
   const RUNTIME_ENTRY_DELAY = RELEASE_ENTRY_DELAY + 0.05;
   const release_entry = {
     ...entry,
@@ -115,17 +100,6 @@ export default function RightContainer({
       : undefined;
 
   const is_unreleased = isUnreleased(media_data, tmdb_data);
-
-  // TMDB returns vote_average: 0 for anything with no votes yet, same as a
-  // (never actually seen) genuine 0.0 score — this is what tells the two
-  // apart, so the field can show "N/A" instead of a misleading "0%".
-  const has_rating = tmdb_data.vote_average > 0;
-  const vote_percent = Math.round((tmdb_data.vote_average ?? 0) * 10);
-  // Kept raw (not x10'd like vote_percent above) — IMDb's own field shows
-  // its native 0-10/one-decimal shape rather than TMDB's percent, so this is
-  // the value ScoreField actually animates/displays; color_value at the call
-  // site below is what still gets it onto scoreColor's 0-100 basis.
-  const imdb_rating = omdb?.imdb_rating;
 
   // Stored comma-joined (two directors is common), split back out so each gets
   // its own pill alongside the cast.
@@ -166,12 +140,9 @@ export default function RightContainer({
               )
             )}
           </motion.p>
-          {/* Every score TMDB/OMDb offers, one row — same ScoreField shape
-              (count-up + 0-100 colour scale) for all four, so this reads as
-              one instrument with four readings rather than four different
-              widgets. Staggered harder than the rest: these are short values
-              on one line, so they need the spacing to register as arriving
-              in turn. */}
+          {/* Release date/runtime, the fields left in this row now that the
+              TMDB/RT/MC/IMDb scores have moved to LeftContainer's own
+              Ratings block (above Finances). */}
           <motion.section
             className={styles.info_group}
             variants={{
@@ -185,77 +156,6 @@ export default function RightContainer({
               },
             }}
           >
-            {has_rating ? (
-              <ScoreField
-                label="TMDB"
-                full_name="The Movie Database"
-                value={vote_percent}
-                sub_value={
-                  typeof tmdb_data.vote_count === 'number'
-                    ? compactCount(tmdb_data.vote_count)
-                    : undefined
-                }
-                play={is_content_expanded}
-                delay={VITALS_DELAY}
-              />
-            ) : (
-              <motion.span variants={element}>
-                <span className={styles.label} title="The Movie Database">
-                  TMDB
-                </span>
-                <span className={styles.value_row}>
-                  {/* No votes yet, not a genuine 0% — scoreColor would map an
-                      actual 0 to red, which reads as "rated terribly" rather
-                      than "not rated at all". Plain muted text instead of
-                      ScoreField's own count-up, since there's no real number
-                      to animate toward. */}
-                  <span className={styles.no_rating}>N/A</span>
-                </span>
-              </motion.span>
-            )}
-            {omdb?.rotten_tomatoes != null && (
-              <ScoreField
-                label="RT"
-                full_name="Rotten Tomatoes"
-                value={omdb.rotten_tomatoes}
-                play={is_content_expanded}
-                delay={VITALS_DELAY}
-              />
-            )}
-            {omdb?.metascore != null && (
-              <ScoreField
-                label="MC"
-                full_name="Metacritic"
-                value={omdb.metascore}
-                format={formatPlain}
-                play={is_content_expanded}
-                delay={VITALS_DELAY}
-              />
-            )}
-            {imdb_rating != null && (
-              <ScoreField
-                label="IMDb"
-                full_name="Internet Movie Database"
-                value={imdb_rating}
-                color_value={imdb_rating * 10}
-                format={formatDecimal}
-                sub_value={
-                  omdb?.imdb_votes != null
-                    ? compactCount(omdb.imdb_votes)
-                    : undefined
-                }
-                play={is_content_expanded}
-                delay={VITALS_DELAY}
-              />
-            )}
-            {/* Forces a flex-wrap line break so release date/runtime land on
-                their own visual row below the scores, without a second
-                motion.section — two of those (each with its own
-                staggerChildren orchestration) mounting on every card open
-                turned out to be the actual regression, not the extra score
-                fields, per the "every card, right at the click" symptom
-                (ScoreField's own count varies per card; this doesn't). */}
-            <div className={styles.row_break} />
             {media_data.type === 'tv' ? (
               <motion.span variants={release_entry}>
                 <span className={styles.label}>

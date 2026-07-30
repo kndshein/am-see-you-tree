@@ -1,6 +1,7 @@
 import styles from './LeftContainer.module.scss';
 import { TmdbType } from '../../../types/Tmdb';
 import Genres from '../Genres/Genres';
+import Ratings from './Ratings/Ratings';
 import { motion } from 'motion/react';
 import { container } from '../Media';
 import {
@@ -72,6 +73,7 @@ export default function LeftContainer({
           />
         )}
       </motion.div>
+      <Ratings tmdb_data={tmdb_data} is_content_expanded={is_content_expanded} />
       {/* Real content, so it sits in the column proper rather than on the
           record strip — but small, because it's reference rather than headline.
           TMDB has no figures for most shows and shorts; the block is dropped

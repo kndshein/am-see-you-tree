@@ -52,16 +52,6 @@
   width: 100%;
 }
 
-// A zero-height flex item spanning the full row width, forcing whatever
-// comes after it (release date/runtime) onto a new flex-wrap line — without
-// splitting .info_group into a second motion.section. A div rather than a
-// span deliberately dodges the `.info_group > span` rule below, which is
-// meant only for actual labelled fields.
-.row_break {
-  flex-basis: 100%;
-  height: 0;
-}
-
 // Direct children only — each of these is one labelled field. VoteCounter and
 // GlitchText nest a span inside them, and a descendant selector would put the
 // field gap on those too, splitting a label from its own value.
@@ -84,26 +74,6 @@
 .label {
   @include field-label;
   margin-bottom: 4px;
-}
-
-// Lets a field carry a secondary figure on the same line as its main value.
-.value_row {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-}
-
-.sub_value {
-  font-size: 0.62em;
-  letter-spacing: 1px;
-  color: rgba($accent-lite, 0.5);
-}
-
-// No votes yet — same size as a real percentage would read at (not a
-// caption like .sub_value above), just flat and muted instead of the live
-// score color VoteCounter's own count-up would land on.
-.no_rating {
-  color: rgba($muted-text, 0.7);
 }
 
 // Names the block it's in — the space above (from the previous block) now
