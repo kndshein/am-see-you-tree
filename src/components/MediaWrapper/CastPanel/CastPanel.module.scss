@@ -20,11 +20,17 @@
 }
 
 // Block-flow counterpart to .panel_wrap above, rendered by RightContainer
-// itself (directly below the cast pills) rather than floating beside the
-// card. Hidden past the same 1650px breakpoint where the floating version
-// takes over, so the two never show at once.
+// itself — as a sibling of whichever cast pill is currently selected, inside
+// that same flex-wrap row (RightContainer.module.scss's .cast) — rather than
+// floating beside the card. flex-basis: 100% is what actually places it:
+// forces a line break right after that pill in the wrap, so the panel lands
+// directly under the clicked item instead of always at the end of the whole
+// row regardless of who triggered it. Harmless outside a flex parent (falls
+// back to plain block sizing). Hidden past the same 1650px breakpoint where
+// the floating version takes over, so the two never show at once.
 .panel_wrap_inline {
   display: block;
+  flex-basis: 100%;
 }
 
 @media (min-width: 1650px) {

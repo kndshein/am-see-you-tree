@@ -6,7 +6,7 @@
   color: rgba($white, 0.75);
   font-family: $accent-text;
   font-weight: 200;
-  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-size: clamp(0.85rem, 1.35vw, 1.1rem);
   // Unitless so it scales with font-size for free. Also what About.module.scss's
   // .body now matches, so the site's two blocks of real reading text (this
   // and the about-modal body) read at the same rhythm.

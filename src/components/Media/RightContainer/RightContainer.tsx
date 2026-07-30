@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
 import { HandleToggleType } from '../../../types/Toggles';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
+import { dashify } from '../../../utils/format';
 import Episodes from '../Episodes/Episodes';
 import { container } from '../Media';
 import {
@@ -58,8 +59,16 @@ export default function RightContainer({
   // stagger step for anything but the shortest text, so the fixed step alone
   // let Episodes start sliding in while Synopsis was still typing.
   const [is_synopsis_revealed, setIsSynopsisRevealed] = useState(false);
+  // Whether the cast list below is showing everyone or just the first 5.
+  // Reset alongside the synopsis reveal (same effect, same trigger) so a
+  // closed-then-reopened card always starts back at the compact view rather
+  // than remembering the last expansion.
+  const [is_cast_expanded, setIsCastExpanded] = useState(false);
   useEffect(() => {
-    if (!is_content_expanded) setIsSynopsisRevealed(false);
+    if (!is_content_expanded) {
+      setIsSynopsisRevealed(false);
+      setIsCastExpanded(false);
+    }
   }, [is_content_expanded]);
 
   const element = {
@@ -107,6 +116,9 @@ export default function RightContainer({
     .split(',')
     .map((name) => name.trim())
     .filter(Boolean);
+
+  const full_cast = tmdb_data.credits?.cast ?? [];
+  const visible_cast = is_cast_expanded ? full_cast : full_cast.slice(0, 5);
 
   return (
     <motion.section
@@ -197,8 +209,24 @@ export default function RightContainer({
               shares a variant child with the pills so it doesn't arrive a
               stagger step ahead of them. */}
           <motion.div variants={element}>
-            <span className={styles.section_label}>
-              {media_data.type === 'tv' ? 'Creators & Cast' : 'Directors & Cast'}
+            <span className={styles.cast_header}>
+              <span className={styles.section_label}>
+                {media_data.type === 'tv' ? 'Creators & Cast' : 'Directors & Cast'}
+              </span>
+              {/* Only worth showing once there's actually more hiding behind
+                  the slice(0, 5) below — otherwise every pill is already on
+                  screen and the button would toggle nothing. */}
+              {full_cast.length > 5 && (
+                <button
+                  type="button"
+                  className={styles.see_all}
+                  onClick={() => setIsCastExpanded((prev) => !prev)}
+                >
+                  <span className={styles.see_all_bracket}>[</span>
+                  {dashify(is_cast_expanded ? 'Show Less' : 'Show All')}
+                  <span className={styles.see_all_bracket}>]</span>
+                </button>
+              )}
             </span>
             <section className={styles.cast}>
               {authors.map((name) => (
@@ -213,58 +241,63 @@ export default function RightContainer({
                   <span className={styles.actor_name}>{name}</span>
                 </motion.span>
               ))}
-              {(tmdb_data.credits?.cast ?? [])
-                .slice(0, 5)
-                .map((actor: CastMember, idx: number) => {
-                  const is_selected = selected_cast === actor.name;
-                  // Check if this actor appears in any other item in the rail.
-                  // castMatchesInMediaList already filters by isShown and
-                  // excludes the current item (done below), so a non-zero
-                  // result means there's something to navigate to.
-                  const other_matches = castMatchesInMediaList(
-                    actor.name,
-                    media_list,
-                    tmdb_data_map,
-                    is_movies_only,
-                  ).filter(
-                    (item) =>
-                      !(item.id === media_data.id &&
-                        (item.type !== 'tv' ||
-                          (item.type === 'tv' &&
-                            media_data.type === 'tv' &&
-                            item.season === (media_data as Extract<MediaType, { type: 'tv' }>).season))),
-                  );
-                  const has_other_movies = other_matches.length > 0;
+              {visible_cast.map((actor: CastMember, idx: number) => {
+                const is_selected = selected_cast === actor.name;
+                // Check if this actor appears in any other item in the rail.
+                // castMatchesInMediaList already filters by isShown and
+                // excludes the current item (done below), so a non-zero
+                // result means there's something to navigate to.
+                const other_matches = castMatchesInMediaList(
+                  actor.name,
+                  media_list,
+                  tmdb_data_map,
+                  is_movies_only,
+                ).filter(
+                  (item) =>
+                    !(item.id === media_data.id &&
+                      (item.type !== 'tv' ||
+                        (item.type === 'tv' &&
+                          media_data.type === 'tv' &&
+                          item.season === (media_data as Extract<MediaType, { type: 'tv' }>).season))),
+                );
+                const has_other_movies = other_matches.length > 0;
 
-                  if (!has_other_movies) {
-                    // No filmography to show — render as a plain non-interactive pill.
-                    return (
-                      <motion.span
-                        className={`${styles.actor} ${styles.actor_no_matches}`}
-                        key={actor.name || idx}
-                        variants={element}
-                        aria-label={`${actor.name} (no other titles in this list)`}
-                      >
-                        <span
-                          className={`${styles.actor_role} ${
-                            actor.character ? '' : styles.unassigned
-                          }`}
-                        >
-                          {actor.character || 'Unassigned'}
-                        </span>
-                        <span className={styles.actor_name}>{actor.name}</span>
-                      </motion.span>
-                    );
-                  }
-
+                if (!has_other_movies) {
+                  // No filmography to show — render as a plain non-interactive pill.
                   return (
+                    <motion.span
+                      className={`${styles.actor} ${styles.actor_no_matches}`}
+                      key={actor.name || idx}
+                      variants={element}
+                      aria-label={`${actor.name} (no other titles in this list)`}
+                    >
+                      <span
+                        className={`${styles.actor_role} ${
+                          actor.character ? '' : styles.unassigned
+                        }`}
+                      >
+                        {actor.character || 'Unassigned'}
+                      </span>
+                      <span className={styles.actor_name}>{actor.name}</span>
+                    </motion.span>
+                  );
+                }
+
+                return (
+                  // Fragment (not the button itself) carries the key: on
+                  // narrow viewports the inline CastPanel now renders as this
+                  // actor's own sibling rather than as one fixed block after
+                  // the whole pill row, so panel_wrap_inline's flex-basis:
+                  // 100% (CastPanel.module.scss) drops it onto its own line
+                  // right where the clicked pill sits in the wrap, instead of
+                  // always under the last row regardless of who was clicked.
+                  <Fragment key={actor.name || idx}>
                     <motion.button
                       type="button"
                       data-cast-name={actor.name}
                       className={`${styles.actor} ${styles.actor_button} ${
                         is_selected ? styles.selected : ''
                       }`}
-                      key={actor.name || idx}
                       variants={element}
                       onClick={() => onSelectCast?.(actor.name)}
                     >
@@ -279,23 +312,22 @@ export default function RightContainer({
                         {actor.name}
                       </span>
                     </motion.button>
-                  );
-                })}
+                    {is_selected && (
+                      <CastPanel
+                        variant="inline"
+                        media_data={media_data}
+                        selected_cast={selected_cast ?? null}
+                        media_list={media_list}
+                        handleJump={handleJump}
+                        is_content_expanded={is_content_expanded}
+                        is_movies_only={is_movies_only}
+                      />
+                    )}
+                  </Fragment>
+                );
+              })}
             </section>
           </motion.div>
-          {/* Narrow-viewport counterpart to MediaWrapper's floating CastPanel
-              — same component, just laid out in normal flow directly below
-              the cast pills instead of floating beside the card. The two
-              are mutually exclusive via CSS breakpoint (CastPanel.module.scss). */}
-          <CastPanel
-            variant="inline"
-            media_data={media_data}
-            selected_cast={selected_cast ?? null}
-            media_list={media_list}
-            handleJump={handleJump}
-            is_content_expanded={is_content_expanded}
-            is_movies_only={is_movies_only}
-          />
           {/* Label and content share one variant child, so they enter together
               instead of the label arriving a stagger step ahead of what it
               names. Every entry has overview text, so this needs no guard. */}

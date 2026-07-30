@@ -85,6 +85,63 @@
   margin: 0 0 6px;
 }
 
+// Only the Creators & Cast label needs a row of its own (the See All
+// trigger sits beside it) — every other .section_label stays a plain block.
+// Carries the margin-bottom .section_label normally owns itself, since
+// nesting it here would otherwise double up with this row's own bottom edge.
+// flex-start (not space-between) — the trigger sits right next to the label
+// itself rather than pushed out to the row's far edge.
+.cast_header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 6px;
+
+  .section_label {
+    margin: 0;
+  }
+}
+
+// Same bracket-link idiom as the site's other inline triggers (About's own
+// [About]/[link], CollectionPanel/CastPanel's bracketed items) — white text
+// with brackets that both shift to $accent-lite on hover, rather than a
+// fresh button style. $accent-text/uppercase to match .section_label right
+// next to it instead of reading as body-text (bloom-link, this idiom's usual
+// base) — this trigger sits among the HUD-styled labels, not the site's
+// regular prose.
+.see_all {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: $accent-text;
+  // Explicit rather than left to inherit — a <button> doesn't reliably pick
+  // up font-size/line-height from its ancestors the way plain text does
+  // (Hud.module.scss's own about_link carries the same comment), and this
+  // sits in a baseline-aligned row right next to .section_label.
+  font-size: 0.7rem;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: $white;
+  white-space: nowrap;
+}
+
+// Lags half a beat behind the label text on hover — same stagger as every
+// other bracket pair on the site (About.module.scss's own .link_bracket
+// comment) — rather than moving in lockstep with it. Delay lives on the base
+// rule, not scoped to :hover, so it also applies symmetrically on the way
+// back out.
+.see_all_bracket {
+  transition: color 0.15s ease-out 0.2s;
+}
+
+.see_all:hover,
+.see_all:hover .see_all_bracket {
+  color: $accent-lite;
+}
+
 // VoteCounter and GlitchText write their text into a bare inner <span>. The
 // global `*` rule (index.scss) matches those spans directly, and a direct
 // match wins over anything inherited from the field, so the typography has to
