@@ -176,6 +176,27 @@ $font-size-lg: 2rem;
   }
 }
 
+// Red/cyan channel-split, CRT/holographic-display style — offsets a warm and
+// a cool tint in opposite directions from the real glyph rather than
+// blurring it, so it reads as an artifact of the display projecting the text
+// (Hud.module.scss's own framing), not a focus blur. text-shadow inherits by
+// default, so one call on a container covers every descendant that doesn't
+// set its own.
+//
+// $dx/$dy is the unit direction FROM this element TOWARD the viewport centre
+// (e.g. a top-left element points right+down: dx: 1, dy: 1) — the cyan
+// channel leads in that direction, red trails the opposite way, so each
+// element's fringe reads as pointing in toward the middle of the screen
+// rather than every instance splitting the same fixed way regardless of
+// where it actually sits.
+@mixin chromatic-aberration($dx: 1, $dy: 0, $offset: 3px, $strength: 0.25) {
+  $ox: $dx * $offset;
+  $oy: $dy * $offset;
+  text-shadow:
+    (-$ox) (-$oy) rgba(255, 40, 60, $strength),
+    $ox $oy rgba(60, 220, 255, $strength);
+}
+
 // A vertical accent bar hugging a title's left edge — TopContainer's card
 // title and About's own heading both used to hand-roll this same ::before
 // separately. Callers still own their own position/padding-left/font-size;
