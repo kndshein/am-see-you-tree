@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
@@ -41,6 +41,34 @@ type PropTypes = {
 // it lives in was still invisible.
 const INFO_GROUP_DELAY = CARD_DELAY_CHILDREN + 2 * CARD_STAGGER + CARD_STAGGER;
 
+const INITIAL_CAST_COUNT = 5;
+const PILL_STAGGER = 0.05;
+
+// A plain module-level function, not defined inline in the component body —
+// .cast's pills below call this through pill_variants (useMemo'd arrays),
+// specifically so each pill gets the SAME object across re-renders rather
+// than a fresh one every time. A fresh object every render was the actual
+// bug behind "the initial five all just appear instead of cascading": with
+// an explicit initial/animate pair (needed so a pill mounting long after the
+// card opened doesn't inherit an already-resolved ambient context as its own
+// starting point — see the pills' own comment below), Framer re-evaluates
+// whether to (re)start the transition on any receiving a new `variants`
+// object, and RightContainer re-renders several times during the opening
+// sequence — each one was quietly restarting the still-in-progress
+// animation from scratch, which collapsed into "no visible cascade."
+function pillVariants(pill_idx: number) {
+  return {
+    ...entry,
+    visible: {
+      ...entry.visible,
+      transition: {
+        ...entry.visible.transition,
+        delay: pill_idx * PILL_STAGGER,
+      },
+    },
+  };
+}
+
 export default function RightContainer({
   tmdb_data,
   media_data,
@@ -80,27 +108,6 @@ export default function RightContainer({
     },
   };
 
-  // .cast's own pills (below) use this instead of the ambient staggerChildren
-  // above: that only computes a delay for children present at the moment the
-  // ancestor's own hidden->visible transition actually fires (card open), so
-  // pills revealed later by Show All — mounting well after that already
-  // happened — got no stagger and just snapped in flat instead of cascading
-  // like the first five. An explicit per-pill delay (same 0.05 step) plays
-  // out identically regardless of whether a pill mounts at initial card-open
-  // or a later Show All click, since a fresh mount always re-runs its own
-  // hidden->visible transition off whatever delay it's given.
-  const PILL_STAGGER = 0.05;
-  const pillEntry = (pill_idx: number) => ({
-    ...entry,
-    visible: {
-      ...entry.visible,
-      transition: {
-        ...entry.visible.transition,
-        delay: pill_idx * PILL_STAGGER,
-      },
-    },
-  });
-
   // Release/runtime's own explicit delay, rather than relying purely on
   // info_group's staggerChildren propagation — this same value is also
   // GlitchText's own `delay` below (a separate imperative animation, outside
@@ -139,7 +146,35 @@ export default function RightContainer({
     .filter(Boolean);
 
   const full_cast = tmdb_data.credits?.cast ?? [];
-  const visible_cast = is_cast_expanded ? full_cast : full_cast.slice(0, 5);
+  const visible_cast = is_cast_expanded
+    ? full_cast
+    : full_cast.slice(0, INITIAL_CAST_COUNT);
+
+  // Only pills revealed later by Show All get their own explicit
+  // initial/animate + custom delay (below) — the first 5 (+ authors) go back
+  // to the plain ambient `element` variant every other block in this
+  // component uses, for a reason that isn't obvious: .cast_header's own
+  // wrapper (the <motion.div variants={element}> below) doesn't fade in the
+  // instant the card opens — it's RightContainer's own 3rd staggered child
+  // (after tagline, info_group), so ambient propagation only gets to it
+  // partway through the card's opening sequence. Explicit animate bypasses
+  // that ambient delay entirely and reacts to is_content_expanded directly —
+  // so the pills were finishing their ENTIRE entrance while still hidden
+  // behind their own not-yet-visible wrapper, then all popping in together
+  // the instant the wrapper itself finally faded in, which is what read as
+  // "arriving with the label, no cascade." Show All's pills don't have this
+  // problem: by the time they mount, the wrapper's already been fully
+  // visible for a while, so there's no competing ambient delay to race.
+  // Memoized (not built inline) so each pill gets the SAME object across
+  // re-renders — see pillVariants' own comment above for why that matters.
+  const revealed_pill_variants = useMemo(
+    () =>
+      Array.from(
+        { length: Math.max(0, full_cast.length - INITIAL_CAST_COUNT) },
+        (_, i) => pillVariants(i),
+      ),
+    [full_cast.length],
+  );
 
   return (
     <motion.section
@@ -250,23 +285,11 @@ export default function RightContainer({
               )}
             </span>
             <section className={styles.cast}>
-              {authors.map((name, author_idx) => (
+              {authors.map((name) => (
                 <motion.span
                   className={`${styles.actor} ${styles.director}`}
                   key={`author-${name}`}
-                  variants={pillEntry(author_idx)}
-                  // Explicit animate, not just inherited context — this and
-                  // every other pill below own their reveal outright rather
-                  // than propagating from .cast_header's ancestor (which still
-                  // carries its own staggerChildren for its label/button), so
-                  // pillEntry's delay above is the only stagger source. Left
-                  // to ambient propagation, a pill mounting at initial card
-                  // open would get that ancestor's own computed stagger ON TOP
-                  // of pillEntry's, double-delaying it relative to one
-                  // revealed later by Show All (which gets no ambient
-                  // contribution at all, since the ancestor's own transition
-                  // already resolved by the time it mounts).
-                  animate={is_content_expanded ? 'visible' : 'hidden'}
+                  variants={element}
                 >
                   <span className={styles.actor_role}>
                     {media_data.type === 'tv' ? 'Creator' : 'Director'}
@@ -275,9 +298,16 @@ export default function RightContainer({
                 </motion.span>
               ))}
               {visible_cast.map((actor: CastMember, idx: number) => {
-                // Authors come first in the row, so a cast pill's own
-                // cascade position continues right after theirs.
-                const pill_idx = authors.length + idx;
+                // One of the first 5 rides the same ambient `element` cascade
+                // as the authors above it (see revealed_pill_variants' own
+                // comment for why); one revealed only by Show All gets its
+                // own explicit variant/initial/animate instead, so it
+                // actually replays an entrance at all once mounted long after
+                // that ambient transition already resolved.
+                const is_revealed_pill = idx >= INITIAL_CAST_COUNT;
+                const pill_variant = is_revealed_pill
+                  ? revealed_pill_variants[idx - INITIAL_CAST_COUNT]
+                  : element;
                 const is_selected = selected_cast === actor.name;
                 // Check if this actor appears in any other item in the rail.
                 // castMatchesInMediaList already filters by isShown and
@@ -304,8 +334,11 @@ export default function RightContainer({
                     <motion.span
                       className={`${styles.actor} ${styles.actor_no_matches}`}
                       key={actor.name || idx}
-                      variants={pillEntry(pill_idx)}
-                      animate={is_content_expanded ? 'visible' : 'hidden'}
+                      variants={pill_variant}
+                      {...(is_revealed_pill && {
+                        initial: 'hidden',
+                        animate: is_content_expanded ? 'visible' : 'hidden',
+                      })}
                       aria-label={`${actor.name} (no other titles in this list)`}
                     >
                       <span
@@ -335,8 +368,11 @@ export default function RightContainer({
                       className={`${styles.actor} ${styles.actor_button} ${
                         is_selected ? styles.selected : ''
                       }`}
-                      variants={pillEntry(pill_idx)}
-                      animate={is_content_expanded ? 'visible' : 'hidden'}
+                      variants={pill_variant}
+                      {...(is_revealed_pill && {
+                        initial: 'hidden',
+                        animate: is_content_expanded ? 'visible' : 'hidden',
+                      })}
                       onClick={() => onSelectCast?.(actor.name)}
                     >
                       <span

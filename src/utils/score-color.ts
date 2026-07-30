@@ -39,15 +39,17 @@ const HUE_STOPS: Record<RatingSource, Array<[percent: number, hue: number]>> = {
     [90, 110],
     [100, 130],
   ],
-  // Metacritic publishes its own official tri-color bands (metacritic.com):
-  // red 0-39, yellow 40-60, green 61-100. Mirrored fairly literally rather
-  // than re-derived, since it's a documented standard, not a guess.
+  // Metacritic's own site uses three flat bands (red 0-39, yellow 40-60,
+  // green 61-100) with no gradient — the stops below are those same three
+  // colors, at the centre of each official band (20/50/80), just genuinely
+  // blended between them instead of snapping at the 39/40 and 60/61
+  // boundaries. 100 still climbs past the green stop toward this curve's
+  // own most saturated green, matching every other source here ending on its
+  // most vivid tier rather than plateauing at "barely good."
   metacritic: [
     [0, 0],
-    [39, 0],
-    [40, 45],
-    [60, 50],
-    [61, 90],
+    [50, 50],
+    [80, 110],
     [100, 130],
   ],
   // IMDb has no official color coding, but its ratings rarely leave a 4-9

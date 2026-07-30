@@ -107,7 +107,7 @@
   border: 1px solid $accent-lite;
   border-radius: $radius-md;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-  font-size: clamp(1rem, 3vw, 1.2rem);
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
   letter-spacing: 0.9px;
 }
 
@@ -123,7 +123,7 @@
   margin: 0;
   padding-left: 20px;
   color: white;
-  font-size: 2.5rem;
+  font-size: 2rem;
 }
 
 // Same color and line-height the card's own Synopsis text uses
@@ -165,7 +165,7 @@
 }
 
 .patch_list {
-  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   margin-top: 50px;
   display: flex;
   flex-flow: column;
@@ -240,7 +240,7 @@
   flex-shrink: 0;
   margin-left: auto;
   padding: 1px 4px;
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   border: 1px solid rgba($accent-lite, 0.4);
   border-radius: $radius-sm;
   color: $accent-lite;
