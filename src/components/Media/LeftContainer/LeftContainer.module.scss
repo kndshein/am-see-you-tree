@@ -87,19 +87,33 @@
 // No border: it sits over artwork, and the backing plate is enough to separate
 // it. Dimmed so it reads as a stamp on the poster rather than a value competing
 // with the vitals row. Top-left because poster art almost always carries title
-// and billing text along the bottom.
+// and billing text along the bottom. Bottom-right corner cut on a diagonal
+// (same motif as .poster/genre_row) instead of the rounded corners it used to
+// carry, so the stamp reads as the same HUD-panel silhouette as everything
+// else on the card rather than a plain rounded chip. Half $notch-size rather
+// than the shared value directly — this badge is only ~20px tall (versus the
+// poster/genre rows it's borrowing the idiom from), so the full site-wide cut
+// would eat visibly into the rating text instead of just clipping the corner.
 .certification {
+  $cert-notch: calc($notch-size / 2);
+
   position: absolute;
   left: 8px;
   top: 8px;
   z-index: 1;
-  padding: 4px 8px 3px;
+  padding: 4px 8px;
   font-family: $body-text;
   font-size: 0.75rem;
   letter-spacing: 1px;
   color: $accent-lite;
   background-color: rgba($background, 0.72);
-  border-radius: $radius-sm;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - #{$cert-notch}),
+    calc(100% - #{$cert-notch}) 100%,
+    0 100%
+  );
 }
 
 // The column is min(30%, 250px) of a shrinking viewport, so it eventually
