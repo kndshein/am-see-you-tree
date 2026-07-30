@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styles from './RightContainer.module.scss';
 import { TmdbType, CastMember } from '../../../types/Tmdb';
 import { MediaType } from '../../../types/Media';
+import { HandleToggleType } from '../../../types/Toggles';
 import dateCalc, { dateEpochSeed } from '../../../utils/date-calc';
 import runtimeCalc, { runtimeMsSeed } from '../../../utils/runtime-calc';
 import { compactCount } from '../../../utils/format';
@@ -21,6 +22,8 @@ import GlitchText from './GlitchText';
 import { castMatchesInMediaList, isUnreleased } from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
 import { useOmdbData } from '../../../utils/omdb-data';
+import CollectionPanel from '../../MediaWrapper/CollectionPanel/CollectionPanel';
+import CastPanel from '../../MediaWrapper/CastPanel/CastPanel';
 
 type PropTypes = {
   tmdb_data: TmdbType;
@@ -31,6 +34,7 @@ type PropTypes = {
   onSelectCast?: (cast_name: string) => void;
   media_list: Array<MediaType>;
   is_movies_only: boolean;
+  handleJump: HandleToggleType;
 };
 
 // When the vitals row actually starts entering: this container is Media's 3rd
@@ -49,6 +53,7 @@ export default function RightContainer({
   onSelectCast,
   media_list,
   is_movies_only,
+  handleJump,
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
   // Keyed by imdb_id (prefetch-omdb.mjs), not this card's own tmdb_key —
@@ -378,6 +383,19 @@ export default function RightContainer({
                 })}
             </section>
           </motion.div>
+          {/* Narrow-viewport counterpart to MediaWrapper's floating CastPanel
+              — same component, just laid out in normal flow directly below
+              the cast pills instead of floating beside the card. The two
+              are mutually exclusive via CSS breakpoint (CastPanel.module.scss). */}
+          <CastPanel
+            variant="inline"
+            media_data={media_data}
+            selected_cast={selected_cast ?? null}
+            media_list={media_list}
+            handleJump={handleJump}
+            is_content_expanded={is_content_expanded}
+            is_movies_only={is_movies_only}
+          />
           {/* Label and content share one variant child, so they enter together
               instead of the label arriving a stagger step ahead of what it
               names. Every entry has overview text, so this needs no guard. */}
@@ -390,6 +408,20 @@ export default function RightContainer({
               onRevealComplete={() => setIsSynopsisRevealed(true)}
             />
           </motion.div>
+          {/* Narrow-viewport counterpart to MediaWrapper's floating
+              CollectionPanel — below Synopsis, above Episodes for TV. Gated
+              on is_synopsis_revealed too, same reason as Episodes below: its
+              own reveal is driven directly off is_content_expanded, so
+              without this it would finish staggering in while Synopsis was
+              still mid-reveal instead of waiting its turn after it. */}
+          <CollectionPanel
+            variant="inline"
+            media_data={media_data}
+            tmdb_data={tmdb_data}
+            media_list={media_list}
+            handleJump={handleJump}
+            is_content_expanded={is_content_expanded && is_synopsis_revealed}
+          />
           {media_data.type === 'tv' && (
             // animate rather than variants: this block deliberately opts out
             // of .container's propagated stagger sequence (element above) —

@@ -26,6 +26,32 @@
   }
 }
 
+// Block-flow counterpart to .panel_wrap above, rendered by RightContainer
+// itself (between Synopsis and Episodes) rather than floating beside the
+// card — the only layout narrow viewports have room for. Hidden past the
+// same 1650px breakpoint where the floating version takes over, so the two
+// never show at once.
+.panel_wrap_inline {
+  display: block;
+}
+
+@media (min-width: 1650px) {
+  .panel_wrap_inline {
+    display: none;
+  }
+}
+
+// Same contents as .list below, just laid out in normal flow instead of
+// anchored off .frame's corner.
+.list_inline {
+  width: 100%;
+  display: flex;
+  flex-flow: column;
+  gap: 8px;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(102, 192, 204, 0.35);
+}
+
 .frame {
   position: relative;
   width: min(1000px, 100%);

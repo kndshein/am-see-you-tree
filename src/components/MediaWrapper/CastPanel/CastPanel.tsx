@@ -19,10 +19,17 @@ type PropTypes = {
   handleJump: HandleToggleType;
   is_content_expanded: boolean;
   is_movies_only: boolean;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  // Only meaningful for variant 'floating' — the inline variant renders
+  // in normal document flow right below the cast pills, so it needs no
+  // computed position.
+  containerRef?: React.RefObject<HTMLDivElement | null>;
   // Direct ref to CollectionPanel's list element — used to stack Filmography
   // below Film Collections without querying the DOM by class name.
-  collectionListRef: React.RefObject<HTMLDivElement | null>;
+  collectionListRef?: React.RefObject<HTMLDivElement | null>;
+  // 'floating' (default) is the wide-viewport version anchored beside the
+  // card. 'inline' is a plain block-flow version rendered by RightContainer
+  // itself, directly below the cast pills, for narrower viewports.
+  variant?: 'floating' | 'inline';
 };
 
 export default function CastPanel({
@@ -34,9 +41,11 @@ export default function CastPanel({
   is_movies_only,
   containerRef,
   collectionListRef,
+  variant = 'floating',
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
   const listRef = useRef<HTMLDivElement | null>(null);
+  const is_inline = variant === 'inline';
 
   const cast_matches = selected_cast
     ? castMatchesInMediaList(
@@ -48,7 +57,7 @@ export default function CastPanel({
     : [];
 
   useEffect(() => {
-    if (!selected_cast || !listRef.current) {
+    if (is_inline || !selected_cast || !listRef.current) {
       return;
     }
 
@@ -59,7 +68,7 @@ export default function CastPanel({
 
       // Position CastPanel (Filmography) below CollectionPanel (Film Collections)
       // when both are visible. Use the direct ref — no DOM class-name querying.
-      const collectionListEl = collectionListRef.current;
+      const collectionListEl = collectionListRef?.current;
 
       let targetTop = 38; // Default standoff top when no collection list
       if (collectionListEl) {
@@ -82,11 +91,75 @@ export default function CastPanel({
 
   if (!selected_cast || cast_matches.length === 0) return null;
 
+  const list_content = (
+    <>
+      <motion.span className={styles.label} variants={entry}>
+        FILMOGRAPHY: {selected_cast.toUpperCase()}
+      </motion.span>
+      {cast_matches.map((item, item_idx) => {
+        const item_key = `${selected_cast}_${item.id}_${item.type}_${
+          item.type === 'tv' ? item.season : ''
+        }`;
+        const item_data = tmdb_data_map[tmdbKeyOf(item)];
+        const base_title =
+          item.type === 'tv'
+            ? item_data?.original_name ||
+              item_data?.original_title ||
+              item.id
+            : item_data?.original_title || item.id;
+        const title =
+          item.type === 'tv' ? `${base_title} - S${item.season}` : base_title;
+        const release_date = releaseDateOf(item, tmdb_data_map);
+        const year = release_date ? release_date.slice(0, 4) : undefined;
+        // Only items that exist in the current rail are navigable.
+        const target_idx = media_list.findIndex(
+          (m) =>
+            m.id === item.id &&
+            (m.type !== 'tv' ||
+              (m.type === 'tv' &&
+                item.type === 'tv' &&
+                m.season === item.season)),
+        );
+        // The card currently on screen — still listed (the filmography
+        // would look incomplete without it) but jumping to where you
+        // already are is a no-op, so it's never clickable.
+        const is_active =
+          item.id === media_data.id &&
+          (item.type !== 'tv' ||
+            (item.type === 'tv' &&
+              media_data.type === 'tv' &&
+              item.season === media_data.season));
+        const is_clickable = target_idx !== -1 && !is_active;
+
+        return (
+          <CastItem
+            key={item_key}
+            title={title}
+            year={year}
+            is_content_expanded={is_content_expanded}
+            is_clickable={is_clickable}
+            is_active={is_active}
+            item_idx={item_idx}
+            total_items={cast_matches.length}
+            type={item.type}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (is_clickable) handleJump(target_idx);
+            }}
+          />
+        );
+      })}
+      <motion.span className={styles.end_of_line} variants={entry}>
+        End of List
+      </motion.span>
+    </>
+  );
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
         key={selected_cast ?? ''}
-        className={styles.panel_wrap}
+        className={is_inline ? styles.panel_wrap_inline : styles.panel_wrap}
         variants={{
           hidden: {},
           visible: { transition: { staggerChildren: 0.06 } },
@@ -95,71 +168,17 @@ export default function CastPanel({
         animate={is_content_expanded ? 'visible' : 'hidden'}
         exit={{ opacity: 0, transition: { duration: 0.15 } }}
       >
-        <div className={styles.frame}>
-          <div className={styles.list} ref={listRef}>
-            <motion.span className={styles.label} variants={entry}>
-              FILMOGRAPHY: {selected_cast.toUpperCase()}
-            </motion.span>
-            {cast_matches.map((item, item_idx) => {
-              const item_key = `${selected_cast}_${item.id}_${item.type}_${
-                item.type === 'tv' ? item.season : ''
-              }`;
-              const item_data = tmdb_data_map[tmdbKeyOf(item)];
-              const base_title =
-                item.type === 'tv'
-                  ? item_data?.original_name ||
-                    item_data?.original_title ||
-                    item.id
-                  : item_data?.original_title || item.id;
-              const title =
-                item.type === 'tv'
-                  ? `${base_title} - S${item.season}`
-                  : base_title;
-              const release_date = releaseDateOf(item, tmdb_data_map);
-              const year = release_date ? release_date.slice(0, 4) : undefined;
-              // Only items that exist in the current rail are navigable.
-              const target_idx = media_list.findIndex(
-                (m) =>
-                  m.id === item.id &&
-                  (m.type !== 'tv' ||
-                    (m.type === 'tv' &&
-                      item.type === 'tv' &&
-                      m.season === item.season)),
-              );
-              // The card currently on screen — still listed (the filmography
-              // would look incomplete without it) but jumping to where you
-              // already are is a no-op, so it's never clickable.
-              const is_active =
-                item.id === media_data.id &&
-                (item.type !== 'tv' ||
-                  (item.type === 'tv' &&
-                    media_data.type === 'tv' &&
-                    item.season === media_data.season));
-              const is_clickable = target_idx !== -1 && !is_active;
-
-              return (
-                <CastItem
-                  key={item_key}
-                  title={title}
-                  year={year}
-                  is_content_expanded={is_content_expanded}
-                  is_clickable={is_clickable}
-                  is_active={is_active}
-                  item_idx={item_idx}
-                  total_items={cast_matches.length}
-                  type={item.type}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    if (is_clickable) handleJump(target_idx);
-                  }}
-                />
-              );
-            })}
-            <motion.span className={styles.end_of_line} variants={entry}>
-              End of List
-            </motion.span>
+        {is_inline ? (
+          <div className={styles.list_inline} ref={listRef}>
+            {list_content}
           </div>
-        </div>
+        ) : (
+          <div className={styles.frame}>
+            <div className={styles.list} ref={listRef}>
+              {list_content}
+            </div>
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   );

@@ -31,9 +31,18 @@ type PropTypes = {
   // Forwarded to MediaWrapper so it can hand the list element's position
   // directly to CastPanel — avoids fragile CSS-module class-name queries.
   listRef?: RefObject<HTMLDivElement | null>;
+  // 'floating' (default) is the wide-viewport version anchored off the
+  // reticle's corner. 'inline' is a plain block-flow version for narrower
+  // viewports where there's no room beside the card — rendered by
+  // RightContainer itself, between Synopsis and Episodes.
+  variant?: 'floating' | 'inline';
 };
 
 const STAGGER = 0.08;
+// Matches entry's own duration (utils/motion.ts) — same constant CastPanel
+// uses for its ENTRY_DURATION, since both lists' brackets wait on their own
+// entries actually finishing first.
+const ENTRY_DURATION = 0.3;
 
 // Sits outside the card itself, just below the reticle's top-right corner
 export default function CollectionPanel({
@@ -43,6 +52,7 @@ export default function CollectionPanel({
   handleJump,
   is_content_expanded,
   listRef,
+  variant = 'floating',
 }: PropTypes) {
   const tmdb_data_map = useTmdbData();
   const is_tv = media_data.type === 'tv';
@@ -65,9 +75,78 @@ export default function CollectionPanel({
     ? tmdb_data.original_name || media_data.id
     : (collection?.name ?? '');
 
+  const is_inline = variant === 'inline';
+
+  // Floating anchors its bracket-pop to COLOR_REVEAL_DELAY (the card's own
+  // glow, ~2.5s after the card opens) since it appears the instant the card
+  // expands, same beat as the glow. Inline instead only mounts once Synopsis
+  // has already finished revealing (RightContainer's is_synopsis_revealed),
+  // so tacking the glow's own 2.5s on top of that would leave it looking
+  // frozen/un-hoverable long after it's visible. Same fix CastPanel already
+  // uses for the same reason: wait on its own entries finishing (STAGGER *
+  // count + ENTRY_DURATION) plus a short beat, then cascade the brackets.
+  const inline_base_delay =
+    (siblings.length - 1) * STAGGER + ENTRY_DURATION + 0.15;
+
+  const list_content = (
+    <>
+      <motion.span className={styles.label} variants={entry}>
+        {label}
+      </motion.span>
+      {siblings.map((sibling, sibling_idx) => {
+        const sibling_data = tmdb_data_map[tmdbKeyOf(sibling)];
+        const title =
+          sibling.type === 'tv'
+            ? `Season ${sibling.season}`
+            : sibling_data?.original_title || sibling.id;
+        const year =
+          sibling.type === 'tv'
+            ? releaseDateOf(sibling, tmdb_data_map).slice(0, 4)
+            : sibling_data?.release_date?.slice(0, 4);
+
+        // Same id repeats across a show's seasons, so TV needs the
+        // season number too — a plain id match would call every season
+        // "active" at once.
+        const is_active =
+          sibling.type === 'tv' && media_data.type === 'tv'
+            ? sibling.season === media_data.season
+            : sibling.id === media_data.id;
+
+        return (
+          <CollectionItem
+            key={tmdbKeyOf(sibling)}
+            title={title}
+            year={year}
+            is_content_expanded={is_content_expanded}
+            is_active={is_active}
+            stagger_delay={
+              is_inline
+                ? inline_base_delay + sibling_idx * COLOR_STAGGER
+                : COLOR_REVEAL_DELAY + sibling_idx * COLOR_STAGGER
+            }
+            onClick={(event) => {
+              event.stopPropagation();
+              const target_idx = media_list.findIndex((item) =>
+                sibling.type === 'tv'
+                  ? item.type === 'tv' &&
+                    item.id === sibling.id &&
+                    item.season === sibling.season
+                  : item.id === sibling.id,
+              );
+              if (target_idx !== -1) handleJump(target_idx);
+            }}
+          />
+        );
+      })}
+      <motion.span className={styles.end_of_line} variants={entry}>
+        End of List
+      </motion.span>
+    </>
+  );
+
   return (
     <motion.div
-      className={styles.panel_wrap}
+      className={is_inline ? styles.panel_wrap_inline : styles.panel_wrap}
       variants={{
         hidden: {},
         visible: { transition: { staggerChildren: STAGGER } },
@@ -76,57 +155,17 @@ export default function CollectionPanel({
       animate={is_content_expanded ? 'visible' : 'hidden'}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >
-      <div className={styles.frame}>
-        <div className={styles.list} ref={listRef}>
-          <motion.span className={styles.label} variants={entry}>
-            {label}
-          </motion.span>
-          {siblings.map((sibling, sibling_idx) => {
-            const sibling_data = tmdb_data_map[tmdbKeyOf(sibling)];
-            const title =
-              sibling.type === 'tv'
-                ? `Season ${sibling.season}`
-                : sibling_data?.original_title || sibling.id;
-            const year =
-              sibling.type === 'tv'
-                ? releaseDateOf(sibling, tmdb_data_map).slice(0, 4)
-                : sibling_data?.release_date?.slice(0, 4);
-
-            // Same id repeats across a show's seasons, so TV needs the
-            // season number too — a plain id match would call every season
-            // "active" at once.
-            const is_active =
-              sibling.type === 'tv' && media_data.type === 'tv'
-                ? sibling.season === media_data.season
-                : sibling.id === media_data.id;
-
-            return (
-              <CollectionItem
-                key={tmdbKeyOf(sibling)}
-                title={title}
-                year={year}
-                is_content_expanded={is_content_expanded}
-                is_active={is_active}
-                stagger_delay={COLOR_REVEAL_DELAY + sibling_idx * COLOR_STAGGER}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  const target_idx = media_list.findIndex((item) =>
-                    sibling.type === 'tv'
-                      ? item.type === 'tv' &&
-                        item.id === sibling.id &&
-                        item.season === sibling.season
-                      : item.id === sibling.id,
-                  );
-                  if (target_idx !== -1) handleJump(target_idx);
-                }}
-              />
-            );
-          })}
-          <motion.span className={styles.end_of_line} variants={entry}>
-            End of List
-          </motion.span>
+      {is_inline ? (
+        <div className={styles.list_inline} ref={listRef}>
+          {list_content}
         </div>
-      </div>
+      ) : (
+        <div className={styles.frame}>
+          <div className={styles.list} ref={listRef}>
+            {list_content}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

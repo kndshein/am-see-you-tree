@@ -284,6 +284,7 @@ export default function MediaWrapper({
               onSelectCast={handleSelectCast}
               media_list={media_list}
               is_movies_only={is_movies_only}
+              handleJump={handleJump}
             />
           </motion.div>
           <AnimatePresence>
@@ -295,6 +296,7 @@ export default function MediaWrapper({
             {is_active && (
               <CollectionPanel
                 key="collection-panel"
+                variant="floating"
                 media_data={media_data}
                 tmdb_data={data}
                 media_list={media_list}
@@ -308,6 +310,7 @@ export default function MediaWrapper({
             {is_active && (
               <CastPanel
                 key="cast-panel"
+                variant="floating"
                 media_data={media_data}
                 selected_cast={selected_cast}
                 media_list={media_list}

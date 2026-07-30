@@ -1,6 +1,7 @@
 import styles from './Media.module.scss';
 import { TmdbType } from '../../types/Tmdb';
 import { MediaType } from '../../types/Media';
+import { HandleToggleType } from '../../types/Toggles';
 import TopContainer from './TopContainer/TopContainer';
 import LeftContainer from './LeftContainer/LeftContainer';
 import RightContainer from './RightContainer/RightContainer';
@@ -17,6 +18,7 @@ type PropTypes = {
   onSelectCast?: (cast_name: string) => void;
   media_list: Array<MediaType>;
   is_movies_only: boolean;
+  handleJump: HandleToggleType;
 };
 
 export const container = {
@@ -37,6 +39,7 @@ export default function Media({
   onSelectCast,
   media_list,
   is_movies_only,
+  handleJump,
 }: PropTypes) {
   return (
     <motion.section
@@ -76,6 +79,7 @@ export default function Media({
         onSelectCast={onSelectCast}
         media_list={media_list}
         is_movies_only={is_movies_only}
+        handleJump={handleJump}
       />
       {/* Absolutely positioned, so it escapes the grid and anchors to .content
           — but it lives here to inherit this section's variant orchestration. */}
