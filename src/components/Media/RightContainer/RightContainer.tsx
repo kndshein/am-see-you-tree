@@ -17,7 +17,10 @@ import {
 import { motion } from 'motion/react';
 import Overview from '../Overview/Overview';
 import GlitchText from './GlitchText';
-import { castMatchesInMediaList, isUnreleased } from '../../../utils/media-lists';
+import {
+  castNamesWithOtherEntries,
+  isUnreleased,
+} from '../../../utils/media-lists';
 import { useTmdbData } from '../../../utils/tmdb-data';
 import CollectionPanel from '../../MediaWrapper/CollectionPanel/CollectionPanel';
 import CastPanel from '../../MediaWrapper/CastPanel/CastPanel';
@@ -176,6 +179,22 @@ export default function RightContainer({
     [full_cast.length],
   );
 
+  // Which pills are actually navigable. Built once per card rather than
+  // per pill: the previous per-pill castMatchesInMediaList call rebuilt,
+  // refiltered and sorted the entire rail for every actor on screen — see
+  // castNamesWithOtherEntries' own comment (media-lists.ts) for the cost.
+  // Same answer, just hoisted out of the render loop.
+  const cast_with_other_entries = useMemo(
+    () =>
+      castNamesWithOtherEntries(
+        media_list,
+        tmdb_data_map,
+        is_movies_only,
+        media_data,
+      ),
+    [media_list, tmdb_data_map, is_movies_only, media_data],
+  );
+
   return (
     <motion.section
       className={styles.container}
@@ -319,24 +338,13 @@ export default function RightContainer({
                   ? revealed_pill_variants[idx - INITIAL_CAST_COUNT]
                   : element;
                 const is_selected = selected_cast === actor.name;
-                // Check if this actor appears in any other item in the rail.
-                // castMatchesInMediaList already filters by isShown and
-                // excludes the current item (done below), so a non-zero
-                // result means there's something to navigate to.
-                const other_matches = castMatchesInMediaList(
-                  actor.name,
-                  media_list,
-                  tmdb_data_map,
-                  is_movies_only,
-                ).filter(
-                  (item) =>
-                    !(item.id === media_data.id &&
-                      (item.type !== 'tv' ||
-                        (item.type === 'tv' &&
-                          media_data.type === 'tv' &&
-                          item.season === (media_data as Extract<MediaType, { type: 'tv' }>).season))),
+                // Whether this actor appears in any rail item other than the
+                // one on screen — i.e. whether the pill has anywhere to jump
+                // to. cast_with_other_entries (above) already applies the
+                // isShown filter and the current-card exclusion.
+                const has_other_movies = cast_with_other_entries.has(
+                  actor.name.toLowerCase(),
                 );
-                const has_other_movies = other_matches.length > 0;
 
                 if (!has_other_movies) {
                   // No filmography to show — render as a plain non-interactive pill.

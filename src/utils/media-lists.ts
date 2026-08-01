@@ -137,18 +137,58 @@ export function castMatchesInMediaList(
   tmdb_data: TmdbMap,
   is_movies_only: boolean,
 ): Array<MediaType> {
+  // Hoisted out of the .some() callback below — it was being recomputed for
+  // every cast row of every item (~1.4k rows across the list), all to produce
+  // the same string each time.
+  const target = cast_name.toLowerCase();
   return mergeTvFragments(media_list)
     .filter((item) => isShown(item, is_movies_only))
     .filter((item) => {
       const data = tmdb_data[tmdbKeyOf(item)];
       if (!data?.credits?.cast) return false;
-      return data.credits.cast.some(
-        (c) => c.name.toLowerCase() === cast_name.toLowerCase(),
-      );
+      return data.credits.cast.some((c) => c.name.toLowerCase() === target);
     })
     .sort((a, b) =>
       releaseDateOf(a, tmdb_data).localeCompare(releaseDateOf(b, tmdb_data)),
     );
+}
+
+// Whether two entries refer to the same card — same id, and for TV the same
+// season (a show's other seasons are genuinely different cards). Shared so
+// the "is this the entry I'm already looking at" test can't drift between
+// its callers.
+function isSameEntry(a: MediaType, b: MediaType): boolean {
+  if (a.id !== b.id) return false;
+  if (a.type !== 'tv') return true;
+  return b.type === 'tv' && a.season === b.season;
+}
+
+// Lowercased names of every actor who appears in some rail entry OTHER than
+// `exclude` — i.e. exactly the set for whom a filmography jump has somewhere
+// to go.
+//
+// Exists because the caller (RightContainer's cast pills) needs that answer
+// per actor, and asking castMatchesInMediaList above once per pill meant
+// rebuilding/refiltering/sorting the whole list for each one: ~1.4k cast-row
+// comparisons per pill, times up to 25 pills once Show All is on, repeated
+// on every render (and RightContainer re-renders several times during a
+// card's opening sequence alone). Building the set once and testing pills
+// against it is the same answer for a fraction of the work.
+export function castNamesWithOtherEntries(
+  media_list: Array<MediaType>,
+  tmdb_data: TmdbMap,
+  is_movies_only: boolean,
+  exclude: MediaType,
+): Set<string> {
+  const names = new Set<string>();
+  for (const item of mergeTvFragments(media_list)) {
+    if (!isShown(item, is_movies_only)) continue;
+    if (isSameEntry(item, exclude)) continue;
+    const cast = tmdb_data[tmdbKeyOf(item)]?.credits?.cast;
+    if (!cast) continue;
+    for (const member of cast) names.add(member.name.toLowerCase());
+  }
+  return names;
 }
 
 // A season can appear as several entries in media-list.json when a movie was
