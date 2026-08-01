@@ -1,14 +1,4 @@
-// Above the expanded card's own fullscreen overlay (MediaWrapper.module.scss's
-// .content_container.active, z-index: 100) and the HUD (Hud.module.scss,
-// z-index: 40) — see SpiderWebCorners.tsx's own comment for why that's the bar.
-.layer {
-  position: fixed;
-  inset: 0;
-  z-index: 150;
-  pointer-events: none;
-}
-
-// Keep these two in sync with MediaWrapper.module.scss's own
+// Keep these in sync with MediaWrapper.module.scss's own
 // .content_container.active (padding: 50px 50px 100px → 100px total
 // horizontal) and .content (width: min(1000px, 100%)) — together those
 // define exactly how much dead space sits between the true screen edge and
@@ -17,25 +7,57 @@
 // window since the card then just fills (100% - 100px) with no cap. A web
 // sized off raw vw units alone doesn't know that — it can look right at
 // whatever width it was tuned against and still sprawl onto the reticle at
-// a narrower one. $corner-max below computes that gap directly instead of
-// guessing a fixed pixel budget, so the cap is always correct.
+// a narrower one. --corner-max below (on .layer) computes that gap directly
+// instead of guessing a fixed pixel budget, so the cap is always correct.
 $card-max-width: 1000px;
 $card-horizontal-padding: 100px;
-$corner-safety-margin: 24px;
-$corner-max: min(
-  230px,
-  calc(
-    (100vw - min($card-max-width, calc(100vw - $card-horizontal-padding))) / 2 -
-      $corner-safety-margin
-  )
-);
+// Still a real guaranteed clearance from the reticle at any window width
+// (see --corner-max below), just not padded as generously as the 24px this
+// started at, so the webs can claim more of the actual dead space around
+// the card.
+$corner-safety-margin: 16px;
+$corner-absolute-max: 320px;
+// The floor a corner web's box never shrinks below, regardless of what
+// --corner-max computes to — deliberately bigger than --corner-max's own
+// worst case (a flat 50px - $corner-safety-margin = 34px at any width
+// <= 1100px, see --corner-gap's own comment), so clamp() picks this floor
+// over that width's own safe cap there. That's a real, accepted tradeoff:
+// below ~1100px wide there just isn't 110px of dead space between the
+// screen edge and the reticle, so holding to it means the web's own edge
+// can cross into the reticle's a bit on a narrow window — chosen over the
+// alternative (never overlap, but shrink to near-invisible ~34px) since a
+// web that's actually visible everywhere reads better than one that's
+// technically never touching anything but is too small to see.
+$corner-min: 110px;
+
+// Above the expanded card's own fullscreen overlay (MediaWrapper.module.scss's
+// .content_container.active, z-index: 100) and the HUD (Hud.module.scss,
+// z-index: 40) — see SpiderWebCorners.tsx's own comment for why that's the bar.
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+
+  // Staged through custom properties, each stage at most one function deep,
+  // rather than one calc(min(calc(min()))) expression four levels deep —
+  // that version was correct on paper (checked by hand and via a standalone
+  // sass compile) but visibly shrank toward 0 above ~1750px in an actual
+  // browser instead of plateauing at $corner-absolute-max the way the flat
+  // arithmetic says it should. Deeply nested calc/min/max is a known rough
+  // edge across engines; flattening it here sidesteps whatever that edge
+  // was rather than chasing the exact browser/version behind it.
+  --card-width: min(#{$card-max-width}, calc(100vw - #{$card-horizontal-padding}));
+  --corner-gap: calc((100vw - var(--card-width)) / 2 - #{$corner-safety-margin});
+  --corner-max: min(#{$corner-absolute-max}, var(--corner-gap));
+}
 
 // Anchor box for the corner — position/mirror only. Each web inside sizes
 // and places itself via .web_slot, since a corner can hold more than one.
 .corner {
   position: fixed;
-  width: clamp(20px, 12vw, #{$corner-max});
-  height: clamp(20px, 12vw, #{$corner-max});
+  width: clamp(#{$corner-min}, 18vw, var(--corner-max));
+  height: clamp(#{$corner-min}, 18vw, var(--corner-max));
   pointer-events: none;
 }
 
@@ -51,8 +73,8 @@ $corner-max: min(
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(clamp(20px, 12vw, #{$corner-max}) * var(--scale, 1));
-  height: calc(clamp(20px, 12vw, #{$corner-max}) * var(--scale, 1));
+  width: calc(clamp(#{$corner-min}, 18vw, var(--corner-max)) * var(--scale, 1));
+  height: calc(clamp(#{$corner-min}, 18vw, var(--corner-max)) * var(--scale, 1));
   opacity: var(--fade, 1);
   transform: translate(var(--inset-x, 0%), var(--inset-y, 0%));
 }

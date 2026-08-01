@@ -59,7 +59,12 @@
     "theme": { "title": "thor" },
     "phase": 1
   },
-  { "type": "movie", "id": "24428-the-avengers", "phase": 1 },
+  {
+    "type": "movie",
+    "id": "24428-the-avengers",
+    "theme": { "title": "avengers" },
+    "phase": 1
+  },
   { "type": "short", "id": "119569-marvel-one-shot-item-47", "phase": 1 },
   {
     "type": "tv",

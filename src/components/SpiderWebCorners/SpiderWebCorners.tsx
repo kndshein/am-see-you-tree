@@ -31,7 +31,8 @@ function mulberry32(seed: number) {
   };
 }
 
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+const clamp = (n: number, lo: number, hi: number) =>
+  Math.min(hi, Math.max(lo, n));
 
 // Point on a quadratic bezier at t — used to scatter sticky glue droplets
 // along the same curve the ring segment itself already sags on, so beads
@@ -82,6 +83,14 @@ type WebConfig = {
   fade: number;
 };
 
+// One web per corner. A second, smaller "secondary" web used to live here
+// too (drifted along one wall, meant to read as a corner that's built up
+// more than one web over time) — removed because at the sizes these ended
+// up at, its own offset was never big enough relative to how large both
+// webs had grown, so it read as an accidental near-duplicate of the primary
+// rather than a deliberate accent. insetX/insetY/fade stay on WebConfig
+// (still 0/0/1 for all four below) rather than being deleted, so a
+// secondary web can come back later without re-plumbing the type.
 const WEB_CONFIGS: WebConfig[] = [
   {
     seed: 'attic-tl',
@@ -97,43 +106,17 @@ const WEB_CONFIGS: WebConfig[] = [
     fade: 1,
   },
   {
-    seed: 'attic-tl-b',
-    corner: 'top_left',
-    spokeCount: 5,
-    ringCount: 2,
-    angleJitter: 14,
-    tornChance: 0.3,
-    strayCount: 1,
-    sizeScale: 0.5,
-    insetX: 41,
-    insetY: 11,
-    fade: 0.6,
-  },
-  {
     seed: 'drafty-tr',
     corner: 'top_right',
     spokeCount: 6,
-    ringCount: 2,
+    ringCount: 4,
     angleJitter: 17,
     tornChance: 0.34,
     strayCount: 2,
-    sizeScale: 0.82,
+    sizeScale: 1.2,
     insetX: 0,
     insetY: 0,
     fade: 1,
-  },
-  {
-    seed: 'drafty-tr-b',
-    corner: 'top_right',
-    spokeCount: 6,
-    ringCount: 2,
-    angleJitter: 12,
-    tornChance: 0.16,
-    strayCount: 1,
-    sizeScale: 0.56,
-    insetX: 9,
-    insetY: 39,
-    fade: 0.55,
   },
   {
     seed: 'windblown-bl',
@@ -149,19 +132,6 @@ const WEB_CONFIGS: WebConfig[] = [
     fade: 1,
   },
   {
-    seed: 'windblown-bl-b',
-    corner: 'bottom_left',
-    spokeCount: 5,
-    ringCount: 2,
-    angleJitter: 18,
-    tornChance: 0.28,
-    strayCount: 1,
-    sizeScale: 0.46,
-    insetX: 26,
-    insetY: 20,
-    fade: 0.5,
-  },
-  {
     seed: 'fresh-br',
     corner: 'bottom_right',
     spokeCount: 7,
@@ -173,19 +143,6 @@ const WEB_CONFIGS: WebConfig[] = [
     insetX: 0,
     insetY: 0,
     fade: 1,
-  },
-  {
-    seed: 'fresh-br-b',
-    corner: 'bottom_right',
-    spokeCount: 6,
-    ringCount: 2,
-    angleJitter: 16,
-    tornChance: 0.22,
-    strayCount: 1,
-    sizeScale: 0.5,
-    insetX: 35,
-    insetY: 8,
-    fade: 0.55,
   },
 ];
 
@@ -223,7 +180,13 @@ function buildWeb(config: WebConfig) {
     };
   });
 
-  type RingSegment = { pa: Vec; control: Vec; pb: Vec; width: number; opacity: number };
+  type RingSegment = {
+    pa: Vec;
+    control: Vec;
+    pb: Vec;
+    width: number;
+    opacity: number;
+  };
   const ringSegments: RingSegment[] = [];
   const baseFractions = [0.28, 0.52, 0.78].slice(0, config.ringCount);
   const fractions = baseFractions
@@ -362,7 +325,13 @@ function CornerWeb({ index }: { index: number }) {
           <stop offset="100%" stopColor="#eef3fb" stopOpacity={0} />
         </radialGradient>
         <filter id={shadow_id} x="-60%" y="-60%" width="220%" height="220%">
-          <feDropShadow dx="0" dy="0.3" stdDeviation="0.35" floodColor="#000" floodOpacity="0.4" />
+          <feDropShadow
+            dx="0"
+            dy="0.3"
+            stdDeviation="0.35"
+            floodColor="#000"
+            floodOpacity="0.4"
+          />
         </filter>
       </defs>
       <g
@@ -372,13 +341,28 @@ function CornerWeb({ index }: { index: number }) {
         filter={`url(#${shadow_id})`}
       >
         {spokePaths.map((p, idx) => (
-          <path key={`s${idx}`} d={p.d} strokeWidth={p.width} opacity={p.opacity} />
+          <path
+            key={`s${idx}`}
+            d={p.d}
+            strokeWidth={p.width}
+            opacity={p.opacity}
+          />
         ))}
         {ringPaths.map((p, idx) => (
-          <path key={`r${idx}`} d={p.d} strokeWidth={p.width} opacity={p.opacity} />
+          <path
+            key={`r${idx}`}
+            d={p.d}
+            strokeWidth={p.width}
+            opacity={p.opacity}
+          />
         ))}
         {strayPaths.map((p, idx) => (
-          <path key={`t${idx}`} d={p.d} strokeWidth={p.width} opacity={p.opacity} />
+          <path
+            key={`t${idx}`}
+            d={p.d}
+            strokeWidth={p.width}
+            opacity={p.opacity}
+          />
         ))}
       </g>
       <g fill="#fff">
@@ -395,7 +379,12 @@ function CornerWeb({ index }: { index: number }) {
   );
 }
 
-const CORNER_CLASSES = ['top_left', 'top_right', 'bottom_left', 'bottom_right'] as const;
+const CORNER_CLASSES = [
+  'top_left',
+  'top_right',
+  'bottom_left',
+  'bottom_right',
+] as const;
 
 // Mounted only while the expanded card's own theme is 'spider-man'
 // (App.tsx, driven by hud-telemetry.ts's locked_theme_title) — sits above
@@ -414,7 +403,10 @@ export default function SpiderWebCorners() {
       aria-hidden="true"
     >
       {CORNER_CLASSES.map((corner_class) => (
-        <div key={corner_class} className={`${styles.corner} ${styles[corner_class]}`}>
+        <div
+          key={corner_class}
+          className={`${styles.corner} ${styles[corner_class]}`}
+        >
           {WEB_CONFIGS.map((config, idx) => {
             if (config.corner !== corner_class) return null;
             return (
