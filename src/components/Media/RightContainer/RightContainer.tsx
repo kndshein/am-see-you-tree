@@ -187,80 +187,90 @@ export default function RightContainer({
       {/* Only render them when active to reduce calculation while collapsed */}
       {is_active && (
         <>
-          <motion.p className={styles.tagline} variants={element}>
-            {/* The slot holds different things per type, so the label names what
-                is actually in it rather than being generic. Movies with no
-                tagline get no label, to avoid heading an empty line. */}
-            {media_data.type === 'tv' ? (
-              <>
-                <span className={styles.tagline_label}>Coverage</span>
-                <span className={styles.season}>
-                  Season {media_data.season}
-                </span>
-                , Episodes {media_data.epiStart} - {media_data.epiEnd}
-              </>
-            ) : (
-              tmdb_data.tagline && (
+          {/* Plain wrapper, not a motion element — tagline and info_group
+              below keep their own existing variants/timing untouched;
+              Framer's stagger propagation counts them in document order
+              regardless of this non-motion div between them and .container
+              (same pattern .cast_header/.cast already rely on). This div
+              exists purely so CSS can let Released/Runtime sit on the same
+              line as a short tagline and wrap below a long one, the way
+              .container's own column flow (one block per line) can't. */}
+          <div className={styles.tagline_row}>
+            <motion.p className={styles.tagline} variants={element}>
+              {/* The slot holds different things per type, so the label names what
+                  is actually in it rather than being generic. Movies with no
+                  tagline get no label, to avoid heading an empty line. */}
+              {media_data.type === 'tv' ? (
                 <>
-                  <span className={styles.tagline_label}>Tagline</span>
-                  {tmdb_data.tagline}
+                  <span className={styles.tagline_label}>Coverage</span>
+                  <span className={styles.season}>
+                    Season {media_data.season}
+                  </span>
+                  , Episodes {media_data.epiStart} - {media_data.epiEnd}
                 </>
-              )
-            )}
-          </motion.p>
-          {/* Release date/runtime, the fields left in this row now that the
-              TMDB/RT/MC/IMDb scores have moved to LeftContainer's own
-              Ratings block (above Finances). */}
-          <motion.section
-            className={styles.info_group}
-            variants={{
-              ...entry,
-              visible: {
-                ...entry.visible,
-                transition: {
-                  ...entry.visible.transition,
-                  staggerChildren: 0.18,
+              ) : (
+                tmdb_data.tagline && (
+                  <>
+                    <span className={styles.tagline_label}>Tagline</span>
+                    {tmdb_data.tagline}
+                  </>
+                )
+              )}
+            </motion.p>
+            {/* Release date/runtime, the fields left in this row now that the
+                TMDB/RT/MC/IMDb scores have moved to LeftContainer's own
+                Ratings block (above Finances). */}
+            <motion.section
+              className={styles.info_group}
+              variants={{
+                ...entry,
+                visible: {
+                  ...entry.visible,
+                  transition: {
+                    ...entry.visible.transition,
+                    staggerChildren: 0.18,
+                  },
                 },
-              },
-            }}
-          >
-            {media_data.type === 'tv' ? (
-              <motion.span variants={release_entry}>
-                <span className={styles.label}>
-                  {is_unreleased ? 'Will Release' : 'Aired'}
-                </span>
-                <GlitchText
-                  final_text={dateCalc(season_data?.air_date)}
-                  seed_text={dateEpochSeed(season_data?.air_date)}
-                  play={is_content_expanded}
-                  delay={RELEASE_ENTRY_DELAY}
-                />
-              </motion.span>
-            ) : (
-              <>
+              }}
+            >
+              {media_data.type === 'tv' ? (
                 <motion.span variants={release_entry}>
                   <span className={styles.label}>
-                    {is_unreleased ? 'Will Release' : 'Released'}
+                    {is_unreleased ? 'Will Release' : 'Aired'}
                   </span>
                   <GlitchText
-                    final_text={dateCalc(tmdb_data.release_date)}
-                    seed_text={dateEpochSeed(tmdb_data.release_date)}
+                    final_text={dateCalc(season_data?.air_date)}
+                    seed_text={dateEpochSeed(season_data?.air_date)}
                     play={is_content_expanded}
                     delay={RELEASE_ENTRY_DELAY}
                   />
                 </motion.span>
-                <motion.span variants={runtime_entry}>
-                  <span className={styles.label}>Runtime</span>
-                  <GlitchText
-                    final_text={runtimeCalc(tmdb_data.runtime)}
-                    seed_text={runtimeMsSeed(tmdb_data.runtime)}
-                    play={is_content_expanded}
-                    delay={RUNTIME_ENTRY_DELAY}
-                  />
-                </motion.span>
-              </>
-            )}
-          </motion.section>
+              ) : (
+                <>
+                  <motion.span variants={release_entry}>
+                    <span className={styles.label}>
+                      {is_unreleased ? 'Will Release' : 'Released'}
+                    </span>
+                    <GlitchText
+                      final_text={dateCalc(tmdb_data.release_date)}
+                      seed_text={dateEpochSeed(tmdb_data.release_date)}
+                      play={is_content_expanded}
+                      delay={RELEASE_ENTRY_DELAY}
+                    />
+                  </motion.span>
+                  <motion.span variants={runtime_entry}>
+                    <span className={styles.label}>Runtime</span>
+                    <GlitchText
+                      final_text={runtimeCalc(tmdb_data.runtime)}
+                      seed_text={runtimeMsSeed(tmdb_data.runtime)}
+                      play={is_content_expanded}
+                      delay={RUNTIME_ENTRY_DELAY}
+                    />
+                  </motion.span>
+                </>
+              )}
+            </motion.section>
+          </div>
           {/* One list of people: whoever made it, then who's in it. The label
               shares a variant child with the pills so it doesn't arrive a
               stagger step ahead of them. */}

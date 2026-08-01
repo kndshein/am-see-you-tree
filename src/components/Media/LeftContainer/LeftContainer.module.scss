@@ -39,12 +39,12 @@
 // block, which is enough to read as a break between blocks without the column
 // feeling loose.
 //
-// The +4px is optical, not structural: this gap runs from the poster's hard
+// The +1px is optical, not structural: this gap runs from the poster's hard
 // image edge to this block's border, whereas the identical one below it ends
 // at the genres label's line box, which carries its own leading above the cap
 // height. Measured equal, this one reads visibly tighter — so it gets nudged.
 .finances {
-  margin-top: $block-gap + 1px;
+  margin-top: $block-gap;
   padding: 5px 10px;
   border: 1px solid rgba($accent-lite, 0.3);
   font-family: $accent-text;
@@ -163,6 +163,6 @@
   // internal $block-gap to the same $section-gap everything else uses.
   // Keeps the optical nudge for the same reason as above.
   .finances {
-    margin-top: $section-gap + 4px;
+    margin-top: $section-gap;
   }
 }

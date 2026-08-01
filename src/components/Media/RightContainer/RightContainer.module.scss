@@ -4,20 +4,45 @@
   display: flex;
   flex-flow: column;
   // The container owns the space between top-level blocks (tagline,
-  // info_group, cast, synopsis, episodes) so no block has to push its
-  // neighbor via its own margin.
-  gap: $section-gap;
+  // info_group, cast, synopsis, genres) so no block has to push its
+  // neighbor via its own margin. $block-gap, not $section-gap — this sits
+  // beside LeftContainer's own poster/finances/genres stack (same
+  // $block-gap, LeftContainer.module.scss), and the two columns should
+  // share one rhythm rather than the right one reading looser than the
+  // left. $section-gap only applies below, once the two columns collapse
+  // into one at the same breakpoint LeftContainer steps its own gap up at.
+  gap: $block-gap;
   padding-right: 20px;
   margin-left: $grid-gutter;
   overflow-y: auto;
   @include custom-scrollbar;
 }
 
+// Wraps .tagline and .info_group so Released/Runtime can sit on the same
+// line as a short tagline instead of always dropping to their own row —
+// ordinary flex-wrap rather than a fixed breakpoint, so a long tagline pushes
+// them below exactly the way a too-long word wraps: no JS length check, the
+// browser just runs out of room on the line.
+.tagline_row {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  // Row-gap matches .container's own gap above — once info_group wraps
+  // below the tagline it reads as its own row the same way cast/synopsis
+  // do below it, so the space above it should match rather than be its own
+  // one-off value.
+  gap: $block-gap 40px;
+  width: 100%;
+}
+
 // Moved up from beside the title: a tagline is almost always short, which
 // otherwise left the corner next to it empty. Sits first in the column so it
-// still reads as introducing the vitals below it.
+// still reads as introducing the vitals below it. No flex-grow: it sizes to
+// its own text (wrapping internally once too long, like any paragraph) and
+// lets info_group sit right after it on the same line rather than being
+// stretched to push info_group to the row's far edge.
 .tagline {
-  margin: 0 5px 0 0;
+  margin: 0;
   color: rgba($white, 0.75);
   font-size: clamp(0.95rem, 1.15vw, 1.15rem);
   font-style: italic;
@@ -49,7 +74,10 @@
   // that contrast is what separates the fields visually. Row gap only applies
   // once they wrap.
   gap: 12px 40px;
-  width: 100%;
+  // No width: 100% — sized to its own two fields (like .actor pills below)
+  // rather than stretched, so .tagline_row's flex-wrap sees its real width
+  // instead of a width that always claims the whole line for itself.
+  width: auto;
 }
 
 // Direct children only — each of these is one labelled field. VoteCounter and
@@ -302,11 +330,24 @@
 }
 
 @media only screen and (max-width: 500px) {
+  // Below this width the two columns collapse into one (Media's own grid),
+  // so RightContainer's blocks stop sitting beside LeftContainer's
+  // poster/finances/genres stack and start sitting below it instead — now
+  // top-level sections in that single column rather than one of two
+  // side-by-side ones, the same step LeftContainer's own finances takes
+  // here (LeftContainer.module.scss), and for the same reason: matching
+  // rhythm requires $section-gap on both sides of this breakpoint, not just
+  // above it.
   .container {
+    gap: $section-gap;
     padding: 0;
     margin: 0;
     margin-bottom: 50px;
     min-height: unset;
     overflow: visible;
+  }
+
+  .tagline_row {
+    gap: $section-gap 40px;
   }
 }
