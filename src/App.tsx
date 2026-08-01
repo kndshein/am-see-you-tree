@@ -7,8 +7,10 @@ import {
 } from 'react';
 import MediaListWrapper from './components/MediaListWrapper/MediaListWrapper';
 import Hud from './components/Hud/Hud';
+import SpiderWebCorners from './components/SpiderWebCorners/SpiderWebCorners';
 import Modal from 'react-modal';
 import {
+  AnimatePresence,
   motion,
   MotionConfig,
   useMotionValueEvent,
@@ -21,6 +23,7 @@ import {
   scroll_progress,
   is_locked,
   is_charging,
+  locked_theme_title,
 } from './utils/hud-telemetry';
 import { dashify } from './utils/format';
 
@@ -66,6 +69,13 @@ function App() {
   // MotionValue specifically to dodge 60fps re-renders during scroll.
   const [is_card_expanded, setIsCardExpanded] = useState(is_locked.get());
   useMotionValueEvent(is_locked, 'change', setIsCardExpanded);
+  // Same reasoning as is_card_expanded above — which title is expanded only
+  // changes on the same rare, human-paced open/close beat.
+  const [locked_theme, setLockedTheme] = useState<string | null>(
+    locked_theme_title.get(),
+  );
+  useMotionValueEvent(locked_theme_title, 'change', setLockedTheme);
+  const is_spider_man_active = locked_theme === 'spider-man';
   // Same reasoning as is_card_expanded above — a held arrow is a rare,
   // human-paced state change, not a per-frame one.
   const [is_holding_arrow, setIsHoldingArrow] = useState(is_charging.get());
@@ -267,6 +277,9 @@ function App() {
                 order_type={order_type}
                 is_movies_only={is_movies_only}
               />
+              <AnimatePresence>
+                {is_spider_man_active && <SpiderWebCorners key="spider-web" />}
+              </AnimatePresence>
               {/* Bottom-centre, in the HUD's own reserved gap between .readout
                   and .build (see .build's comment in Hud.module.scss) — where
                   the old nav bar's centrepiece used to sit. */}

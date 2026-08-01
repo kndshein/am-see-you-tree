@@ -14,6 +14,14 @@ export const card_count = motionValue(0);
 
 export const is_locked = motionValue(false); // a card is expanded
 
+// The expanded card's own media_data.theme?.title (Media.d.ts) — null
+// whenever nothing's expanded, same lifetime as is_locked above but carrying
+// which theme rather than just whether one's active. Read by App.tsx to
+// decide whether to mount a theme-specific effect (e.g. SpiderWebCorners)
+// above everything else, the same way is_locked itself is read for the
+// overlay/HUD dimming.
+export const locked_theme_title = motionValue<string | null>(null);
+
 // A scroll arrow is being held down at all (MediaListWrapper.tsx), from the
 // moment of press — read by App.tsx so the progress bar's own fill can pick
 // up the same orange the arrow itself charges toward.

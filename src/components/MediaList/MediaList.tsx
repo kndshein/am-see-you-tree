@@ -21,6 +21,7 @@ import {
   focused_position,
   card_count,
   is_locked,
+  locked_theme_title,
 } from '../../utils/hud-telemetry';
 import { OrderType } from '../../App';
 
@@ -356,7 +357,12 @@ export default function MediaList({
   useEffect(() => {
     apply_ref.current(true);
     is_locked.set(active_toggle !== null);
-  }, [active_toggle]);
+    locked_theme_title.set(
+      active_toggle !== null
+        ? media_list[active_toggle]?.theme?.title ?? null
+        : null,
+    );
+  }, [active_toggle, media_list]);
 
   // Let a plain (vertical) wheel scroll drive the horizontal rail, instead
   // of requiring Shift+wheel. Trackpad horizontal swipes (deltaX already

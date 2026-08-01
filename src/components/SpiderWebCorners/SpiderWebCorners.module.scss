@@ -1,0 +1,58 @@
+// Above the expanded card's own fullscreen overlay (MediaWrapper.module.scss's
+// .content_container.active, z-index: 100) and the HUD (Hud.module.scss,
+// z-index: 40) — see SpiderWebCorners.tsx's own comment for why that's the bar.
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+}
+
+// --scale (set inline per corner, SpiderWebCorners.tsx) is what gives the
+// four corners their own sizes instead of one identical icon stamped four
+// times.
+.corner {
+  --scale: 1;
+  position: fixed;
+  width: calc(clamp(110px, 14vw, 220px) * var(--scale));
+  height: calc(clamp(110px, 14vw, 220px) * var(--scale));
+  pointer-events: none;
+}
+
+// The extra rotate (SpiderWebCorners.tsx's own inline style, applied here
+// rather than on .corner) composes with the corner's own mirror transform
+// below instead of fighting it — a real web anchored on a wall never lines
+// up perfectly with the corner seam it's attached to.
+.web_inner {
+  width: 100%;
+  height: 100%;
+}
+
+.top_left {
+  top: 0;
+  left: 0;
+}
+
+.top_right {
+  top: 0;
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.bottom_left {
+  bottom: 0;
+  left: 0;
+  transform: scaleY(-1);
+}
+
+.bottom_right {
+  bottom: 0;
+  right: 0;
+  transform: scale(-1, -1);
+}
+
+.web {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
