@@ -420,5 +420,10 @@
       "Allow users to see all cast members.",
       "Misc. UI touch ups."
     ]
+  },
+  {
+    "version": "5.5.0",
+    "date": "2026-08",
+    "notes": ["Add spider webs in viewport corners for Spider-Man films"]
   }
 ]
