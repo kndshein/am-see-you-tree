@@ -33,12 +33,26 @@ function mulberry32(seed: number) {
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
+// Point on a quadratic bezier at t — used to scatter sticky glue droplets
+// along the same curve the ring segment itself already sags on, so beads
+// sit ON the silk rather than floating near it.
+function qpoint(p0: Vec, c: Vec, p1: Vec, t: number): Vec {
+  const mt = 1 - t;
+  return {
+    x: mt * mt * p0.x + 2 * mt * t * c.x + t * t * p1.x,
+    y: mt * mt * p0.y + 2 * mt * t * c.y + t * t * p1.y,
+  };
+}
+
 type Vec = { x: number; y: number };
 type StrandPath = { d: string; width: number; opacity: number };
 type Glint = { cx: number; cy: number; r: number; opacity: number };
 
+type CornerClass = 'top_left' | 'top_right' | 'bottom_left' | 'bottom_right';
+
 type WebConfig = {
   seed: string;
+  corner: CornerClass;
   // How many radial threads besides the two straight frame threads that run
   // along the corner's own two walls (the almost-always-intact ones real
   // corner webs anchor on).
@@ -54,49 +68,124 @@ type WebConfig = {
   tornChance: number;
   strayCount: number;
   sizeScale: number;
-  rotateDeg: number;
+  // How far this web's own anchor sits from the true screen corner, as a
+  // percentage of its own (already viewport-safe, see $corner-max in the
+  // .scss) box — 0 for the corner's main web, >0 for a smaller second web
+  // drifted along one wall, the way a neglected corner accumulates more
+  // than one web over time rather than just one. A percentage rather than
+  // raw px so the drift shrinks along with the box on a narrow window
+  // instead of overshooting a budget that's already gotten smaller.
+  insetX: number;
+  insetY: number;
+  // Opacity multiplier — secondary webs read as older/wispier, not just
+  // smaller duplicates of the main one.
+  fade: number;
 };
 
 const WEB_CONFIGS: WebConfig[] = [
   {
     seed: 'attic-tl',
+    corner: 'top_left',
     spokeCount: 9,
     ringCount: 3,
     angleJitter: 9,
     tornChance: 0.08,
     strayCount: 1,
-    sizeScale: 1.05,
-    rotateDeg: -2,
+    sizeScale: 1,
+    insetX: 0,
+    insetY: 0,
+    fade: 1,
+  },
+  {
+    seed: 'attic-tl-b',
+    corner: 'top_left',
+    spokeCount: 5,
+    ringCount: 2,
+    angleJitter: 14,
+    tornChance: 0.3,
+    strayCount: 1,
+    sizeScale: 0.5,
+    insetX: 41,
+    insetY: 11,
+    fade: 0.6,
   },
   {
     seed: 'drafty-tr',
+    corner: 'top_right',
     spokeCount: 6,
     ringCount: 2,
     angleJitter: 17,
     tornChance: 0.34,
     strayCount: 2,
     sizeScale: 0.82,
-    rotateDeg: 4,
+    insetX: 0,
+    insetY: 0,
+    fade: 1,
+  },
+  {
+    seed: 'drafty-tr-b',
+    corner: 'top_right',
+    spokeCount: 6,
+    ringCount: 2,
+    angleJitter: 12,
+    tornChance: 0.16,
+    strayCount: 1,
+    sizeScale: 0.56,
+    insetX: 9,
+    insetY: 39,
+    fade: 0.55,
   },
   {
     seed: 'windblown-bl',
+    corner: 'bottom_left',
     spokeCount: 8,
     ringCount: 3,
     angleJitter: 21,
     tornChance: 0.2,
     strayCount: 2,
-    sizeScale: 0.96,
-    rotateDeg: -5,
+    sizeScale: 0.92,
+    insetX: 0,
+    insetY: 0,
+    fade: 1,
+  },
+  {
+    seed: 'windblown-bl-b',
+    corner: 'bottom_left',
+    spokeCount: 5,
+    ringCount: 2,
+    angleJitter: 18,
+    tornChance: 0.28,
+    strayCount: 1,
+    sizeScale: 0.46,
+    insetX: 26,
+    insetY: 20,
+    fade: 0.5,
   },
   {
     seed: 'fresh-br',
+    corner: 'bottom_right',
     spokeCount: 7,
     ringCount: 2,
     angleJitter: 6,
     tornChance: 0.05,
     strayCount: 0,
-    sizeScale: 1.16,
-    rotateDeg: 3,
+    sizeScale: 1,
+    insetX: 0,
+    insetY: 0,
+    fade: 1,
+  },
+  {
+    seed: 'fresh-br-b',
+    corner: 'bottom_right',
+    spokeCount: 6,
+    ringCount: 2,
+    angleJitter: 16,
+    tornChance: 0.22,
+    strayCount: 1,
+    sizeScale: 0.5,
+    insetX: 35,
+    insetY: 8,
+    fade: 0.55,
   },
 ];
 
@@ -129,12 +218,13 @@ function buildWeb(config: WebConfig) {
     const isAnchor = idx === 0 || idx === spokes.length - 1;
     return {
       d: `M0 0 L ${(s.dir.x * s.reach).toFixed(2)} ${(s.dir.y * s.reach).toFixed(2)}`,
-      width: isAnchor ? 0.55 : 0.26 + rng() * 0.16,
-      opacity: isAnchor ? 0.75 + rng() * 0.2 : 0.4 + rng() * 0.4,
+      width: isAnchor ? 0.75 : 0.36 + rng() * 0.22,
+      opacity: isAnchor ? 0.8 + rng() * 0.2 : 0.45 + rng() * 0.4,
     };
   });
 
-  const ringPaths: StrandPath[] = [];
+  type RingSegment = { pa: Vec; control: Vec; pb: Vec; width: number; opacity: number };
+  const ringSegments: RingSegment[] = [];
   const baseFractions = [0.28, 0.52, 0.78].slice(0, config.ringCount);
   const fractions = baseFractions
     .map((f) => clamp(f + (rng() - 0.5) * 0.14, 0.12, 0.95))
@@ -156,10 +246,38 @@ function buildWeb(config: WebConfig) {
         x: mid.x + (mid.x / dist) * bulge,
         y: mid.y + (mid.y / dist) * bulge,
       };
-      ringPaths.push({
-        d: `M ${pa.x.toFixed(2)} ${pa.y.toFixed(2)} Q ${control.x.toFixed(2)} ${control.y.toFixed(2)} ${pb.x.toFixed(2)} ${pb.y.toFixed(2)}`,
-        width: 0.16 + rng() * 0.1,
-        opacity: 0.22 + rng() * 0.32,
+      ringSegments.push({
+        pa,
+        control,
+        pb,
+        width: 0.22 + rng() * 0.14,
+        opacity: 0.26 + rng() * 0.36,
+      });
+    }
+  }
+
+  const ringPaths: StrandPath[] = ringSegments.map((seg) => ({
+    d: `M ${seg.pa.x.toFixed(2)} ${seg.pa.y.toFixed(2)} Q ${seg.control.x.toFixed(2)} ${seg.control.y.toFixed(2)} ${seg.pb.x.toFixed(2)} ${seg.pb.y.toFixed(2)}`,
+    width: seg.width,
+    opacity: seg.opacity,
+  }));
+
+  // Sticky glue droplets beaded along the capture spiral itself (real orb
+  // webs are studded with these, not the dry radial spokes) — walked along
+  // each ring segment's own curve so they sit on the sagging silk.
+  const beads: Glint[] = [];
+  for (const seg of ringSegments) {
+    const segLen = Math.hypot(seg.pb.x - seg.pa.x, seg.pb.y - seg.pa.y) || 1;
+    const spacing = 2.4 + rng() * 1.6;
+    const count = Math.max(1, Math.round(segLen / spacing));
+    for (let i = 0; i < count; i++) {
+      const t = clamp((i + 0.5) / count + (rng() - 0.5) * 0.16, 0.06, 0.94);
+      const pt = qpoint(seg.pa, seg.control, seg.pb, t);
+      beads.push({
+        cx: pt.x,
+        cy: pt.y,
+        r: 0.2 + rng() * 0.16,
+        opacity: 0.34 + rng() * 0.34,
       });
     }
   }
@@ -185,11 +303,14 @@ function buildWeb(config: WebConfig) {
     };
     strayPaths.push({
       d: `M ${origin.x.toFixed(2)} ${origin.y.toFixed(2)} Q ${control.x.toFixed(2)} ${control.y.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,
-      width: 0.14 + rng() * 0.08,
-      opacity: 0.18 + rng() * 0.22,
+      width: 0.18 + rng() * 0.1,
+      opacity: 0.2 + rng() * 0.24,
     });
   }
 
+  // A few larger, brighter catch-lights on top of the bead field — the
+  // occasional droplet that's caught the light dead-on rather than the
+  // uniform glisten of the spiral as a whole.
   const glints: Glint[] = [];
   const glintCount = 2 + Math.floor(rng() * 3);
   for (let i = 0; i < glintCount; i++) {
@@ -198,19 +319,22 @@ function buildWeb(config: WebConfig) {
     glints.push({
       cx: s.dir.x * f * s.reach,
       cy: s.dir.y * f * s.reach,
-      r: 0.35 + rng() * 0.45,
-      opacity: 0.3 + rng() * 0.35,
+      r: 0.5 + rng() * 0.6,
+      opacity: 0.5 + rng() * 0.35,
     });
   }
 
-  return { spokePaths, ringPaths, strayPaths, glints };
+  return { spokePaths, ringPaths, strayPaths, beads, glints };
 }
 
 const WEBS = WEB_CONFIGS.map(buildWeb);
 
 function CornerWeb({ index }: { index: number }) {
-  const { spokePaths, ringPaths, strayPaths, glints } = WEBS[index];
-  const gradient_id = `web-fade-${WEB_CONFIGS[index].seed}`;
+  const { spokePaths, ringPaths, strayPaths, beads, glints } = WEBS[index];
+  const config = WEB_CONFIGS[index];
+  const gradient_id = `web-fade-${config.seed}`;
+  const shadow_id = `web-shadow-${config.seed}`;
+  const dew_id = `web-dew-${config.seed}`;
 
   return (
     <svg
@@ -226,12 +350,27 @@ function CornerWeb({ index }: { index: number }) {
           cy="0"
           r={SIZE}
         >
-          <stop offset="0%" stopColor="#e8ecf1" stopOpacity={0.6} />
-          <stop offset="55%" stopColor="#e8ecf1" stopOpacity={0.3} />
-          <stop offset="100%" stopColor="#e8ecf1" stopOpacity={0.03} />
+          <stop offset="0%" stopColor="#f6f9ff" stopOpacity={0.68} />
+          <stop offset="55%" stopColor="#d8e1ef" stopOpacity={0.34} />
+          <stop offset="100%" stopColor="#d8e1ef" stopOpacity={0.03} />
         </radialGradient>
+        {/* Off-center hotspot rather than a flat fill — sells the droplet
+            as glassy/wet (light caught on one side) instead of a flat dot. */}
+        <radialGradient id={dew_id} cx="35%" cy="32%" r="70%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity={0.95} />
+          <stop offset="45%" stopColor="#eef3fb" stopOpacity={0.55} />
+          <stop offset="100%" stopColor="#eef3fb" stopOpacity={0} />
+        </radialGradient>
+        <filter id={shadow_id} x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow dx="0" dy="0.3" stdDeviation="0.35" floodColor="#000" floodOpacity="0.4" />
+        </filter>
       </defs>
-      <g stroke={`url(#${gradient_id})`} fill="none" strokeLinecap="round">
+      <g
+        stroke={`url(#${gradient_id})`}
+        fill="none"
+        strokeLinecap="round"
+        filter={`url(#${shadow_id})`}
+      >
         {spokePaths.map((p, idx) => (
           <path key={`s${idx}`} d={p.d} strokeWidth={p.width} opacity={p.opacity} />
         ))}
@@ -243,6 +382,11 @@ function CornerWeb({ index }: { index: number }) {
         ))}
       </g>
       <g fill="#fff">
+        {beads.map((b, idx) => (
+          <circle key={idx} cx={b.cx} cy={b.cy} r={b.r} opacity={b.opacity} />
+        ))}
+      </g>
+      <g fill={`url(#${dew_id})`}>
         {glints.map((g, idx) => (
           <circle key={idx} cx={g.cx} cy={g.cy} r={g.r} opacity={g.opacity} />
         ))}
@@ -269,18 +413,27 @@ export default function SpiderWebCorners() {
       transition={{ duration: 0.7 }}
       aria-hidden="true"
     >
-      {CORNER_CLASSES.map((corner_class, idx) => (
-        <div
-          key={corner_class}
-          className={`${styles.corner} ${styles[corner_class]}`}
-          style={{ '--scale': WEB_CONFIGS[idx].sizeScale } as React.CSSProperties}
-        >
-          <div
-            className={styles.web_inner}
-            style={{ transform: `rotate(${WEB_CONFIGS[idx].rotateDeg}deg)` }}
-          >
-            <CornerWeb index={idx} />
-          </div>
+      {CORNER_CLASSES.map((corner_class) => (
+        <div key={corner_class} className={`${styles.corner} ${styles[corner_class]}`}>
+          {WEB_CONFIGS.map((config, idx) => {
+            if (config.corner !== corner_class) return null;
+            return (
+              <div
+                key={config.seed}
+                className={styles.web_slot}
+                style={
+                  {
+                    '--scale': config.sizeScale,
+                    '--inset-x': `${config.insetX}%`,
+                    '--inset-y': `${config.insetY}%`,
+                    '--fade': config.fade,
+                  } as React.CSSProperties
+                }
+              >
+                <CornerWeb index={idx} />
+              </div>
+            );
+          })}
         </div>
       ))}
     </motion.div>

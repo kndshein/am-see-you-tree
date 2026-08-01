@@ -8,24 +8,53 @@
   pointer-events: none;
 }
 
-// --scale (set inline per corner, SpiderWebCorners.tsx) is what gives the
-// four corners their own sizes instead of one identical icon stamped four
-// times.
+// Keep these two in sync with MediaWrapper.module.scss's own
+// .content_container.active (padding: 50px 50px 100px → 100px total
+// horizontal) and .content (width: min(1000px, 100%)) — together those
+// define exactly how much dead space sits between the true screen edge and
+// the reticle-framed card at any window width: 50px flat once the card is
+// pinned to its 1000px cap's own margin, shrinking to nothing on a narrower
+// window since the card then just fills (100% - 100px) with no cap. A web
+// sized off raw vw units alone doesn't know that — it can look right at
+// whatever width it was tuned against and still sprawl onto the reticle at
+// a narrower one. $corner-max below computes that gap directly instead of
+// guessing a fixed pixel budget, so the cap is always correct.
+$card-max-width: 1000px;
+$card-horizontal-padding: 100px;
+$corner-safety-margin: 24px;
+$corner-max: min(
+  230px,
+  calc(
+    (100vw - min($card-max-width, calc(100vw - $card-horizontal-padding))) / 2 -
+      $corner-safety-margin
+  )
+);
+
+// Anchor box for the corner — position/mirror only. Each web inside sizes
+// and places itself via .web_slot, since a corner can hold more than one.
 .corner {
-  --scale: 1;
   position: fixed;
-  width: calc(clamp(110px, 14vw, 220px) * var(--scale));
-  height: calc(clamp(110px, 14vw, 220px) * var(--scale));
+  width: clamp(20px, 12vw, #{$corner-max});
+  height: clamp(20px, 12vw, #{$corner-max});
   pointer-events: none;
 }
 
-// The extra rotate (SpiderWebCorners.tsx's own inline style, applied here
-// rather than on .corner) composes with the corner's own mirror transform
-// below instead of fighting it — a real web anchored on a wall never lines
-// up perfectly with the corner seam it's attached to.
-.web_inner {
-  width: 100%;
-  height: 100%;
+// One web within a corner. --scale/--fade (set inline per web,
+// SpiderWebCorners.tsx) are what let a corner hold a full-size primary web
+// anchored right at the seam plus a smaller, fainter secondary one drifted
+// along a wall — real neglected corners build up more than one web over
+// time instead of a single identical icon stamped four times. --inset-x/
+// --inset-y are percentages of the web's own (already safely capped) box
+// rather than raw px, so the secondary's drift shrinks right along with the
+// box on a narrow window instead of overshooting a now-smaller budget.
+.web_slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(clamp(20px, 12vw, #{$corner-max}) * var(--scale, 1));
+  height: calc(clamp(20px, 12vw, #{$corner-max}) * var(--scale, 1));
+  opacity: var(--fade, 1);
+  transform: translate(var(--inset-x, 0%), var(--inset-y, 0%));
 }
 
 .top_left {
@@ -51,8 +80,27 @@
   transform: scale(-1, -1);
 }
 
+// The svg's viewBox ("-8 -8 114 114" in SpiderWebCorners.tsx) pads the
+// authored 100x100 content by 8 units on the near (corner-anchor) side and
+// 6 on the far side, purely so the drop-shadow filter has room to bleed
+// without being clipped by the svg's own default overflow. Left at 100%
+// sizing, that padding eats INTO .web_slot's already corner-anchored box —
+// the local (0, 0) point where the anchor spokes actually converge lands
+// ~7% inward from .web_slot's own (correctly corner-flush) edge, reading as
+// a gap between the web and the true screen corner. Shifting this element
+// by the near-side padding's share (8/114 ≈ 7%), width/height left alone,
+// re-centers that math: local (0, 0) maps back onto .web_slot's own (0, 0)
+// and the near-side padding bleeds off past the true screen edge (harmless
+// — nothing to see off-screen anyway) instead of compressing the web
+// inward. Deliberately not also enlarging past 100% to fit the far-side
+// padding too: that would grow past $corner-max's already-computed safe
+// footprint and eat back into the reticle-clearance margin above.
 .web {
   display: block;
+  position: absolute;
+  top: -7.02%;
+  left: -7.02%;
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.3));
 }
